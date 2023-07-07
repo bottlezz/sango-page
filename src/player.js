@@ -26,9 +26,6 @@ class Player extends HTMLElement {
   constructor() {
     super();
     this.shadowRoot = this.attachShadow({ mode: "open" });
-    // let div = document.createElement('div');
-    // div.textContent = 'Big Bang Theory';
-    // shadowRoot.append(div);
     let clone = template.content.cloneNode(true);
 
     this.shadowRoot.append(clone);

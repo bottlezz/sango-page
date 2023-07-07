@@ -16,6 +16,7 @@ template.innerHTML = `
     <label>game id</label>
     <input type="text" id="gameId" name="fname"><br><br>
     <button name="create-btn">Play</button>
+    <button name="reset-btn">Reset DB</button>
   </div>
   <div>
     <sg-player>p1</sg-player>
@@ -39,6 +40,7 @@ class Table extends HTMLElement {
     shadowRoot.append(clone);
 
     this.createButton = shadowRoot.querySelector("button[name='create-btn']");
+    this.resetButton = shadowRoot.querySelector("button[name='reset-btn']");
 
     this.wcPlayers = shadowRoot.querySelectorAll("sg-player");
     this.gameIdBox = shadowRoot.querySelector("#gameId");
@@ -46,6 +48,9 @@ class Table extends HTMLElement {
     // this.setButton = shadowRoot.querySelector("#set-btn");
     this.createButton.addEventListener("click", () => {
       this.gameStart();
+    });
+    this.resetButton.addEventListener("click", () => {
+      this.resetDb();
     });
   }
 
@@ -95,6 +100,10 @@ class Table extends HTMLElement {
     console.log(`game control: db connected`);
     this.db = db;
     this.appData = {};
+  }
+
+  resetDb() {
+    set(ref(db), {});
   }
 }
 

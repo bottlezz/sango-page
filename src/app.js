@@ -21,7 +21,6 @@ const db = getDatabase(app);
 
 window.db = db;
 window.appData = {};
-
 let sgTable = document.querySelector("sg-table");
 sgTable.init(db);
 // set(ref(db, "people/1"), { name: "j" });

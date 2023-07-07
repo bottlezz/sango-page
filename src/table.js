@@ -19,13 +19,36 @@ template.innerHTML = `
     <button name="reset-btn">Reset DB</button>
   </div>
   <div>
-    <sg-player>p1</sg-player>
-    <sg-player>p2</sg-player>
+    <sg-player></sg-player>
+    <sg-player></sg-player>
   </div>
 `;
-const tableInitData = {
-  p1: { name: "p1", hand: [], state: "off" },
-  p2: { name: "p2", hand: [], state: "off" },
+const deckMock = {
+  cards: [],
+  visable: false,
+};
+const playerDecksMock = {
+  jiang: { ...deckMock }, // wu jiang
+  showPai: { ...deckMock }, // shou pai
+  panDing: { ...deckMock }, // pan ding
+  zhuang: { ...deckMock }, // zhuang bei
+};
+
+const playerMock = {
+  name: "p",
+  state: "off",
+  ...playerDecksMock,
+};
+
+const tableDecks = {
+  jiang: { ...deckMock },
+  pai: { ...deckMock },
+};
+
+const tableMock = {
+  p1: { ...playerMock, name: "p1" },
+  p2: { ...playerMock, name: "p2" },
+  jiang: { cards: [{ id: "j1", fold: false }], visable: false },
 };
 
 class Table extends HTMLElement {
@@ -68,8 +91,8 @@ class Table extends HTMLElement {
             this.renderGame(snapshot.val());
           } else {
             console.log("No data available, creating");
-            set(ref(db, `game/${gameId}`), tableInitData).then(() => {
-              this.renderGame(tableInitData);
+            set(ref(db, `game/${gameId}`), tableMock).then(() => {
+              this.renderGame(tableMock);
             });
           }
         })

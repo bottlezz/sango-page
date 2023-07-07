@@ -87,12 +87,14 @@ class Table extends HTMLElement {
     this.gameMenuWidget.dataset.display = "hide";
     let i = 0;
     for (const prop in gameData) {
-      console.log(`game/${this.appData.gameId}/${prop}`);
-      this.wcPlayers[i].init(
-        ref(db, `game/${this.appData.gameId}/${prop}`),
-        this.appData
-      );
-      i++;
+      if (prop == "p" + (i + 1)) {
+        console.log(`game/${this.appData.gameId}/${prop}`);
+        this.wcPlayers[i].init(
+          ref(db, `game/${this.appData.gameId}/${prop}`),
+          this.appData
+        );
+        i++;
+      }
     }
   }
 

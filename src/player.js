@@ -1,27 +1,31 @@
-import { getDatabase, get, update, set, ref, onValue } from "firebase/database";
-
+import {
+  getDatabase,
+  get,
+  update,
+  set,
+  ref,
+  onValue,
+  child,
+  onChildAdded,
+} from "firebase/database";
+import { commonStyle } from "./constants.js";
 const template = document.createElement("template");
 template.innerHTML = `
-  <style>
-  div[data-display="hide"] {
-      display: none
-  }
-  </style>
-  <div name="widget" data-display="hide">
-  <slot name="content"></slot>
+${commonStyle}
+<div name="widget" data-display="hide">
   <div name="empty-info" data-display="hide">
-  <p> this slot is empty, click <button name="join-btn">Join</button> to join</p>
+    <p> this slot is empty, enter an unique name: <input type="text" name="username"> then, click <button name="join-btn">Join</button> to join</p>
   </div>
   <label name="player-name">pName</label>
-    <input type="text" id="gameId"><br><br>
-
-    <button name="leave-btn">leave</button>
-  </div>
+  <button name="leave-btn">leave</button>
+  <button name="rejoin-btn">rejoin</button>
+  <div name="deck-area" calss="widget"></div>
+</div>
 `;
 
 class Player extends HTMLElement {
   playerRef;
-  appData;
+  gameController;
   shadowRoot;
   constructor() {
     super();
@@ -39,6 +43,11 @@ class Player extends HTMLElement {
     this.leaveButton.addEventListener("click", () => {
       this.leaveSeat();
     });
+    this.shadowRoot
+      .querySelector("button[name='rejoin-btn']")
+      .addEventListener("click", () => {
+        this.reJoinSeat();
+      });
     this.widget = this.shadowRoot.querySelector("div[name='widget']");
     console.log(this.widget.dataset.display);
   }
@@ -46,30 +55,47 @@ class Player extends HTMLElement {
   joinSeat() {
     const updates = {};
     updates["state"] = "on";
+    updates["name"] = this.shadowRoot.querySelector(
+      `input[name="username"]`
+    ).value;
+    this.gameController.currentPlayer = this.playerRef.key;
     update(this.playerRef, updates);
+  }
+
+  reJoinSeat() {
+    this.gameController.currentPlayer = this.playerRef.key;
   }
   leaveSeat() {
     const updates = {};
     updates["state"] = "off";
+    updates["name"] = "empty";
+    this.gameController.currentPlayer = null;
     update(this.playerRef, updates);
   }
 
-  init(playerRef, appData) {
+  init(playerRef, gameController) {
     this.playerRef = playerRef;
-    this.appData = appData;
+    this.gameController = gameController;
     this.widget.dataset.display = "";
-    get(playerRef).then((snapshot) => {
-      console.log(snapshot.val());
-    });
+
     onValue(playerRef, (snapshot) => {
-      const playerData = snapshot.val();
-      this.renderPlayer(playerData);
+      if (snapshot.exists()) {
+        const playerData = snapshot.val();
+        this.renderPlayer(playerData);
+      }
     });
-    this.db = db;
+
+    this.handArea = document.createElement("sg-area");
+    this.handArea.init(child(playerRef, `/hand`), this.gameController);
+    const playerDeckAreaWdight = this.shadowRoot.querySelector(
+      `div[name="deck-area"]`
+    );
+    playerDeckAreaWdight.appendChild(this.handArea);
   }
 
   renderPlayer(playerData) {
-    console.log("render player");
+    console.log(`render player: ${this.playerRef.key}`);
+    console.log(playerData);
     const doc = this.shadowRoot;
     const playerNameWidget = doc.querySelector("label[name='player-name'");
     playerNameWidget.innerHTML = playerData.name;

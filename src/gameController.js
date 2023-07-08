@@ -9,10 +9,14 @@ import {
   set,
   onValue,
 } from "firebase/database";
+
 class gameController {
   db;
-  constructor(db) {
+  gameId;
+  currentPlayer;
+  constructor(db, gameId) {
     this.db = db;
+    this.gameId = gameId;
   }
 
   moveItem(fromPath, toPath) {
@@ -33,6 +37,46 @@ class gameController {
         update(dbRef, updates);
       }
     });
+  }
+
+  getDiscardDeckPath() {
+    return `game/${this.gameId}/tableDecks/discard`;
+  }
+
+  moveToDiscardPile(cardRef) {
+    get(cardRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        // get value
+        const value = snapshot.val();
+        // remove from db
+        remove(cardRef);
+        // add to discard pile
+        this.addItem(this.getDiscardDeckPath() + "/cards", value);
+      }
+    });
+  }
+
+  moveToPlayerArea(cardRef, player, area) {
+    get(cardRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        // get value
+        const value = snapshot.val();
+        // remove from db
+        remove(cardRef);
+        // move to target area
+        const targetPath = `game/${this.gameId}/${player}/${area}/cards`;
+        this.addItem(targetPath, value);
+      }
+    });
+  }
+
+  addItem(toPath, value) {
+    console.log(`Add item to: ${toPath}`);
+    let dbRef = ref(this.db);
+    const newKey = push(child(dbRef, toPath)).key;
+    const updates = {};
+    updates[toPath + "/" + newKey] = value;
+    update(dbRef, updates);
   }
 }
 

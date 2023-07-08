@@ -23,9 +23,3 @@ window.db = db;
 window.appData = {};
 let sgTable = document.querySelector("sg-table");
 sgTable.init(db);
-// set(ref(db, "people/1"), { name: "j" });
-// let players = document.querySelectorAll("my-player");
-// players.forEach((p) => {
-//   console.log("hello");
-//   p.init(db, window.appData);
-// });

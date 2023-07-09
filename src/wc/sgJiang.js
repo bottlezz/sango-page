@@ -12,47 +12,21 @@ import {
   onChildRemoved,
 } from "firebase/database";
 
-import paiKu from "../data/pai.json" assert { type: "json" };
-
-import { commonStyle } from "../constants.js";
+import paiKu from "./data/pai.json" assert { type: "json" };
+import jiangKu from "./data/jiang.json" assert { type: "json" };
+import { commonStyle } from "./constants.js";
 const template = document.createElement("template");
-const wcStyle = `
-<style>
-.card-front {
-  display: none
-}
-.card-widget {
-  width: 2em;
-  display: inline-block
-}
-:host-context(.current-player) .card-widget, :host-context(.discard-area) .card-widget   {
-  width: 4em;
-  display: inline-block
-}
-:host-context(.current-player) .card-back , :host-context(.discard-area) .card-back {
-  display: none
-}
-:host-context(.current-player) .card-front , :host-context(.discard-area) .card-front {
-  display: inline-block
-}
-</style>
-`;
 template.innerHTML = `
-${commonStyle}
-${wcStyle}
-<div name="widget" class="card-widget">
-  <div class="card-front">
-    <div name="card-desc"></div>
+  ${commonStyle}
+  <div name="widget" data-display="">
+    <div name="card-desc" class="card-front"></div>
+    <div name="card-back" class="card-back"><p>[牌]</p></div>
+    <div name="card-controls">
+      <button name="discard-btn"> 弃 </button>
+      <button name="draw-btn"> 摸 </button>
+    </div>
   </div>
-  <div class="card-back">
-    <p>[牌]</p>
-  </div>
-  <div name="card-controls">
-    <button name="discard-btn"> 弃 </button>
-    <button name="draw-btn"> 摸 </button>
-  </div>
-</div>
-`;
+  `;
 
 class SgCard extends HTMLElement {
   cardRef;
@@ -98,7 +72,7 @@ class SgCard extends HTMLElement {
       const paiKuData = paiKu[this.cardData.id];
       const paiName = paiKuData.name;
       const paiDesc = paiKuData.desc;
-      this.cardDescWidget.innerHTML = `<p>${paiName}</p><p> ${paiDesc}</p>`;
+      this.cardDescWidget.innerHTML = `<p>${paiName} ++++ ${paiDesc}</p>`;
     }
 
     if (cardData.id[0] == "j") {
@@ -106,7 +80,7 @@ class SgCard extends HTMLElement {
       const jiangKuData = jiangKu[this.cardData.id];
       const paiName = jiangKuData.name;
       const paiDesc = jiangKuData.desc;
-      this.cardDescWidget.innerHTML = `<p>${paiName} </p><p>  ${paiDesc}</p>`;
+      this.cardDescWidget.innerHTML = `<p>${paiName} ++++ ${paiDesc}</p>`;
     }
 
     this.initControls();

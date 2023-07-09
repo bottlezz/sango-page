@@ -8,12 +8,12 @@ import {
   child,
   onChildAdded,
 } from "firebase/database";
-import { commonStyle } from "./constants.js";
+import { commonStyle } from "../constants.js";
 const template = document.createElement("template");
 template.innerHTML = `
 ${commonStyle}
-<div name="widget" data-display="hide">
-  <div name="empty-info" data-display="hide">
+<div name="widget" class="hide">
+  <div name="empty-info" class="hide">
     <p> this slot is empty, enter an unique name: <input type="text" name="username"> then, click <button name="join-btn">Join</button> to join</p>
   </div>
   <label name="player-name">pName</label>
@@ -49,7 +49,6 @@ class SgPlayer extends HTMLElement {
         this.reJoinSeat();
       });
     this.widget = this.shadowRoot.querySelector("div[name='widget']");
-    console.log(this.widget.dataset.display);
   }
 
   joinSeat() {
@@ -59,6 +58,7 @@ class SgPlayer extends HTMLElement {
       `input[name="username"]`
     ).value;
     this.gameController.currentPlayer = this.playerRef.key;
+    this.widget.classList.add("current-player");
     update(this.playerRef, updates);
   }
 
@@ -76,7 +76,7 @@ class SgPlayer extends HTMLElement {
   init(playerRef, gameController) {
     this.playerRef = playerRef;
     this.gameController = gameController;
-    this.widget.dataset.display = "";
+    this.widget.classList.remove("hide");
 
     onValue(playerRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -102,9 +102,9 @@ class SgPlayer extends HTMLElement {
     if (playerData.state) {
       let emptyInfo = doc.querySelector("div[name='empty-info']");
       if (playerData.state == "off") {
-        emptyInfo.dataset.display = "";
+        emptyInfo.classList.remove("hide");
       } else {
-        emptyInfo.dataset.display = "hide";
+        emptyInfo.classList.add("hide");
       }
     }
   }

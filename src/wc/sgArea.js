@@ -12,7 +12,7 @@ import {
 } from "firebase/database";
 
 import "./sgCard.js";
-import { commonStyle } from "./constants.js";
+import { commonStyle } from "../constants.js";
 const template = document.createElement("template");
 template.innerHTML = `
 ${commonStyle}
@@ -27,6 +27,7 @@ class SgArea extends HTMLElement {
   gameController;
   cardArea;
   cards = {};
+  areaType;
   constructor() {
     super();
     this.shadowRoot = this.attachShadow({ mode: "open" });
@@ -38,7 +39,12 @@ class SgArea extends HTMLElement {
 
   init(deckRef, gameController) {
     this.deckRef = deckRef;
+    this.areaType = deckRef.key + "-area";
     this.gameController = gameController;
+
+    this.shadowRoot
+      .querySelector(`div[name="widget"]`)
+      .classList.add(this.areaType);
 
     onChildAdded(child(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;

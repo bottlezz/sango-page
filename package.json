@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "css-loader": "^6.8.1",
     "firebase": "^10.0.0",
     "html-webpack-plugin": "^5.5.3",
     "style-loader": "^3.3.3",

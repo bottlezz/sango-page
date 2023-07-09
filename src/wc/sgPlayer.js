@@ -64,6 +64,7 @@ class SgPlayer extends HTMLElement {
 
   reJoinSeat() {
     this.gameController.currentPlayer = this.playerRef.key;
+    this.widget.classList.add("current-player");
   }
   leaveSeat() {
     const updates = {};

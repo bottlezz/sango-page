@@ -7,6 +7,14 @@ module.exports = {
     static: "./dist",
     hot: true,
   },
+  module: {
+    rules: [
+      {
+        test: /\.css$/i,
+        use: ["css-loader"],
+      },
+    ],
+  },
   entry: "./src/app.js",
   output: {
     path: path.resolve(__dirname, "dist"),

@@ -9,27 +9,27 @@
   }
 }
 
-.card-widget {
+.card-block {
   display: inline-block;
   width: auto;
 
-  .widget {
+  .card-widget {
+    border: red solid 1px;
+    padding: 2px;
     width: 2em;
     display: inline-block
   }
 }
 
-.card-widget:hover .card-controls {
+.card-block:hover .card-controls {
   display: inline-block;
 }
 
-:host-context(.current-player),
-:host-context(.discard-area) {
-  
-  .card-widget {
-    width: 4em;
-    display: inline-block;
-  }
+:host-context(.current-player) .card-widget,
+:host-context(.discard-area) .card-widget{
+
+  width: 4em;
+  display: inline-block;
 
   .card-back {
     display: none

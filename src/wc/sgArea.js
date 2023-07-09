@@ -11,7 +11,7 @@ import {
   onChildRemoved,
 } from "firebase/database";
 
-import "./sgcard.js";
+import "./sgCard.js";
 import { commonStyle } from "./constants.js";
 const template = document.createElement("template");
 template.innerHTML = `

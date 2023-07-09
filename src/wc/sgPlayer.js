@@ -23,7 +23,7 @@ ${commonStyle}
 </div>
 `;
 
-class Player extends HTMLElement {
+class SgPlayer extends HTMLElement {
   playerRef;
   gameController;
   shadowRoot;
@@ -110,4 +110,4 @@ class Player extends HTMLElement {
   }
 }
 
-customElements.define("sg-player", Player);
+customElements.define("sg-player", SgPlayer);

@@ -1,9 +1,9 @@
 //This file will be the web component
 //It only needs to run, not be imported by main.js
-import "./player.js";
+import "./sgPlayer.js";
 import { getDatabase, ref, child, get, set, onValue } from "firebase/database";
 import { gameController } from "./gameController.js";
-import "./sgarea.js";
+import "./sgArea.js";
 import { commonStyle } from "./constants.js";
 
 const template = document.createElement("template");

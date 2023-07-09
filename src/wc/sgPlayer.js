@@ -12,7 +12,7 @@ import { commonStyle } from "../constants.js";
 const template = document.createElement("template");
 template.innerHTML = `
 ${commonStyle}
-<div name="widget" class="hide">
+<div name="widget" class="widget hide">
   <div name="empty-info" class="hide">
     <p> this slot is empty, enter an unique name: <input type="text" name="username"> then, click <button name="join-btn">Join</button> to join</p>
   </div>

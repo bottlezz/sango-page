@@ -1,0 +1,41 @@
+.card-front {
+  display: none
+}
+
+.card-controls {
+  display: none;
+  button {
+    display: inline-block;
+  }
+}
+
+.card-widget {
+  display: inline-block;
+  width: auto;
+
+  .widget {
+    width: 2em;
+    display: inline-block
+  }
+}
+
+.card-widget:hover .card-controls {
+  display: inline-block;
+}
+
+:host-context(.current-player),
+:host-context(.discard-area) {
+  
+  .card-widget {
+    width: 4em;
+    display: inline-block;
+  }
+
+  .card-back {
+    display: none
+  }
+
+  .card-front {
+    display: inline-block
+  }
+}

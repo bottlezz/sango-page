@@ -13,41 +13,26 @@ import {
 } from "firebase/database";
 
 import paiKu from "../data/pai.json" assert { type: "json" };
-
+import styleContent from "./css/SgCard.css";
 import { commonStyle } from "../constants.js";
 const template = document.createElement("template");
 const wcStyle = `
-<style>
-.card-front {
-  display: none
-}
-.card-widget {
-  width: 2em;
-  display: inline-block
-}
-:host-context(.current-player) .card-widget, :host-context(.discard-area) .card-widget   {
-  width: 4em;
-  display: inline-block
-}
-:host-context(.current-player) .card-back , :host-context(.discard-area) .card-back {
-  display: none
-}
-:host-context(.current-player) .card-front , :host-context(.discard-area) .card-front {
-  display: inline-block
-}
-</style>
+<style>${styleContent}</style>
 `;
 template.innerHTML = `
 ${commonStyle}
 ${wcStyle}
 <div name="widget" class="card-widget">
-  <div class="card-front">
-    <div name="card-desc"></div>
+  <div class="widget">
+    <div class="card-front">
+      <div name="card-desc"></div>
+    </div>
+    <div class="card-back">
+      <p>[牌]</p>
+    </div>
   </div>
-  <div class="card-back">
-    <p>[牌]</p>
-  </div>
-  <div name="card-controls">
+  <div name="card-controls" class="card-controls">
+  
     <button name="discard-btn"> 弃 </button>
     <button name="draw-btn"> 摸 </button>
   </div>

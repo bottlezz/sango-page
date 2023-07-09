@@ -19,7 +19,8 @@ const template = document.createElement("template");
 template.innerHTML = `
   ${commonStyle}
   <div name="widget" data-display="">
-    <div name="card-desc" class="card-front"></div>
+    <div class="card-front">
+    <div name="card-desc"></div>
     <div name="card-back" class="card-back"><p>[牌]</p></div>
     <div name="card-controls">
       <button name="discard-btn"> 弃 </button>

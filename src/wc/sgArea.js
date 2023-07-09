@@ -16,7 +16,7 @@ import { commonStyle } from "../constants.js";
 const template = document.createElement("template");
 template.innerHTML = `
 ${commonStyle}
-<div name="widget" data-display="">
+<div name="widget" class="widget">
   <div name="card-area"> </div>
 </div>
 `;

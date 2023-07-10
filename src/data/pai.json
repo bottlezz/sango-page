@@ -1,4 +1,3 @@
-//this game sux
 {
   "p1": { "name": "方片A", "suit": "diamond", "rank": "A", "desc": "诸葛连弩" },
   "p2": { "name": "草花A", "suit": "clover", "rank": "A", "desc": "诸葛连弩" },

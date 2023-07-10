@@ -8,10 +8,12 @@ import {
   child,
   onChildAdded,
 } from "firebase/database";
-import { commonStyle } from "../constants.js";
+import commonCss from "./css/common.css";
 const template = document.createElement("template");
 template.innerHTML = `
-${commonStyle}
+<style>
+${commonCss}
+</style>
 <div name="widget" class="widget hide">
   <div name="empty-info" class="hide">
     <p> this slot is empty, enter an unique name: <input type="text" name="username"> then, click <button name="join-btn">Join</button> to join</p>
@@ -91,7 +93,7 @@ class SgPlayer extends HTMLElement {
     const playerDeckAreaWdight = this.shadowRoot.querySelector(
       `div[name="deck-area"]`
     );
-    playerDeckAreaWdight.appendChild(this.handArea);
+    playerDeckAreaWdight.prepend(this.handArea);
   }
 
   renderPlayer(playerData) {

@@ -13,14 +13,16 @@ import {
 } from "firebase/database";
 
 import paiKu from "../data/pai.json" assert { type: "json" };
-import css from "./css/SgCard.css";
-import { commonStyle } from "../constants.js";
+import cardCss from "./css/SgCard.css";
+import commonCss from "./css/common.css";
 const template = document.createElement("template");
-
+const css = `
+${commonCss}
+${cardCss} 
+`;
 template.innerHTML = `
-${commonStyle}
 <style>
-${css} 
+${css}
 </style>
 <div name="widget" class="card-block">
   <div class="card-widget">

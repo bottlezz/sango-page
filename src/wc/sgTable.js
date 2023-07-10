@@ -3,13 +3,15 @@
 
 import { getDatabase, ref, child, get, set, onValue } from "firebase/database";
 import { gameController } from "../gameController.js";
-import { commonStyle } from "../constants.js";
+import commonCss from "./css/common.css";
 import "./sgArea.js";
 import "./sgPlayer.js";
 
 const template = document.createElement("template");
 template.innerHTML = `
-${commonStyle}
+<style>
+${commonCss}
+</style>
 <div name="widget" data-display="">
 
   <slot name="content"></slot>

@@ -4,7 +4,7 @@ module.exports = {
   mode: "development",
   devtool: "eval-source-map",
   devServer: {
-    static: "./dist",
+    static: false,
     hot: true,
   },
   module: {

@@ -12,10 +12,12 @@ import {
 } from "firebase/database";
 
 import "./sgCard.js";
-import { commonStyle } from "../constants.js";
+import commonCss from "./css/common.css";
 const template = document.createElement("template");
 template.innerHTML = `
-${commonStyle}
+<style>
+${commonCss}
+</style>
 <div name="widget" class="widget">
   <div name="card-area"> </div>
 </div>
@@ -54,7 +56,7 @@ class SgArea extends HTMLElement {
       const cardWc = document.createElement("sg-card");
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
-      this.cardArea.appendChild(cardWc);
+      this.cardArea.prepend(cardWc);
     });
     onChildChanged(child(deckRef, "/cards"), (snapshot) => {
       console.log(`on child changed: ${snapshot.key}`);

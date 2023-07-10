@@ -8,21 +8,35 @@ import {
   child,
   onChildAdded,
 } from "firebase/database";
+
+import "./sgHpbar.js";
 import commonCss from "./css/common.css";
+import sgPlayerCss from "./css/sgPlayer.css";
+
 const template = document.createElement("template");
 template.innerHTML = `
 <style>
 ${commonCss}
+${sgPlayerCss}
 </style>
 <div name="widget" class="widget hide">
-  <div name="empty-info" class="hide">
-    <p> this slot is empty, enter an unique name: <input type="text" name="username"> then, click <button name="join-btn">Join</button> to join</p>
+  <div name="join-seat-menu" class="hide">
+    click <button name="join-btn">Join</button> to take this seat</p>
   </div>
-  <label name="player-name">pName</label>
-  <button name="leave-btn">leave</button>
-  <button name="rejoin-btn">rejoin</button>
-  <div name="deck-area" calss="widget"></div>
+  <div name="player-game-area" class="hide">
+    <p><label name="player-name">pName</label> </p>
+    <p><span class="hp"></span></p>
+    <div name="deck-area" calss="widget"></div>
+  </div>
 </div>
+
+<div name="change-name-menu" class="hide">
+    <label>New Name</label>
+    <input type="text" id="newName" value="John">
+  </div>
+  <button name="update-name-btn" class="game-menu-button hide">Update</button>
+</div>
+<button name="change-name-btn" class="game-menu-button hide">Change Name</button>
 `;
 
 class SgPlayer extends HTMLElement {
@@ -35,45 +49,40 @@ class SgPlayer extends HTMLElement {
     let clone = template.content.cloneNode(true);
 
     this.shadowRoot.append(clone);
-    this.joinButton = this.shadowRoot.querySelector("button[name='join-btn']");
-    this.leaveButton = this.shadowRoot.querySelector(
-      "button[name='leave-btn']"
-    );
-    this.joinButton.addEventListener("click", () => {
-      this.joinSeat();
-    });
-    this.leaveButton.addEventListener("click", () => {
-      this.leaveSeat();
-    });
-    this.shadowRoot
-      .querySelector("button[name='rejoin-btn']")
-      .addEventListener("click", () => {
-        this.reJoinSeat();
-      });
     this.widget = this.shadowRoot.querySelector("div[name='widget']");
   }
+  // attachChangeNameListener() {
+  //   const changeNameBtn = this.shadowRoot.querySelector(
+  //     `button[name="change-name-btn"]`
+  //   );
+  //   changeNameBtn.addEventListener("click", () => {
+  //     const changeNameMenuDiv = this.shadowRoot.querySelector(
+  //       `div[name="change-name-menu"]`
+  //     );
+  //     changeNameMenuDiv.classList.remove("hide");
+  //   });
+  //   const updateNameBtn = this.shadowRoot.querySelector(
+  //     `button[name="update-name-btn"]`
+  //   );
+  //   updateNameBtn.addEventListener("click", () => {
+  //     newName = this.shadowRoot.querySelector(`#newName`).value;
+  //     this.gameController.userName = newName;
+  //   });
+  // }
 
   joinSeat() {
     const updates = {};
     updates["state"] = "on";
-    updates["name"] = this.shadowRoot.querySelector(
-      `input[name="username"]`
-    ).value;
+    updates["name"] = this.gameController.userName;
     this.gameController.currentPlayer = this.playerRef.key;
     this.widget.classList.add("current-player");
     update(this.playerRef, updates);
   }
 
-  reJoinSeat() {
+  assginAsCurrentPlayer() {
     this.gameController.currentPlayer = this.playerRef.key;
     this.widget.classList.add("current-player");
-  }
-  leaveSeat() {
-    const updates = {};
-    updates["state"] = "off";
-    updates["name"] = "empty";
-    this.gameController.currentPlayer = null;
-    update(this.playerRef, updates);
+    this.gameController.lockPlayerSelection();
   }
 
   init(playerRef, gameController) {
@@ -81,33 +90,54 @@ class SgPlayer extends HTMLElement {
     this.gameController = gameController;
     this.widget.classList.remove("hide");
 
-    onValue(playerRef, (snapshot) => {
+    const hpSpan = this.shadowRoot.querySelector(".hp");
+    const hpWc = document.createElement("sg-hpbar");
+    hpSpan.append(hpWc);
+    hpWc.init(child(playerRef, "/hp"), gameController);
+
+    onValue(child(playerRef, "/name"), (snapshot) => {
       if (snapshot.exists()) {
-        const playerData = snapshot.val();
-        this.renderPlayer(playerData);
+        const playerName = snapshot.val();
+        this.renderPlayer(playerName);
       }
     });
+
+    onValue(child(playerRef, "/hp"), (snapshot) => {});
 
     this.handArea = document.createElement("sg-area");
     this.handArea.init(child(playerRef, `/hand`), this.gameController);
     const playerDeckAreaWdight = this.shadowRoot.querySelector(
       `div[name="deck-area"]`
     );
-    playerDeckAreaWdight.prepend(this.handArea);
+
+    playerDeckAreaWdight.append(this.handArea);
   }
 
-  renderPlayer(playerData) {
+  renderPlayer(playerName) {
     console.log(`render player: ${this.playerRef.key}`);
-    console.log(playerData);
-    const doc = this.shadowRoot;
-    const playerNameWidget = doc.querySelector("label[name='player-name'");
-    playerNameWidget.innerHTML = playerData.name;
-    if (playerData.state) {
-      let emptyInfo = doc.querySelector("div[name='empty-info']");
-      if (playerData.state == "off") {
-        emptyInfo.classList.remove("hide");
-      } else {
-        emptyInfo.classList.add("hide");
+    const playerNameWidget = this.shadowRoot.querySelector(
+      "label[name='player-name']"
+    );
+    playerNameWidget.innerHTML = playerName;
+    if (playerName == "empty") {
+      // display join button
+      const joinSeatMenuDiv = this.shadowRoot.querySelector(
+        `div[name="join-seat-menu"]`
+      );
+      joinSeatMenuDiv.classList.remove("hide");
+
+      this.joinButton = this.shadowRoot.querySelector(
+        "button[name='join-btn']"
+      );
+      this.joinButton.addEventListener("click", () => {
+        this.joinSeat();
+      });
+    } else {
+      this.shadowRoot
+        .querySelector(`div[name="player-game-area"]`)
+        .classList.remove("hide");
+      if (this.gameController.userName == playerName) {
+        this.assginAsCurrentPlayer();
       }
     }
   }

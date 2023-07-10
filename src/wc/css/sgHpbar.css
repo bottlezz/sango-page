@@ -1,0 +1,7 @@
+.max-hp-control {
+    display: none;
+}
+
+:host-context(.current-player) .max-hp-control{
+    display: unset;
+}

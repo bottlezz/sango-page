@@ -14,9 +14,12 @@ class gameController {
   db;
   gameId;
   currentPlayer;
-  constructor(db, gameId) {
+  userName;
+  rootComponent;
+  constructor(db, gameId, rootComponent) {
     this.db = db;
     this.gameId = gameId;
+    this.rootComponent = rootComponent;
   }
 
   moveItem(fromPath, toPath) {
@@ -37,6 +40,10 @@ class gameController {
         update(dbRef, updates);
       }
     });
+  }
+
+  lockPlayerSelection() {
+    this.rootComponent.lockPlayerSelection();
   }
 
   getDiscardDeckPath() {

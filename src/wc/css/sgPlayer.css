@@ -1,0 +1,13 @@
+.current-player.widget {
+    border: green solid 2px;
+    padding: .2em;
+    margin: .2em;
+}
+
+:host-context(.player-seated) div[name="join-seat-menu"] {
+    display: none;
+}
+
+p {
+    margin: .3em;
+}

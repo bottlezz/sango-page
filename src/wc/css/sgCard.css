@@ -21,7 +21,7 @@
   }
 }
 
-.card-block:hover .card-controls {
+:host-context(.player-seated) .card-block:hover .card-controls {
   display: inline-block;
 }
 

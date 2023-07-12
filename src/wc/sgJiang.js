@@ -12,23 +12,35 @@ import {
   onChildRemoved,
 } from "firebase/database";
 
-import jiangKu from "./data/jiang.json" assert { type: "json" };
-import { commonStyle } from "./constants.js";
+import jiangKu from "../data/jiang.json" assert { type: "json" };
+import cardCss from "./css/SgCard.css";
+import commonCss from "./css/common.css";
 const template = document.createElement("template");
+const css = `
+${commonCss}
+${cardCss} 
+`;
 template.innerHTML = `
-  ${commonStyle}
-  <div name="widget" data-display="">
+<style>
+${css}
+</style>
+<div name="widget" class="card-block">
+  <div class="card-widget">
     <div class="card-front">
-    <div name="card-desc"></div>
-    <div name="card-back" class="card-back"><p>[将]</p></div>
-    <div name="card-controls">
-      <button name="discard-btn"> 弃 </button>
-      <button name="draw-btn"> 摸 </button>
+      <div name="card-desc"></div>
+    </div>
+    <div class="card-back">
+      <p>[将]</p>
     </div>
   </div>
-  `;
-
-class SgCard extends HTMLElement {
+  <div name="card-controls" class="card-controls">
+  
+    <button name="discard-btn"> 弃 </button>
+    <button name="draw-btn"> 摸 </button>
+  </div>
+</div>
+`;
+class SgJiang extends HTMLElement {
   cardRef;
   cardData;
   shadowRoot;
@@ -47,40 +59,32 @@ class SgCard extends HTMLElement {
     );
   }
 
-  // discardPai() {
-  //   this.gameController.moveToDiscardPile(this.cardRef);
-  // }
+  discardJiang() {
+    this.gameController.moveCardToTableDeck(this.cardRef, "jiang");
+  }
 
-  // drawPai() {
-  //   // move pai to hand
-  //   if (this.gameController.currentPlayer) {
-  //     this.gameController.moveToPlayerArea(
-  //       this.cardRef,
-  //       this.gameController.currentPlayer,
-  //       "hand"
-  //     );
-  //   }
-  // }
+  drawJiang() {
+    // move pai to hand
+    if (this.gameController.currentPlayer) {
+      this.gameController.moveCardToPlayerArea(
+        this.cardRef,
+        this.gameController.currentPlayer,
+        "jiang"
+      );
+    }
+  }
 
   init(cardRef, cardData, gameController) {
     this.cardRef = cardRef;
     this.cardData = cardData;
     this.gameController = gameController;
 
-    // pai, not jiang
-    if (cardData.id[0] == "p") {
-      const paiKuData = paiKu[this.cardData.id];
-      const paiName = paiKuData.name;
-      const paiDesc = paiKuData.desc;
-      this.cardDescWidget.innerHTML = `<p>${paiName} ++++ ${paiDesc}</p>`;
-    }
-
+    //  jiang
     if (cardData.id[0] == "j") {
-      jiangKu;
-      const jiangKuData = jiangKu[this.cardData.id];
-      const paiName = jiangKuData.name;
-      const paiDesc = jiangKuData.desc;
-      this.cardDescWidget.innerHTML = `<p>${paiName} ++++ ${paiDesc}</p>`;
+      const itemData = jiangKu[this.cardData.id];
+      const itemName = itemData.name;
+      const itemDesc = itemData.desc;
+      this.cardDescWidget.innerHTML = `<p>${itemName} ++++ ${itemDesc}</p>`;
     }
 
     this.initControls();
@@ -94,16 +98,16 @@ class SgCard extends HTMLElement {
 
     discardButton.addEventListener("click", () => {
       console.log("discarding!");
-      this.discardPai();
+      this.discardJiang();
     });
     drawButton.addEventListener("click", () => {
       console.log("drawing!");
 
-      this.drawPai();
+      this.drawJiang();
     });
   }
 
   disconnectedCallback() {}
 }
 
-customElements.define("sg-card", SgCard);
+customElements.define("sg-jiang", SgJiang);

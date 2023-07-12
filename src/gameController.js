@@ -50,7 +50,7 @@ class gameController {
     return `game/${this.gameId}/tableDecks/discard`;
   }
 
-  moveToDiscardPile(cardRef) {
+  moveCardToTableDeck(cardRef, deck) {
     get(cardRef).then((snapshot) => {
       if (snapshot.exists()) {
         // get value
@@ -58,12 +58,13 @@ class gameController {
         // remove from db
         remove(cardRef);
         // add to discard pile
-        this.addItem(this.getDiscardDeckPath() + "/cards", snapshot.key, value);
+        const targetPath = `game/${this.gameId}/tableDecks/${deck}`;
+        this.addItem(targetPath + "/cards", snapshot.key, value);
       }
     });
   }
 
-  moveToPlayerArea(cardRef, player, area) {
+  moveCardToPlayerArea(cardRef, player, area) {
     get(cardRef).then((snapshot) => {
       if (snapshot.exists()) {
         // get value

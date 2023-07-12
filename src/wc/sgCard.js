@@ -61,13 +61,13 @@ class SgCard extends HTMLElement {
   }
 
   discardPai() {
-    this.gameController.moveToDiscardPile(this.cardRef);
+    this.gameController.moveCardToTableDeck(this.cardRef, "discard");
   }
 
   drawPai() {
     // move pai to hand
     if (this.gameController.currentPlayer) {
-      this.gameController.moveToPlayerArea(
+      this.gameController.moveCardToPlayerArea(
         this.cardRef,
         this.gameController.currentPlayer,
         "hand"
@@ -86,14 +86,6 @@ class SgCard extends HTMLElement {
       const paiName = paiKuData.name;
       const paiDesc = paiKuData.desc;
       this.cardDescWidget.innerHTML = `<p>${paiName}</p><p> ${paiDesc}</p>`;
-    }
-
-    if (cardData.id[0] == "j") {
-      jiangKu;
-      const jiangKuData = jiangKu[this.cardData.id];
-      const paiName = jiangKuData.name;
-      const paiDesc = jiangKuData.desc;
-      this.cardDescWidget.innerHTML = `<p>${paiName} </p><p>  ${paiDesc}</p>`;
     }
 
     this.initControls();

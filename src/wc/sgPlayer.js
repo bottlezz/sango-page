@@ -104,13 +104,17 @@ class SgPlayer extends HTMLElement {
 
     onValue(child(playerRef, "/hp"), (snapshot) => {});
 
-    this.handArea = document.createElement("sg-area");
-    this.handArea.init(child(playerRef, `/hand`), this.gameController);
     const playerDeckAreaWdight = this.shadowRoot.querySelector(
       `div[name="deck-area"]`
     );
 
+    this.handArea = document.createElement("sg-area");
+    this.handArea.init(child(playerRef, `/hand`), this.gameController);
+
+    this.jiangArea = document.createElement("sg-jiangarea");
+    this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);
     playerDeckAreaWdight.append(this.handArea);
+    playerDeckAreaWdight.append(this.jiangArea);
   }
 
   renderPlayer(playerName) {

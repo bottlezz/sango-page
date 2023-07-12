@@ -6,6 +6,7 @@ import { gameController } from "../gameController.js";
 import commonCss from "./css/common.css";
 import "./sgArea.js";
 import "./sgPlayer.js";
+import "./sgJiangArea.js";
 import * as appData from "../data/appData.js";
 
 const template = document.createElement("template");
@@ -94,12 +95,13 @@ class SgTable extends HTMLElement {
       this.playersWidiget.appendChild(sgPlayer);
     }
 
-    // this.jiangArea = document.createElement("sg-area");
-    // this.jiangArea.init(
-    //   ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`),
-    //   this.gameController
-    // );
-    // this.tableDeckWidget.appendChild(this.jiangArea);
+    this.jiangArea = document.createElement("sg-jiangarea");
+    this.jiangArea.init(
+      ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`),
+      this.gameController
+    );
+    this.tableDeckWidget.appendChild(this.jiangArea);
+
     this.paiArea = document.createElement("sg-area");
     this.paiArea.init(
       ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`),

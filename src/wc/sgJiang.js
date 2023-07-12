@@ -12,7 +12,6 @@ import {
   onChildRemoved,
 } from "firebase/database";
 
-import paiKu from "./data/pai.json" assert { type: "json" };
 import jiangKu from "./data/jiang.json" assert { type: "json" };
 import { commonStyle } from "./constants.js";
 const template = document.createElement("template");
@@ -21,7 +20,7 @@ template.innerHTML = `
   <div name="widget" data-display="">
     <div class="card-front">
     <div name="card-desc"></div>
-    <div name="card-back" class="card-back"><p>[牌]</p></div>
+    <div name="card-back" class="card-back"><p>[将]</p></div>
     <div name="card-controls">
       <button name="discard-btn"> 弃 </button>
       <button name="draw-btn"> 摸 </button>
@@ -48,20 +47,20 @@ class SgCard extends HTMLElement {
     );
   }
 
-  discardPai() {
-    this.gameController.moveToDiscardPile(this.cardRef);
-  }
+  // discardPai() {
+  //   this.gameController.moveToDiscardPile(this.cardRef);
+  // }
 
-  drawPai() {
-    // move pai to hand
-    if (this.gameController.currentPlayer) {
-      this.gameController.moveToPlayerArea(
-        this.cardRef,
-        this.gameController.currentPlayer,
-        "hand"
-      );
-    }
-  }
+  // drawPai() {
+  //   // move pai to hand
+  //   if (this.gameController.currentPlayer) {
+  //     this.gameController.moveToPlayerArea(
+  //       this.cardRef,
+  //       this.gameController.currentPlayer,
+  //       "hand"
+  //     );
+  //   }
+  // }
 
   init(cardRef, cardData, gameController) {
     this.cardRef = cardRef;

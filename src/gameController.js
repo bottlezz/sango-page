@@ -32,7 +32,7 @@ class gameController {
         const value = snapshot.val();
         // console.log("mpove value :");
         // console.log(value);
-        const newKey = push(child(dbRef, toPath)).key;
+        const newKey = snapshot.key;
         // console.log(newKey);
         const updates = {};
         updates[fromPath] = null;
@@ -58,7 +58,7 @@ class gameController {
         // remove from db
         remove(cardRef);
         // add to discard pile
-        this.addItem(this.getDiscardDeckPath() + "/cards", value);
+        this.addItem(this.getDiscardDeckPath() + "/cards", snapshot.key, value);
       }
     });
   }
@@ -72,17 +72,16 @@ class gameController {
         remove(cardRef);
         // move to target area
         const targetPath = `game/${this.gameId}/${player}/${area}/cards`;
-        this.addItem(targetPath, value);
+        this.addItem(targetPath, snapshot.key, value);
       }
     });
   }
 
-  addItem(toPath, value) {
+  addItem(toPath, key, value) {
     console.log(`Add item to: ${toPath}`);
     let dbRef = ref(this.db);
-    const newKey = push(child(dbRef, toPath)).key;
     const updates = {};
-    updates[toPath + "/" + newKey] = value;
+    updates[toPath + "/" + key] = value;
     update(dbRef, updates);
   }
 }

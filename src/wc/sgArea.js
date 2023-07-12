@@ -13,30 +13,44 @@ import {
 
 import "./sgCard.js";
 import commonCss from "./css/common.css";
-const template = document.createElement("template");
-template.innerHTML = `
-<style>
-${commonCss}
-</style>
-<div name="widget" class="widget">
-  <div name="card-area"> </div>
-</div>
-`;
+// const template = document.createElement("template");
+// template.innerHTML = `
+// <style>
+// ${commonCss}
+// </style>
+// <div name="widget" class="widget">
+//   <div name="card-area"> </div>
+// </div>
+// `;
 
 class SgArea extends HTMLElement {
   deckRef;
   shadowRoot;
   gameController;
-  cardArea;
-  cards = {};
+  style;
   areaType;
+  cardArea;
+  widget;
+  cards = {};
+
   constructor() {
     super();
     this.shadowRoot = this.attachShadow({ mode: "open" });
-    let clone = template.content.cloneNode(true);
 
-    this.shadowRoot.append(clone);
-    this.cardArea = this.shadowRoot.querySelector("div[name='card-area']");
+    this.style = document.createElement("style");
+    this.style.appendChild(document.createTextNode(commonCss));
+
+    this.widget = document.createElement("div");
+    this.widget.classList.add("widget");
+    this.widget.setAttribute("name", "widget");
+
+    this.cardArea = document.createElement("div");
+    this.cardArea.setAttribute("name", "card-area");
+
+    this.widget.append(this.cardArea);
+
+    this.shadowRoot.append(this.style);
+    this.shadowRoot.append(this.widget);
   }
 
   init(deckRef, gameController) {
@@ -44,9 +58,7 @@ class SgArea extends HTMLElement {
     this.areaType = deckRef.key + "-area";
     this.gameController = gameController;
 
-    this.shadowRoot
-      .querySelector(`div[name="widget"]`)
-      .classList.add(this.areaType);
+    this.widget.classList.add(this.areaType);
 
     onChildAdded(child(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;
@@ -71,6 +83,8 @@ class SgArea extends HTMLElement {
       this.cardArea.removeChild(cardWc);
     });
   }
+
+  shuffle() {}
 }
 
 customElements.define("sg-area", SgArea);

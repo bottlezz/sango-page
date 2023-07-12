@@ -11,7 +11,10 @@ module.exports = {
     rules: [
       {
         test: /\.css$/i,
-        use: ["css-loader"],
+        loader: "css-loader",
+        options: {
+          sourceMap: true,
+        },
       },
     ],
   },
@@ -22,6 +25,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
+      title: "Develpoment",
       filename: "index.html",
       inject: true,
       scriptLoading: "module",

@@ -13,12 +13,15 @@ import {
 } from "firebase/database";
 
 import jiangKu from "../data/jiang.json" assert { type: "json" };
-import cardCss from "./css/SgCard.css";
+import cardCss from "./css/sgCard.css";
 import commonCss from "./css/common.css";
+import jiangCss from "./css/sgJiang.css";
+
 const template = document.createElement("template");
 const css = `
 ${commonCss}
 ${cardCss} 
+${jiangCss}
 `;
 template.innerHTML = `
 <style>
@@ -27,7 +30,16 @@ ${css}
 <div name="widget" class="card-block">
   <div class="card-widget">
     <div class="card-front">
-      <div name="card-desc"></div>
+      <div class="jiang-desc">
+        <span class="jiang-name"></span>
+        <b><span class="jiang-gender"></span></b>
+        <span class="jiang-hp"></span>
+      </div>
+      <div class="skill-hint">
+        <div><span>||技||</span></div>
+        <div class="jiang-skill"></div>
+      </div>
+    
     </div>
     <div class="card-back">
       <p>[将]</p>
@@ -37,6 +49,7 @@ ${css}
   
     <button name="discard-btn"> 弃 </button>
     <button name="draw-btn"> 摸 </button>
+    <button name="show-btn"> 亮 </button>
   </div>
 </div>
 `;
@@ -52,7 +65,7 @@ class SgJiang extends HTMLElement {
 
     this.shadowRoot.append(clone);
     this.cardDescWidget = this.shadowRoot.querySelector(
-      "div[name='card-desc']"
+      "div[name='jiang-desc']"
     );
     this.cardControlWidget = this.shadowRoot.querySelector(
       `div[name="card-controls"]`
@@ -74,20 +87,55 @@ class SgJiang extends HTMLElement {
     }
   }
 
+  showJiang() {
+    if (this.cardData.show != "1") {
+      this.gameController.showCard(this.cardRef);
+    } else {
+      this.gameController.resetCard(this.cardRef);
+    }
+  }
+
   init(cardRef, cardData, gameController) {
     this.cardRef = cardRef;
     this.cardData = cardData;
     this.gameController = gameController;
 
-    //  jiang
-    if (cardData.id[0] == "j") {
-      const itemData = jiangKu[this.cardData.id];
-      const itemName = itemData.name;
-      const itemDesc = itemData.desc;
-      this.cardDescWidget.innerHTML = `<p>${itemName} ++++ ${itemDesc}</p>`;
-    }
+    onValue(this.cardRef, (snapshot) => {
+      if (snapshot.exists()) {
+        console.log("jiang on value:");
+        console.log(snapshot.val());
+        this.cardData = snapshot.val();
+        this.renderCard();
+      }
+    });
 
     this.initControls();
+  }
+
+  renderCard() {
+    const jiang = jiangKu[this.cardData.id];
+    const genderSpan = this.shadowRoot.querySelector(".jiang-gender");
+    const nameSpan = this.shadowRoot.querySelector(".jiang-name");
+    const hpSpan = this.shadowRoot.querySelector(".jiang-hp");
+
+    nameSpan.innerHTML = jiang.name;
+    hpSpan.innerHTML = jiang.health + "HP";
+
+    if (jiang.gender == "M") {
+      genderSpan.innerHTML = "&#9794;";
+    } else {
+      genderSpan.innerHTML = "&#9792;";
+    }
+    const skill = jiang.skill.replaceAll("/", "<br><br>");
+    this.shadowRoot.querySelector(".jiang-skill").innerHTML = skill;
+
+    if (this.cardData.show == "1") {
+      this.shadowRoot.querySelector(".card-block").classList.add("show-front");
+    } else if (this.cardData.show == "0") {
+      this.shadowRoot
+        .querySelector(".card-block")
+        .classList.remove("show-front");
+    }
   }
 
   initControls() {
@@ -95,6 +143,7 @@ class SgJiang extends HTMLElement {
       `button[name="discard-btn"]`
     );
     const drawButton = this.shadowRoot.querySelector(`button[name="draw-btn"]`);
+    const showButton = this.shadowRoot.querySelector(`button[name="show-btn"]`);
 
     discardButton.addEventListener("click", () => {
       console.log("discarding!");
@@ -102,8 +151,12 @@ class SgJiang extends HTMLElement {
     });
     drawButton.addEventListener("click", () => {
       console.log("drawing!");
-
       this.drawJiang();
+    });
+
+    showButton.addEventListener("click", () => {
+      console.log("showing!");
+      this.showJiang();
     });
   }
 

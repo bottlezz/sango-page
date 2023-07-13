@@ -41,10 +41,10 @@ class SgArea extends HTMLElement {
     this.style.appendChild(document.createTextNode(commonCss));
 
     this.widget = document.createElement("div");
-    this.widget.classList.add("widget");
     this.widget.setAttribute("name", "widget");
 
     this.cardArea = document.createElement("div");
+    this.cardArea.classList.add("widget");
     this.cardArea.setAttribute("name", "card-area");
 
     this.widget.append(this.cardArea);

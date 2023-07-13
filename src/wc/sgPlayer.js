@@ -122,7 +122,7 @@ class SgPlayer extends HTMLElement {
     const playerNameWidget = this.shadowRoot.querySelector(
       "label[name='player-name']"
     );
-    playerNameWidget.innerHTML = playerName;
+    playerNameWidget.innerHTML = `${this.playerRef.key} : ${playerName}`;
     if (playerName == "empty") {
       // display join button
       const joinSeatMenuDiv = this.shadowRoot.querySelector(

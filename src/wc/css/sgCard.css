@@ -4,14 +4,22 @@
 
 .card-controls {
   display: none;
+  position: absolute;
+  background-color:wheat;
+  top: -1em;
+  left: 0;
+  padding: .1em;
   button {
     display: inline-block;
+    margin-top: 3px;
+    height: 2em;
   }
 }
 
 .card-block {
   display: inline-block;
   width: auto;
+  position: relative;
 
   .card-widget {
     border: red solid 1px;
@@ -21,9 +29,19 @@
   }
 }
 
+
+.card-controls button[name="discard-btn"] {
+  display: none;
+}
+
+:host-context(.current-player ) .card-controls button[name="discard-btn"] {
+  display: inline-block;
+}
+
 :host-context(.player-seated) .card-block:hover .card-controls {
   display: inline-block;
 }
+
 
 :host-context(.current-player) .card-widget,
 :host-context(.discard-area) .card-widget{

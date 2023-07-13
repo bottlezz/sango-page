@@ -1,0 +1,53 @@
+:host-context(.current-player) .card-widget,
+.card-block.show-front .card-widget{
+
+  width: 7em;
+  display: inline-block;
+
+  .card-back {
+    display: none
+  }
+
+  .card-front {
+    display: inline-block
+  }
+}
+
+:host-context(.current-player) .card-controls button[name="draw-btn"]{
+  display: none;
+}
+
+.card-block.show-front {
+  border: solid blue 1px;
+}
+
+.card-block.show-front button[name="show-btn"] {
+  background-color: white;
+}
+
+.jiang-skill {
+  display: none;
+  z-index: 10;
+}
+
+.skill-hint {
+  position: relative;
+  width: 50%;
+  border-bottom: dotted red 2px;
+
+  span {
+    display: inline-block;
+    padding: 1px;
+  }
+}
+
+.skill-hint:hover .jiang-skill {
+  display: block;
+  position: absolute;
+  top: 0;
+  left:0;
+  background-color: wheat;
+  padding: .5em;
+  border: dotted orange 2px;
+  width: 12em;
+}

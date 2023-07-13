@@ -18,18 +18,18 @@ const playerMock = {
 };
 const jiangDeckMock1 = {
   cards: [
-    { id: "j1", visibleTo: "none" },
-    { id: "j2", visibleTo: "none" },
-    { id: "j3", visibleTo: "none" },
+    { id: "j1", show: "0" },
+    { id: "j2", show: "0" },
+    { id: "j3", show: "0" },
   ],
   display: "normal",
 };
 
 const paiDeckMock1 = {
   cards: [
-    { id: "p1", visibleTo: "none" },
-    { id: "p2", visibleTo: "none" },
-    { id: "p3", visibleTo: "none" },
+    { id: "p1", show: "0" },
+    { id: "p2", show: "0" },
+    { id: "p3", show: "0" },
   ],
   display: "normal",
 };
@@ -42,7 +42,7 @@ const tableDecksMock = {
 
 const cardMock = {
   id: "j1",
-  visableTo: "none",
+  show: "0",
 };
 
 const tableMock = {

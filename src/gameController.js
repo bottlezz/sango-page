@@ -50,6 +50,14 @@ class gameController {
     return `game/${this.gameId}/tableDecks/discard`;
   }
 
+  showCard(cardRef) {
+    set(child(cardRef, "/show"), "1");
+  }
+
+  resetCard(cardRef) {
+    set(child(cardRef, "/show"), "0");
+  }
+
   moveCardToTableDeck(cardRef, deck) {
     get(cardRef).then((snapshot) => {
       if (snapshot.exists()) {

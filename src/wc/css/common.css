@@ -7,3 +7,8 @@ div.widget {
     padding: 2px;
     margin: 2px;
 }
+div.widget:empty {
+    border: none;
+    padding: 0;
+    margin: 0;
+}

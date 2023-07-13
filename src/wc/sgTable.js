@@ -8,7 +8,7 @@ import "./sgArea.js";
 import "./sgPlayer.js";
 import "./sgJiangArea.js";
 import * as appData from "../data/appData.js";
-
+import jiangKu from "../data/jiang.json";
 const template = document.createElement("template");
 template.innerHTML = `
 <style>
@@ -32,6 +32,14 @@ ${commonCss}
 `;
 
 const initData = appData.initDataMock1;
+const initJiangDeckCards = Object.keys(jiangKu).map((key) => {
+  return { id: key, show: "0" };
+});
+const jiangDeckMock1 = {
+  cards: initJiangDeckCards,
+  display: "normal",
+};
+initData.tableDecks.jiang = jiangDeckMock1;
 class SgTable extends HTMLElement {
   db;
   widget;

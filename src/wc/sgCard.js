@@ -13,7 +13,7 @@ import {
 } from "firebase/database";
 
 import paiKu from "../data/pai.json" assert { type: "json" };
-import cardCss from "./css/SgCard.css";
+import cardCss from "./css/sgCard.css";
 import commonCss from "./css/common.css";
 const template = document.createElement("template");
 const css = `
@@ -80,15 +80,21 @@ class SgCard extends HTMLElement {
     this.cardData = cardData;
     this.gameController = gameController;
 
-    // pai, not jiang
-    if (cardData.id[0] == "p") {
-      const paiKuData = paiKu[this.cardData.id];
-      const paiName = paiKuData.name;
-      const paiDesc = paiKuData.desc;
-      this.cardDescWidget.innerHTML = `<p>${paiName}</p><p> ${paiDesc}</p>`;
-    }
+    onValue(this.cardRef, (snapshot) => {
+      if (snapshot.exists()) {
+        this.cardData = snapshot.val();
+        this.refreshCard();
+      }
+    });
 
     this.initControls();
+  }
+
+  refreshCard() {
+    const itemData = paiKu[this.cardData.id];
+    const itemName = itemData.name;
+    const itemDesc = itemData.desc;
+    this.cardDescWidget.innerHTML = `<p>${itemName}</p><p> ${itemDesc}</p>`;
   }
 
   initControls() {

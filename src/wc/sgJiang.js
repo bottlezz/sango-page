@@ -31,9 +31,14 @@ ${css}
   <div class="card-widget">
     <div class="card-front">
       <div class="jiang-desc">
+      <div class="info-line">
         <span class="jiang-name"></span>
-        <b><span class="jiang-gender"></span></b>
+        <span class="jiang-gender"></span>
+      </div>
+      <div class="info-line">
+        <span class="jiang-force"></span>
         <span class="jiang-hp"></span>
+      </div>
       </div>
       <div class="skill-hint">
         <div><span>||技||</span></div>
@@ -117,10 +122,11 @@ class SgJiang extends HTMLElement {
     const genderSpan = this.shadowRoot.querySelector(".jiang-gender");
     const nameSpan = this.shadowRoot.querySelector(".jiang-name");
     const hpSpan = this.shadowRoot.querySelector(".jiang-hp");
+    const forceSpan = this.shadowRoot.querySelector(".jiang-force");
 
     nameSpan.innerHTML = jiang.name;
     hpSpan.innerHTML = jiang.health + "HP";
-
+    forceSpan.innerHTML = jiang.force;
     if (jiang.gender == "M") {
       genderSpan.innerHTML = "&#9794;";
     } else {

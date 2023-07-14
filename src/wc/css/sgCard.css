@@ -16,6 +16,12 @@
   }
 }
 
+.info-line {
+  display:flex; 
+  justify-content:space-between; 
+  align-items: baseline;
+}
+
 .card-block {
   display: inline-block;
   width: auto;
@@ -54,6 +60,6 @@
   }
 
   .card-front {
-    display: inline-block
+    display: block
   }
 }

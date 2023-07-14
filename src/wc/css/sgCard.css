@@ -35,6 +35,24 @@
   }
 }
 
+span.club::before {
+  content: "\2663";
+}
+
+span.heart::before {
+  content: "\2665";
+  color: red;
+}
+
+span.diamond::before {
+  content: "\2666";
+  color: red;
+}
+
+span.spade::before {
+  content: "\2660";
+}
+
 
 .card-controls button[name="discard-btn"] {
   display: none;

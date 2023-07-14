@@ -27,7 +27,7 @@ ${css}
 <div name="widget" class="card-block">
   <div class="card-widget">
     <div class="card-front">
-      <div style="font-size: 1.5em;"><span><span class="pai-suit"></span><span class="pai-rank"></span></span></div>
+      <div style="font-size: 1.5em;"><span name="pai-rank"></span></div>
       <div class =".info-line"><span class="pai-desc"></span></div>
     </div>
     <div class="card-back">
@@ -97,26 +97,13 @@ class SgCard extends HTMLElement {
     const itemRank = itemData.rank;
     const itemDesc = itemData.desc;
 
-    const suitSpan = this.shadowRoot.querySelector(".pai-suit");
-    const rankSpan = this.shadowRoot.querySelector(".pai-rank");
+    const rankSpan = this.shadowRoot.querySelector(`span[name="pai-rank"]`);
     const descSpan = this.shadowRoot.querySelector(".pai-desc");
 
     rankSpan.innerHTML = itemRank;
     descSpan.innerHTML = itemDesc;
-    switch(itemData.suit) {
-      case "diamond":
-        suitSpan.innerHTML = "&#9830;"
-        break;
-      case "spade":
-        suitSpan.innerHTML = "&#9824;"
-        break;
-      case "heart":
-        suitSpan.innerHTML = "&#9829;"
-        break;
-      case "club":
-        suitSpan.innerHTML = "&#9827;"
-        break;
-    }
+    rankSpan.className = itemSuit;
+
 
   }
 

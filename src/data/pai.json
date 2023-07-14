@@ -1,6 +1,802 @@
 {
-  "p1": { "suit": "diamond", "rank": "A", "desc": "诸葛连弩" },
-  "p2": { "suit": "club", "rank": "A", "desc": "诸葛连弩" },
-  "p3": { "suit": "spade", "rank": "9", "desc": "闪电" },
-  "p4": { "suit": "heart", "rank": "9", "desc": "闪电" }
+  "p1": {
+    "suit": "diamond",
+    "rank": "A",
+    "desc": "决斗"
+  },
+  "p2": {
+    "suit": "diamond",
+    "rank": "A",
+    "desc": "诸葛连弩"
+  },
+  "p3": {
+    "suit": "diamond",
+    "rank": "A",
+    "desc": "朱雀羽扇"
+  },
+  "p4": {
+    "suit": "diamond",
+    "rank": "2",
+    "desc": "闪"
+  },
+  "p5": {
+    "suit": "diamond",
+    "rank": "2",
+    "desc": "闪"
+  },
+  "p6": {
+    "suit": "diamond",
+    "rank": "2",
+    "desc": "桃"
+  },
+  "p7": {
+    "suit": "diamond",
+    "rank": "3",
+    "desc": "闪"
+  },
+  "p8": {
+    "suit": "diamond",
+    "rank": "3",
+    "desc": "桃"
+  },
+  "p9": {
+    "suit": "diamond",
+    "rank": "3",
+    "desc": "顺手牵羊"
+  },
+  "p10": {
+    "suit": "diamond",
+    "rank": "4",
+    "desc": "火杀"
+  },
+  "p11": {
+    "suit": "diamond",
+    "rank": "4",
+    "desc": "闪"
+  },
+  "p12": {
+    "suit": "diamond",
+    "rank": "4",
+    "desc": "顺手牵羊"
+  },
+  "p13": {
+    "suit": "diamond",
+    "rank": "5",
+    "desc": "火杀"
+  },
+  "p14": {
+    "suit": "diamond",
+    "rank": "5",
+    "desc": "闪"
+  },
+  "p15": {
+    "suit": "diamond",
+    "rank": "5",
+    "desc": "贯石斧"
+  },
+  "p16": {
+    "suit": "diamond",
+    "rank": "6",
+    "desc": "普杀"
+  },
+  "p17": {
+    "suit": "diamond",
+    "rank": "6",
+    "desc": "闪"
+  },
+  "p18": {
+    "suit": "diamond",
+    "rank": "6",
+    "desc": "闪"
+  },
+  "p19": {
+    "suit": "diamond",
+    "rank": "7",
+    "desc": "普杀"
+  },
+  "p20": {
+    "suit": "diamond",
+    "rank": "7",
+    "desc": "闪"
+  },
+  "p21": {
+    "suit": "diamond",
+    "rank": "7",
+    "desc": "闪"
+  },
+  "p22": {
+    "suit": "diamond",
+    "rank": "8",
+    "desc": "普杀"
+  },
+  "p23": {
+    "suit": "diamond",
+    "rank": "8",
+    "desc": "闪"
+  },
+  "p24": {
+    "suit": "diamond",
+    "rank": "8",
+    "desc": "闪"
+  },
+  "p25": {
+    "suit": "diamond",
+    "rank": "9",
+    "desc": "普杀"
+  },
+  "p26": {
+    "suit": "diamond",
+    "rank": "9",
+    "desc": "闪"
+  },
+  "p27": {
+    "suit": "diamond",
+    "rank": "9",
+    "desc": "酒"
+  },
+  "p28": {
+    "suit": "diamond",
+    "rank": "10",
+    "desc": "普杀"
+  },
+  "p29": {
+    "suit": "diamond",
+    "rank": "10",
+    "desc": "闪"
+  },
+  "p30": {
+    "suit": "diamond",
+    "rank": "10",
+    "desc": "闪"
+  },
+  "p31": {
+    "suit": "diamond",
+    "rank": "J",
+    "desc": "闪"
+  },
+  "p32": {
+    "suit": "diamond",
+    "rank": "J",
+    "desc": "闪"
+  },
+  "p33": {
+    "suit": "diamond",
+    "rank": "J",
+    "desc": "闪"
+  },
+  "p34": {
+    "suit": "diamond",
+    "rank": "Q",
+    "desc": "桃"
+  },
+  "p35": {
+    "suit": "diamond",
+    "rank": "Q",
+    "desc": "火攻"
+  },
+  "p36": {
+    "suit": "diamond",
+    "rank": "Q",
+    "desc": "方天画戟"
+  },
+  "p37": {
+    "suit": "diamond",
+    "rank": "Q",
+    "desc": "普无懈可击"
+  },
+  "p38": {
+    "suit": "diamond",
+    "rank": "K",
+    "desc": "普杀"
+  },
+  "p39": {
+    "suit": "diamond",
+    "rank": "K",
+    "desc": "紫骍"
+  },
+  "p40": {
+    "suit": "diamond",
+    "rank": "K",
+    "desc": "骅骝"
+  },
+  "p41": {
+    "suit": "club",
+    "rank": "A",
+    "desc": "决斗"
+  },
+  "p42": {
+    "suit": "club",
+    "rank": "A",
+    "desc": "诸葛连弩"
+  },
+  "p43": {
+    "suit": "club",
+    "rank": "A",
+    "desc": "白银狮子"
+  },
+  "p44": {
+    "suit": "club",
+    "rank": "2",
+    "desc": "普杀"
+  },
+  "p45": {
+    "suit": "club",
+    "rank": "2",
+    "desc": "八卦阵"
+  },
+  "p46": {
+    "suit": "club",
+    "rank": "2",
+    "desc": "藤甲"
+  },
+  "p47": {
+    "suit": "club",
+    "rank": "2",
+    "desc": "仁王盾"
+  },
+  "p48": {
+    "suit": "club",
+    "rank": "3",
+    "desc": "普杀"
+  },
+  "p49": {
+    "suit": "club",
+    "rank": "3",
+    "desc": "酒"
+  },
+  "p50": {
+    "suit": "club",
+    "rank": "3",
+    "desc": "过河拆桥"
+  },
+  "p51": {
+    "suit": "club",
+    "rank": "4",
+    "desc": "普杀"
+  },
+  "p52": {
+    "suit": "club",
+    "rank": "4",
+    "desc": "过河拆桥"
+  },
+  "p53": {
+    "suit": "club",
+    "rank": "4",
+    "desc": "兵粮寸断"
+  },
+  "p54": {
+    "suit": "club",
+    "rank": "5",
+    "desc": "普杀"
+  },
+  "p55": {
+    "suit": "club",
+    "rank": "5",
+    "desc": "雷杀"
+  },
+  "p56": {
+    "suit": "club",
+    "rank": "5",
+    "desc": "的卢"
+  },
+  "p57": {
+    "suit": "club",
+    "rank": "6",
+    "desc": "普杀"
+  },
+  "p58": {
+    "suit": "club",
+    "rank": "6",
+    "desc": "雷杀"
+  },
+  "p59": {
+    "suit": "club",
+    "rank": "6",
+    "desc": "乐不思蜀"
+  },
+  "p60": {
+    "suit": "club",
+    "rank": "7",
+    "desc": "普杀"
+  },
+  "p61": {
+    "suit": "club",
+    "rank": "7",
+    "desc": "雷杀"
+  },
+  "p62": {
+    "suit": "club",
+    "rank": "7",
+    "desc": "南蛮入侵"
+  },
+  "p63": {
+    "suit": "club",
+    "rank": "8",
+    "desc": "普杀"
+  },
+  "p64": {
+    "suit": "club",
+    "rank": "8",
+    "desc": "普杀"
+  },
+  "p65": {
+    "suit": "club",
+    "rank": "8",
+    "desc": "雷杀"
+  },
+  "p66": {
+    "suit": "club",
+    "rank": "9",
+    "desc": "普杀"
+  },
+  "p67": {
+    "suit": "club",
+    "rank": "9",
+    "desc": "普杀"
+  },
+  "p68": {
+    "suit": "club",
+    "rank": "9",
+    "desc": "酒"
+  },
+  "p69": {
+    "suit": "club",
+    "rank": "10",
+    "desc": "普杀"
+  },
+  "p70": {
+    "suit": "club",
+    "rank": "10",
+    "desc": "普杀"
+  },
+  "p71": {
+    "suit": "club",
+    "rank": "10",
+    "desc": "铁索连环"
+  },
+  "p72": {
+    "suit": "club",
+    "rank": "J",
+    "desc": "普杀"
+  },
+  "p73": {
+    "suit": "club",
+    "rank": "J",
+    "desc": "普杀"
+  },
+  "p74": {
+    "suit": "club",
+    "rank": "J",
+    "desc": "铁索连环"
+  },
+  "p75": {
+    "suit": "club",
+    "rank": "Q",
+    "desc": "借刀杀人"
+  },
+  "p76": {
+    "suit": "club",
+    "rank": "Q",
+    "desc": "普无懈可击"
+  },
+  "p77": {
+    "suit": "club",
+    "rank": "Q",
+    "desc": "铁索连环"
+  },
+  "p78": {
+    "suit": "club",
+    "rank": "K",
+    "desc": "借刀杀人"
+  },
+  "p79": {
+    "suit": "club",
+    "rank": "K",
+    "desc": "普无懈可击"
+  },
+  "p80": {
+    "suit": "club",
+    "rank": "K",
+    "desc": "铁索连环"
+  },
+  "p81": {
+    "suit": "heart",
+    "rank": "A",
+    "desc": "万箭齐发"
+  },
+  "p82": {
+    "suit": "heart",
+    "rank": "A",
+    "desc": "桃园结义"
+  },
+  "p83": {
+    "suit": "heart",
+    "rank": "A",
+    "desc": "普无懈可击"
+  },
+  "p84": {
+    "suit": "heart",
+    "rank": "2",
+    "desc": "闪"
+  },
+  "p85": {
+    "suit": "heart",
+    "rank": "2",
+    "desc": "闪"
+  },
+  "p86": {
+    "suit": "heart",
+    "rank": "2",
+    "desc": "火攻"
+  },
+  "p87": {
+    "suit": "heart",
+    "rank": "3",
+    "desc": "桃"
+  },
+  "p88": {
+    "suit": "heart",
+    "rank": "3",
+    "desc": "五谷丰登"
+  },
+  "p89": {
+    "suit": "heart",
+    "rank": "3",
+    "desc": "火杀"
+  },
+  "p90": {
+    "suit": "heart",
+    "rank": "4",
+    "desc": "火杀"
+  },
+  "p91": {
+    "suit": "heart",
+    "rank": "4",
+    "desc": "桃"
+  },
+  "p92": {
+    "suit": "heart",
+    "rank": "4",
+    "desc": "五谷丰登"
+  },
+  "p93": {
+    "suit": "heart",
+    "rank": "5",
+    "desc": "桃"
+  },
+  "p94": {
+    "suit": "heart",
+    "rank": "5",
+    "desc": "麒麟弓"
+  },
+  "p95": {
+    "suit": "heart",
+    "rank": "5",
+    "desc": "赤兔"
+  },
+  "p96": {
+    "suit": "heart",
+    "rank": "6",
+    "desc": "桃"
+  },
+  "p97": {
+    "suit": "heart",
+    "rank": "6",
+    "desc": "桃"
+  },
+  "p98": {
+    "suit": "heart",
+    "rank": "6",
+    "desc": "乐不思蜀"
+  },
+  "p99": {
+    "suit": "heart",
+    "rank": "7",
+    "desc": "火杀"
+  },
+  "p100": {
+    "suit": "heart",
+    "rank": "7",
+    "desc": "桃"
+  },
+  "p101": {
+    "suit": "heart",
+    "rank": "7",
+    "desc": "无中生有"
+  },
+  "p102": {
+    "suit": "heart",
+    "rank": "8",
+    "desc": "闪"
+  },
+  "p103": {
+    "suit": "heart",
+    "rank": "8",
+    "desc": "桃"
+  },
+  "p104": {
+    "suit": "heart",
+    "rank": "8",
+    "desc": "无中生有"
+  },
+  "p105": {
+    "suit": "heart",
+    "rank": "9",
+    "desc": "闪"
+  },
+  "p106": {
+    "suit": "heart",
+    "rank": "9",
+    "desc": "桃"
+  },
+  "p107": {
+    "suit": "heart",
+    "rank": "9",
+    "desc": "无中生有"
+  },
+  "p108": {
+    "suit": "heart",
+    "rank": "10",
+    "desc": "普杀"
+  },
+  "p109": {
+    "suit": "heart",
+    "rank": "10",
+    "desc": "普杀"
+  },
+  "p110": {
+    "suit": "heart",
+    "rank": "10",
+    "desc": "火杀"
+  },
+  "p111": {
+    "suit": "heart",
+    "rank": "J",
+    "desc": "普杀"
+  },
+  "p112": {
+    "suit": "heart",
+    "rank": "J",
+    "desc": "闪"
+  },
+  "p113": {
+    "suit": "heart",
+    "rank": "J",
+    "desc": "无中生有"
+  },
+  "p114": {
+    "suit": "heart",
+    "rank": "Q",
+    "desc": "闪"
+  },
+  "p115": {
+    "suit": "heart",
+    "rank": "Q",
+    "desc": "桃"
+  },
+  "p116": {
+    "suit": "heart",
+    "rank": "Q",
+    "desc": "过河拆桥"
+  },
+  "p117": {
+    "suit": "heart",
+    "rank": "Q",
+    "desc": "闪电"
+  },
+  "p118": {
+    "suit": "heart",
+    "rank": "K",
+    "desc": "闪"
+  },
+  "p119": {
+    "suit": "heart",
+    "rank": "K",
+    "desc": "爪黄飞电"
+  },
+  "p120": {
+    "suit": "heart",
+    "rank": "K",
+    "desc": "普无懈可击"
+  },
+  "p121": {
+    "suit": "spade",
+    "rank": "A",
+    "desc": "决斗"
+  },
+  "p122": {
+    "suit": "spade",
+    "rank": "A",
+    "desc": "闪电"
+  },
+  "p123": {
+    "suit": "spade",
+    "rank": "A",
+    "desc": "古锭刀"
+  },
+  "p124": {
+    "suit": "spade",
+    "rank": "2",
+    "desc": "雌雄双股剑"
+  },
+  "p125": {
+    "suit": "spade",
+    "rank": "2",
+    "desc": "八卦阵"
+  },
+  "p126": {
+    "suit": "spade",
+    "rank": "2",
+    "desc": "藤甲"
+  },
+  "p127": {
+    "suit": "spade",
+    "rank": "2",
+    "desc": "寒冰剑"
+  },
+  "p128": {
+    "suit": "spade",
+    "rank": "3",
+    "desc": "酒"
+  },
+  "p129": {
+    "suit": "spade",
+    "rank": "3",
+    "desc": "过河拆桥"
+  },
+  "p130": {
+    "suit": "spade",
+    "rank": "3",
+    "desc": "顺手牵羊"
+  },
+  "p131": {
+    "suit": "spade",
+    "rank": "4",
+    "desc": "雷杀"
+  },
+  "p132": {
+    "suit": "spade",
+    "rank": "4",
+    "desc": "过河拆桥"
+  },
+  "p133": {
+    "suit": "spade",
+    "rank": "4",
+    "desc": "顺手牵羊"
+  },
+  "p134": {
+    "suit": "spade",
+    "rank": "5",
+    "desc": "雷杀"
+  },
+  "p135": {
+    "suit": "spade",
+    "rank": "5",
+    "desc": "青龙偃月刀"
+  },
+  "p136": {
+    "suit": "spade",
+    "rank": "5",
+    "desc": "绝影"
+  },
+  "p137": {
+    "suit": "spade",
+    "rank": "6",
+    "desc": "雷杀"
+  },
+  "p138": {
+    "suit": "spade",
+    "rank": "6",
+    "desc": "乐不思蜀"
+  },
+  "p139": {
+    "suit": "spade",
+    "rank": "6",
+    "desc": "青釭剑"
+  },
+  "p140": {
+    "suit": "spade",
+    "rank": "7",
+    "desc": "普杀"
+  },
+  "p141": {
+    "suit": "spade",
+    "rank": "7",
+    "desc": "雷杀"
+  },
+  "p142": {
+    "suit": "spade",
+    "rank": "7",
+    "desc": "南蛮入侵"
+  },
+  "p143": {
+    "suit": "spade",
+    "rank": "8",
+    "desc": "普杀"
+  },
+  "p144": {
+    "suit": "spade",
+    "rank": "8",
+    "desc": "普杀"
+  },
+  "p145": {
+    "suit": "spade",
+    "rank": "8",
+    "desc": "雷杀"
+  },
+  "p146": {
+    "suit": "spade",
+    "rank": "9",
+    "desc": "普杀"
+  },
+  "p147": {
+    "suit": "spade",
+    "rank": "9",
+    "desc": "普杀"
+  },
+  "p148": {
+    "suit": "spade",
+    "rank": "9",
+    "desc": "酒"
+  },
+  "p149": {
+    "suit": "spade",
+    "rank": "10",
+    "desc": "普杀"
+  },
+  "p150": {
+    "suit": "spade",
+    "rank": "10",
+    "desc": "普杀"
+  },
+  "p151": {
+    "suit": "spade",
+    "rank": "10",
+    "desc": "兵粮寸断"
+  },
+  "p152": {
+    "suit": "spade",
+    "rank": "J",
+    "desc": "顺手牵羊"
+  },
+  "p153": {
+    "suit": "spade",
+    "rank": "J",
+    "desc": "普无懈可击"
+  },
+  "p154": {
+    "suit": "spade",
+    "rank": "J",
+    "desc": "铁索连环"
+  },
+  "p155": {
+    "suit": "spade",
+    "rank": "Q",
+    "desc": "过河拆桥"
+  },
+  "p156": {
+    "suit": "spade",
+    "rank": "Q",
+    "desc": "铁索连环"
+  },
+  "p157": {
+    "suit": "spade",
+    "rank": "Q",
+    "desc": "丈八蛇矛"
+  },
+  "p158": {
+    "suit": "spade",
+    "rank": "K",
+    "desc": "普无懈可击"
+  },
+  "p159": {
+    "suit": "spade",
+    "rank": "K",
+    "desc": "南蛮入侵"
+  },
+  "p160": {
+    "suit": "spade",
+    "rank": "K",
+    "desc": "大宛"
+  }
 }

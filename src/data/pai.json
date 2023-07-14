@@ -1,5 +1,6 @@
 {
-  "p1": { "name": "方片A", "suit": "diamond", "rank": "A", "desc": "诸葛连弩" },
-  "p2": { "name": "草花A", "suit": "clover", "rank": "A", "desc": "诸葛连弩" },
-  "p3": { "name": "黑桃9", "suit": "spade", "rank": "9", "desc": "闪电" }
+  "p1": { "suit": "diamond", "rank": "A", "desc": "诸葛连弩" },
+  "p2": { "suit": "club", "rank": "A", "desc": "诸葛连弩" },
+  "p3": { "suit": "spade", "rank": "9", "desc": "闪电" },
+  "p4": { "suit": "heart", "rank": "9", "desc": "闪电" }
 }

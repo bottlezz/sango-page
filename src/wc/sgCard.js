@@ -27,7 +27,8 @@ ${css}
 <div name="widget" class="card-block">
   <div class="card-widget">
     <div class="card-front">
-      <div name="card-desc"></div>
+      <div style="font-size: 1.5em;"><span><span class="pai-suit"></span><span class="pai-rank"></span></span></div>
+      <div class =".info-line"><span class="pai-desc"></span></div>
     </div>
     <div class="card-back">
       <p>[牌]</p>
@@ -52,8 +53,8 @@ class SgCard extends HTMLElement {
     let clone = template.content.cloneNode(true);
 
     this.shadowRoot.append(clone);
-    this.cardDescWidget = this.shadowRoot.querySelector(
-      "div[name='card-desc']"
+    this.cardFront = this.shadowRoot.querySelector(
+      "div[name='card-front']"
     );
     this.cardControlWidget = this.shadowRoot.querySelector(
       `div[name="card-controls"]`
@@ -92,9 +93,31 @@ class SgCard extends HTMLElement {
 
   refreshCard() {
     const itemData = paiKu[this.cardData.id];
-    const itemName = itemData.name;
+    const itemSuit= itemData.suit;
+    const itemRank = itemData.rank;
     const itemDesc = itemData.desc;
-    this.cardDescWidget.innerHTML = `<p>${itemName}</p><p> ${itemDesc}</p>`;
+
+    const suitSpan = this.shadowRoot.querySelector(".pai-suit");
+    const rankSpan = this.shadowRoot.querySelector(".pai-rank");
+    const descSpan = this.shadowRoot.querySelector(".pai-desc");
+
+    rankSpan.innerHTML = itemRank;
+    descSpan.innerHTML = itemDesc;
+    switch(itemData.suit) {
+      case "diamond":
+        suitSpan.innerHTML = "&#9830;"
+        break;
+      case "spade":
+        suitSpan.innerHTML = "&#9824;"
+        break;
+      case "heart":
+        suitSpan.innerHTML = "&#9829;"
+        break;
+      case "club":
+        suitSpan.innerHTML = "&#9827;"
+        break;
+    }
+
   }
 
   initControls() {

@@ -71,7 +71,8 @@ const initData = {
   },
 };
 
-const initDataMock1 = {
+const initDataMock8 = {
+  pCount: 8,
   p1: { ...playerMock, name: "empty" },
   p2: { ...playerMock, name: "empty" },
   p3: { ...playerMock, name: "empty" },
@@ -79,7 +80,22 @@ const initDataMock1 = {
   p5: { ...playerMock, name: "empty" },
   p6: { ...playerMock, name: "empty" },
   p7: { ...playerMock, name: "empty" },
-  p8: { ...playerMock, name: "p8" },
+  p8: { ...playerMock, name: "empty" },
+  tableDecks: {
+    jiang: jiangDeckMock1,
+    pai: paiDeckMock1,
+    discard: { ...deckMock },
+  },
+};
+
+const initDataMock6 = {
+  pCount: 6,
+  p1: { ...playerMock, name: "empty" },
+  p2: { ...playerMock, name: "empty" },
+  p3: { ...playerMock, name: "empty" },
+  p4: { ...playerMock, name: "empty" },
+  p5: { ...playerMock, name: "empty" },
+  p6: { ...playerMock, name: "empty" },
   tableDecks: {
     jiang: jiangDeckMock1,
     pai: paiDeckMock1,
@@ -97,5 +113,6 @@ export {
   cardMock,
   tableMock,
   initData,
-  initDataMock1,
+  initDataMock8,
+  initDataMock6,
 };

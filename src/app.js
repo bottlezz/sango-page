@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
-import "./wc/sgTable.js";
-
+// import "./wc/sgTable.js";
+import { SgGameMenu } from "./wc/sgGameMenu.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -22,5 +22,8 @@ const db = getDatabase(app);
 
 window.db = db;
 window.appData = {};
-let sgTable = document.querySelector("sg-table");
-sgTable.init(db);
+//let sgTable = document.querySelector("sg-table");
+const appDom = document.querySelector(`div[name="app"]`);
+const gameMenu = new SgGameMenu(db);
+appDom.appendChild(gameMenu);
+// sgTable.init(db);

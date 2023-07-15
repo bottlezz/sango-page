@@ -16,10 +16,10 @@ class gameController {
   currentPlayer;
   userName;
   rootComponent;
-  constructor(db, gameId, rootComponent) {
+  constructor(db, gameId) {
     this.db = db;
     this.gameId = gameId;
-    this.rootComponent = rootComponent;
+    //this.rootComponent = rootComponent;
   }
 
   moveItem(fromPath, toPath) {

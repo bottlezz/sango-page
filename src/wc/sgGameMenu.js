@@ -34,7 +34,7 @@ ${commonCss}
   </div>
   <div name="name-field">
     <label>Player number</label>
-    <input type="text" id="playerNumber" value="6"><br><br>
+    <input type="text" id="playerCount" value="6"><br><br>
   </div>
   <button name="play-btn" class="game-menu-button">Play</button>
   <button name="reset-btn" class="game-menu-button">Reset DB</button>
@@ -49,7 +49,7 @@ class SgGameMenu extends HTMLElement {
   gameController;
   tableRef;
   shadowRoot;
-  playerNumber = 6;
+  playerCount = 6;
   gameId = 1;
   subs = [];
   constructor(db) {
@@ -101,18 +101,19 @@ class SgGameMenu extends HTMLElement {
   onPlayClick() {
     const gameId = this.shadowRoot.querySelector("#gameId").value;
     const userName = this.shadowRoot.querySelector("#userName").value;
-    const playerNum = this.shadowRoot.querySelector("#playerNumber").value;
+    const playerNum = this.shadowRoot.querySelector("#playerCount").value;
 
     if (!userName || !playerNum || !gameId) return;
     if (playerNum != 6) {
       playerNum = 8;
     }
-    this.playerNumber = playerNum;
+    this.playerCount = playerNum;
     this.userName = userName;
     this.gameId = gameId;
 
     this.gameController = new gameController(db, gameId);
     this.gameController.userName = userName;
+    this.gameController.playerCount = playerNum;
     this.tableRef = ref(db, `game/${gameId}`);
 
     get(this.tableRef).then((snapshot) => {
@@ -123,7 +124,7 @@ class SgGameMenu extends HTMLElement {
           const key = "p" + i;
           console.log(key);
           if (game[key] && game[key].name == userName) {
-            // user connected. go into talbe
+            // User reconnect, skip seat select.
             console.log("user connected");
             this.joinSeat(key);
             return;
@@ -146,11 +147,11 @@ class SgGameMenu extends HTMLElement {
     // console.log("render seat");
     seatMenu.classList.remove("hide");
     seatMenu.innerHTML = ""
-    for (let i = 0; i < this.playerNumber; i++) {
+    for (let i = 0; i < this.playerCount; i++) {
       const seatDom = document.createElement("div");
       const key = `p${i + 1}`;
-      seatDom.append(`${key}: `)
       const playerNameRef = ref(this.db, `game/${this.gameId}/${key}/name`);
+      seatDom.append(`${key}: `)
       seatMenu.appendChild(seatDom);
       const unSub = onValue(playerNameRef, (snapshot) => {
         const pName = snapshot.val();
@@ -173,27 +174,27 @@ class SgGameMenu extends HTMLElement {
     set(ref(db), {});
   }
 
-
   joinSeat(key) {
     const playerNameRef = ref(this.db, `game/${this.gameId}/${key}/name`);
     set(playerNameRef, this.userName);
     this.renderTable();
     this.removeSelf();
   }
+
   removeSelf() {
     this.parentNode.removeChild(this);
-  }
-
-  disconnectedCallback() {
-    // console.log("disconnected");
-    this.subs.forEach((unSub) => {
-      unSub();
-    })
   }
 
   renderTable() {
     const table = new SgTable(this.db, this.gameController);
     this.parentNode.appendChild(table);
+  }
+
+  disconnectedCallback() {
+    // remove database listener.
+    this.subs.forEach((unSub) => {
+      unSub();
+    })
   }
 }
 

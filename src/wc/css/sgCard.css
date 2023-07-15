@@ -1,14 +1,15 @@
 .card-front {
-  display: none
+  display: none;
 }
 
 .card-controls {
   display: none;
   position: absolute;
-  background-color:wheat;
-  top: -1em;
+  background-color: wheat;
+  top: 0;
   left: 0;
-  padding: .1em;
+  padding: 0.1em;
+
   button {
     display: inline-block;
     margin-top: 3px;
@@ -17,8 +18,8 @@
 }
 
 .info-line {
-  display:flex; 
-  justify-content:space-between; 
+  display: flex;
+  justify-content: space-between;
   align-items: baseline;
 }
 
@@ -26,12 +27,13 @@
   display: inline-block;
   width: auto;
   position: relative;
+  background-color: white;
 
   .card-widget {
     border: red solid 1px;
     padding: 2px;
     width: 2em;
-    display: inline-block
+    display: inline-block;
   }
 }
 
@@ -53,12 +55,11 @@ span.spade::before {
   content: "\2660";
 }
 
-
 .card-controls button[name="discard-btn"] {
   display: none;
 }
 
-:host-context(.current-player ) .card-controls button[name="discard-btn"] {
+:host-context(.current-player) .card-controls button[name="discard-btn"] {
   display: inline-block;
 }
 
@@ -66,18 +67,16 @@ span.spade::before {
   display: inline-block;
 }
 
-
 :host-context(.current-player) .card-widget,
-:host-context(.discard-area) .card-widget{
-
+:host-context(.discard-area) .card-widget {
   width: 4em;
   display: inline-block;
 
   .card-back {
-    display: none
+    display: none;
   }
 
   .card-front {
-    display: block
+    display: block;
   }
 }

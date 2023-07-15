@@ -1,14 +1,20 @@
-div[data-display="hide"], .hide {
-    display: none
+div[data-display="hide"],
+.hide {
+  display: none;
 }
 
 div.widget {
-    border: red solid 1px;
-    padding: 2px;
-    margin: 2px;
+  border: red solid 1px;
+  padding: 2px;
+  margin: 2px;
 }
 div.widget:empty {
-    border: none;
-    padding: 0;
-    margin: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* make scrollbar transparent */
 }

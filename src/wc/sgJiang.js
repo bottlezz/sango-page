@@ -63,6 +63,7 @@ class SgJiang extends HTMLElement {
   cardData;
   shadowRoot;
   gameController;
+  unSub;
   constructor() {
     super();
     this.shadowRoot = this.attachShadow({ mode: "open" });
@@ -105,10 +106,8 @@ class SgJiang extends HTMLElement {
     this.cardData = cardData;
     this.gameController = gameController;
 
-    onValue(this.cardRef, (snapshot) => {
+    this.unSub = onValue(this.cardRef, (snapshot) => {
       if (snapshot.exists()) {
-        console.log("jiang on value:");
-        console.log(snapshot.val());
         this.cardData = snapshot.val();
         this.renderCard();
       }
@@ -166,7 +165,9 @@ class SgJiang extends HTMLElement {
     });
   }
 
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    this.unSub();
+  }
 }
 
 customElements.define("sg-jiang", SgJiang);

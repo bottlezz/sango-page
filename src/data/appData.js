@@ -85,6 +85,7 @@ const initDataMock8 = {
     jiang: jiangDeckMock1,
     pai: paiDeckMock1,
     discard: { ...deckMock },
+    role: ["忠","忠","忠","反","反","反","内","主"]
   },
 };
 
@@ -100,6 +101,7 @@ const initDataMock6 = {
     jiang: jiangDeckMock1,
     pai: paiDeckMock1,
     discard: { ...deckMock },
+    role: ["忠","忠","反","反","内","主"]
   },
 };
 

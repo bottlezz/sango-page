@@ -15,11 +15,11 @@ class gameController {
   gameId;
   currentPlayer;
   userName;
+  playerCount;
   rootComponent;
   constructor(db, gameId) {
     this.db = db;
     this.gameId = gameId;
-    //this.rootComponent = rootComponent;
   }
 
   moveItem(fromPath, toPath) {
@@ -30,10 +30,7 @@ class gameController {
     get(child(dbRef, fromPath)).then((snapshot) => {
       if (snapshot.exists()) {
         const value = snapshot.val();
-        // console.log("mpove value :");
-        // console.log(value);
         const newKey = snapshot.key;
-        // console.log(newKey);
         const updates = {};
         updates[fromPath] = null;
         updates[toPath + "/" + newKey] = value;
@@ -58,6 +55,23 @@ class gameController {
     set(child(cardRef, "/show"), "0");
   }
 
+  recycle(cardsRef) {
+    const paiCardsPath = `game/${this.gameId}/tableDecks/pai/cards`;
+    get(cardsRef).then((snapshot) => {
+      if (!snapshot.exists()) return;
+      const cardsData = snapshot.val();
+
+      const updates = {};
+      const keys = Object.keys(cardsData);
+      keys.forEach((key) => {
+        updates[paiCardsPath + "/" + key] = cardsData[key];
+      });
+      const dbRef = ref(this.db);
+      update(dbRef, updates);
+      set(cardsRef, {});
+    });
+  }
+
   moveCardToTableDeck(cardRef, deck) {
     get(cardRef).then((snapshot) => {
       if (snapshot.exists()) {
@@ -66,8 +80,8 @@ class gameController {
         // remove from db
         remove(cardRef);
         // add to discard pile
-        const targetPath = `game/${this.gameId}/tableDecks/${deck}`;
-        this.addItem(targetPath + "/cards", snapshot.key, value);
+        const targetPath = `game/${this.gameId}/tableDecks/${deck}/cards`;
+        this.addItem(targetPath, snapshot.key, value);
       }
     });
   }
@@ -88,7 +102,7 @@ class gameController {
 
   addItem(toPath, key, value) {
     console.log(`Add item to: ${toPath}`);
-    let dbRef = ref(this.db);
+    const dbRef = ref(this.db);
     const updates = {};
     updates[toPath + "/" + key] = value;
     update(dbRef, updates);

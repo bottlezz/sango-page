@@ -5,52 +5,58 @@ import { getDatabase, ref, child, get, set, onValue } from "firebase/database";
 import { gameController } from "../gameController.js";
 import commonCss from "./css/common.css";
 import tableCss from "./css/sgTable.css";
+import { SgArea } from "./sgArea.js";
 import "./sgArea.js";
-import "./sgPlayer.js";
+import { SgPlayer } from "./sgPlayer.js";
 import "./sgJiangArea.js";
-
-const template = document.createElement("template");
-template.innerHTML = `
-<style>
-${commonCss}
-</style>
-<div class = "table-container">
-  <div name="tableDecks"></div>
-  <div name="players"></div>
-</div>
-`;
 
 class SgTable extends HTMLElement {
   db;
   widget;
   gameController;
+  shadowRoot;
   tableRef;
-  playerNumber = 6;
+  playerCount = 6;
+  playerDoms = [];
   constructor(db, gameController) {
     super();
     this.db = db;
     this.gameController = gameController;
     this.gameController.rootComponent = this;
+    this.playerCount = this.gameController.playerCount;
 
-    const shadowRoot = this.attachShadow({ mode: "open" });
-    let clone = template.content.cloneNode(true);
-    shadowRoot.append(clone);
+    this.shadowRoot = this.attachShadow({ mode: "open" });
+    const style = document.createElement("style");
+    style.append(commonCss);
+    style.append(tableCss);
+    const container = document.createElement("div");
+    container.className = "table-container";
 
-    this.tableDeckWidget = shadowRoot.querySelector("div[name='tableDecks']");
-    this.playersWidiget = shadowRoot.querySelector("div[name='players']");
+    this.shadowRoot.appendChild(style);
+    this.shadowRoot.appendChild(container);
 
     this.initGame();
   }
 
   initGame() {
-    console.log("initlizing");
-    for (let i = 0; i < this.playerNumber; i++) {
-      const sgPlayer = document.createElement("sg-player");
+    const container = this.shadowRoot.querySelector(".table-container");
+    const tableDeckWidget = document.createElement("div");
+    tableDeckWidget.classList.add("table-public");
+    container.appendChild(tableDeckWidget);
+    for (let i = 0; i < this.playerCount; i++) {
+      const sgPlayer = new SgPlayer();
+      sgPlayer.dataset.key = `p${i + 1}`;
+      container.appendChild(sgPlayer);
+      this.playerDoms.push(sgPlayer);
+    }
+    // because bad design, current play assign function has side effects on other player widget.
+    // so I have to use another loop to run init() after all sg-player is added to sg-table.
+    for (let i = 0; i < this.playerCount; i++) {
+      const sgPlayer = this.playerDoms[i];
       sgPlayer.init(
         ref(this.db, `game/${this.gameController.gameId}/p${i + 1}`),
         this.gameController
       );
-      this.playersWidiget.appendChild(sgPlayer);
     }
 
     this.jiangArea = document.createElement("sg-jiangarea");
@@ -58,29 +64,42 @@ class SgTable extends HTMLElement {
       ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`),
       this.gameController
     );
-    this.tableDeckWidget.appendChild(this.jiangArea);
+    tableDeckWidget.appendChild(this.jiangArea);
 
-    this.paiArea = document.createElement("sg-area");
+    this.paiArea = new SgArea();
     this.paiArea.init(
       ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`),
       this.gameController
     );
-    this.tableDeckWidget.appendChild(this.paiArea);
+    tableDeckWidget.appendChild(this.paiArea);
 
     this.discardArea = document.createElement("sg-area");
     this.discardArea.init(
       ref(this.db, `game/${this.gameController.gameId}/tableDecks/discard`),
       this.gameController
     );
-    this.tableDeckWidget.appendChild(this.discardArea);
+    tableDeckWidget.appendChild(this.discardArea);
   }
 
   lockPlayerSelection() {
     this.dataset.owner = gameController.userName;
     this.classList.add("player-seated");
-  }
-  resetDb() {
-    set(ref(db), {});
+    // assign slot
+    const mainPlayer = this.gameController.currentPlayer; //p1
+    const curPlayerNum = Number(mainPlayer[1]);
+    for (let i = 0; i < this.playerCount; i++) {
+      const slotClass = `slot${i}`;
+      let counter = (curPlayerNum + i) % this.playerCount;
+      if (counter == 0) {
+        counter = this.playerCount;
+      }
+      const playerKey = `p${counter}`;
+      console.log(playerKey);
+      const playerDom = this.shadowRoot.querySelector(
+        `sg-player[data-key="${playerKey}"]`
+      );
+      playerDom.classList.add(slotClass);
+    }
   }
 }
 

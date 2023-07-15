@@ -20,23 +20,12 @@ ${commonCss}
 ${sgPlayerCss}
 </style>
 <div name="widget" class="widget hide">
-  <div name="join-seat-menu" class="hide">
-    click <button name="join-btn">Join</button> to take this seat</p>
-  </div>
   <div name="player-game-area" class="hide">
     <p><label name="player-name">pName</label> </p>
     <p><span class="hp"></span></p>
     <div name="deck-area" calss="widget"></div>
   </div>
 </div>
-
-<div name="change-name-menu" class="hide">
-    <label>New Name</label>
-    <input type="text" id="newName" value="John">
-  </div>
-  <button name="update-name-btn" class="game-menu-button hide">Update</button>
-</div>
-<button name="change-name-btn" class="game-menu-button hide">Change Name</button>
 `;
 
 class SgPlayer extends HTMLElement {
@@ -51,36 +40,10 @@ class SgPlayer extends HTMLElement {
     this.shadowRoot.append(clone);
     this.widget = this.shadowRoot.querySelector("div[name='widget']");
   }
-  // attachChangeNameListener() {
-  //   const changeNameBtn = this.shadowRoot.querySelector(
-  //     `button[name="change-name-btn"]`
-  //   );
-  //   changeNameBtn.addEventListener("click", () => {
-  //     const changeNameMenuDiv = this.shadowRoot.querySelector(
-  //       `div[name="change-name-menu"]`
-  //     );
-  //     changeNameMenuDiv.classList.remove("hide");
-  //   });
-  //   const updateNameBtn = this.shadowRoot.querySelector(
-  //     `button[name="update-name-btn"]`
-  //   );
-  //   updateNameBtn.addEventListener("click", () => {
-  //     newName = this.shadowRoot.querySelector(`#newName`).value;
-  //     this.gameController.userName = newName;
-  //   });
-  // }
-
-  joinSeat() {
-    const updates = {};
-    updates["state"] = "on";
-    updates["name"] = this.gameController.userName;
-    this.gameController.currentPlayer = this.playerRef.key;
-    this.widget.classList.add("current-player");
-    update(this.playerRef, updates);
-  }
 
   assginAsCurrentPlayer() {
     this.gameController.currentPlayer = this.playerRef.key;
+    this.classList.add("current-player");
     this.widget.classList.add("current-player");
     this.gameController.lockPlayerSelection();
   }
@@ -123,28 +86,15 @@ class SgPlayer extends HTMLElement {
       "label[name='player-name']"
     );
     playerNameWidget.innerHTML = `${this.playerRef.key} : ${playerName}`;
-    if (playerName == "empty") {
-      // display join button
-      const joinSeatMenuDiv = this.shadowRoot.querySelector(
-        `div[name="join-seat-menu"]`
-      );
-      joinSeatMenuDiv.classList.remove("hide");
-
-      this.joinButton = this.shadowRoot.querySelector(
-        "button[name='join-btn']"
-      );
-      this.joinButton.addEventListener("click", () => {
-        this.joinSeat();
-      });
-    } else {
-      this.shadowRoot
-        .querySelector(`div[name="player-game-area"]`)
-        .classList.remove("hide");
-      if (this.gameController.userName == playerName) {
-        this.assginAsCurrentPlayer();
-      }
+    this.shadowRoot
+      .querySelector(`div[name="player-game-area"]`)
+      .classList.remove("hide");
+    if (this.gameController.userName == playerName) {
+      this.assginAsCurrentPlayer();
     }
+    
   }
 }
 
+export {SgPlayer};
 customElements.define("sg-player", SgPlayer);

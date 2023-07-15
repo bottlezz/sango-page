@@ -1,0 +1,10 @@
+:host-context(.table-public) div[name="card-area"] {
+  background-color: white;
+  gap: 0.1rem;
+}
+
+/* div[name="card-area"]::after {
+  content: "";
+  gap: 0.1rem;
+  flex: auto;
+} */

@@ -35,7 +35,6 @@ ${css}
     </div>
   </div>
   <div name="card-controls" class="card-controls">
-  
     <button name="discard-btn"> 弃 </button>
     <button name="draw-btn"> 摸 </button>
   </div>

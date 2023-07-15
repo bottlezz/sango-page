@@ -77,7 +77,7 @@
   "p16": {
     "suit": "diamond",
     "rank": "6",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p17": {
     "suit": "diamond",
@@ -92,7 +92,7 @@
   "p19": {
     "suit": "diamond",
     "rank": "7",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p20": {
     "suit": "diamond",
@@ -107,7 +107,7 @@
   "p22": {
     "suit": "diamond",
     "rank": "8",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p23": {
     "suit": "diamond",
@@ -122,7 +122,7 @@
   "p25": {
     "suit": "diamond",
     "rank": "9",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p26": {
     "suit": "diamond",
@@ -137,7 +137,7 @@
   "p28": {
     "suit": "diamond",
     "rank": "10",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p29": {
     "suit": "diamond",
@@ -182,12 +182,12 @@
   "p37": {
     "suit": "diamond",
     "rank": "Q",
-    "desc": "普无懈可击"
+    "desc": "无懈可击"
   },
   "p38": {
     "suit": "diamond",
     "rank": "K",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p39": {
     "suit": "diamond",
@@ -217,7 +217,7 @@
   "p44": {
     "suit": "club",
     "rank": "2",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p45": {
     "suit": "club",
@@ -237,7 +237,7 @@
   "p48": {
     "suit": "club",
     "rank": "3",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p49": {
     "suit": "club",
@@ -252,7 +252,7 @@
   "p51": {
     "suit": "club",
     "rank": "4",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p52": {
     "suit": "club",
@@ -267,7 +267,7 @@
   "p54": {
     "suit": "club",
     "rank": "5",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p55": {
     "suit": "club",
@@ -282,7 +282,7 @@
   "p57": {
     "suit": "club",
     "rank": "6",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p58": {
     "suit": "club",
@@ -297,7 +297,7 @@
   "p60": {
     "suit": "club",
     "rank": "7",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p61": {
     "suit": "club",
@@ -312,12 +312,12 @@
   "p63": {
     "suit": "club",
     "rank": "8",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p64": {
     "suit": "club",
     "rank": "8",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p65": {
     "suit": "club",
@@ -327,12 +327,12 @@
   "p66": {
     "suit": "club",
     "rank": "9",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p67": {
     "suit": "club",
     "rank": "9",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p68": {
     "suit": "club",
@@ -342,12 +342,12 @@
   "p69": {
     "suit": "club",
     "rank": "10",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p70": {
     "suit": "club",
     "rank": "10",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p71": {
     "suit": "club",
@@ -357,12 +357,12 @@
   "p72": {
     "suit": "club",
     "rank": "J",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p73": {
     "suit": "club",
     "rank": "J",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p74": {
     "suit": "club",
@@ -377,7 +377,7 @@
   "p76": {
     "suit": "club",
     "rank": "Q",
-    "desc": "普无懈可击"
+    "desc": "无懈可击"
   },
   "p77": {
     "suit": "club",
@@ -392,7 +392,7 @@
   "p79": {
     "suit": "club",
     "rank": "K",
-    "desc": "普无懈可击"
+    "desc": "无懈可击"
   },
   "p80": {
     "suit": "club",
@@ -412,7 +412,7 @@
   "p83": {
     "suit": "heart",
     "rank": "A",
-    "desc": "普无懈可击"
+    "desc": "无懈可击"
   },
   "p84": {
     "suit": "heart",
@@ -537,12 +537,12 @@
   "p108": {
     "suit": "heart",
     "rank": "10",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p109": {
     "suit": "heart",
     "rank": "10",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p110": {
     "suit": "heart",
@@ -552,7 +552,7 @@
   "p111": {
     "suit": "heart",
     "rank": "J",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p112": {
     "suit": "heart",
@@ -597,7 +597,7 @@
   "p120": {
     "suit": "heart",
     "rank": "K",
-    "desc": "普无懈可击"
+    "desc": "无懈可击"
   },
   "p121": {
     "suit": "spade",
@@ -697,7 +697,7 @@
   "p140": {
     "suit": "spade",
     "rank": "7",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p141": {
     "suit": "spade",
@@ -712,12 +712,12 @@
   "p143": {
     "suit": "spade",
     "rank": "8",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p144": {
     "suit": "spade",
     "rank": "8",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p145": {
     "suit": "spade",
@@ -727,12 +727,12 @@
   "p146": {
     "suit": "spade",
     "rank": "9",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p147": {
     "suit": "spade",
     "rank": "9",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p148": {
     "suit": "spade",
@@ -742,12 +742,12 @@
   "p149": {
     "suit": "spade",
     "rank": "10",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p150": {
     "suit": "spade",
     "rank": "10",
-    "desc": "普杀"
+    "desc": "杀"
   },
   "p151": {
     "suit": "spade",
@@ -762,7 +762,7 @@
   "p153": {
     "suit": "spade",
     "rank": "J",
-    "desc": "普无懈可击"
+    "desc": "无懈可击"
   },
   "p154": {
     "suit": "spade",
@@ -787,7 +787,7 @@
   "p158": {
     "suit": "spade",
     "rank": "K",
-    "desc": "普无懈可击"
+    "desc": "无懈可击"
   },
   "p159": {
     "suit": "spade",

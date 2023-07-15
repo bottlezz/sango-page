@@ -1,6 +1,18 @@
 :host-context(.table-public) div[name="card-area"] {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: wrap;
   background-color: white;
   gap: 0.1rem;
+}
+
+.wrapper {
+  height: 100%;
+  padding: 0.1rem;
+}
+
+.control-area {
+  padding: 0.1rem;
 }
 
 /* div[name="card-area"]::after {

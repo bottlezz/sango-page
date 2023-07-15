@@ -30,12 +30,13 @@
   display: grid;
   grid-template-columns: 3rem 1fr 1fr 1fr;
   grid-template-rows: 5rem 6rem;
+  gap: 0.5rem;
 
   .jiang-area {
     grid-area: 1 / 1 / span 1 / span 1;
     overflow-y: scroll;
     background-color: white;
-    border: solid 1px red;
+    border: solid 1px black;
   }
 
   .jiang-area::part(card-area) {
@@ -44,6 +45,7 @@
     flex-wrap: wrap;
     width: 30rem;
     border: none;
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
   }
 
   .jiang-area:hover {
@@ -53,7 +55,16 @@
   }
 
   .pai-area {
-    grid-area: 2 / 2 / span 1 / span 3;
+    grid-area: 1 / 4 / span 1 / span 1;
+    overflow-y: scroll;
+    background-color: white;
+    border: solid 1px black;
+  }
+
+  .discard-area {
+    grid-area: 1 / 2 / span 2 / span 2;
+    background-color: white;
+    border: solid 1px black;
     overflow-y: scroll;
   }
 }

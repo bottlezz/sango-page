@@ -37,6 +37,14 @@
   }
 }
 
+.card-block.show-front {
+  border: solid blue 1px;
+}
+
+.card-block.show-front button[name="show-btn"] {
+  background-color: white;
+}
+
 span.club::before {
   content: "\2663";
 }
@@ -68,7 +76,8 @@ span.spade::before {
 }
 
 :host-context(.current-player) .card-widget,
-:host-context(.discard-area) .card-widget {
+:host-context(.discard-area) .card-widget,
+.card-block.show-front .card-widget {
   width: 4em;
   display: inline-block;
 

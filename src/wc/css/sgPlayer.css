@@ -1,13 +1,20 @@
 .current-player.widget {
-    border: green solid 2px;
-    padding: .2em;
-    margin: .2em;
+  border: green solid 2px;
+  padding: 0.2em;
+  margin: 0.2em;
 }
 
 :host-context(.player-seated) div[name="join-seat-menu"] {
-    display: none;
+  display: none;
 }
 
 p {
-    margin: .3em;
+  margin: 0.3em;
+}
+
+.hand-area::part(card-area) {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+  border: none;
 }

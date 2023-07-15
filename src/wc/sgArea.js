@@ -33,32 +33,32 @@ class SgArea extends HTMLElement {
     this.style.append(commonCss);
     this.style.append(areaCss);
 
-    const warpper = document.createElement("div");
-    warpper.classList.add("wrapper");
+    this.warpper = document.createElement("div");
+    this.warpper.classList.add("wrapper");
     this.cardArea = document.createElement("div");
-    this.cardArea.classList.add("widget");
     this.cardArea.setAttribute("part", "card-area");
     this.cardArea.setAttribute("name", "card-area");
 
     this.controlArea = document.createElement("div");
     this.controlArea.classList.add("control-area");
+    this.controlArea.setAttribute("part", "control-area");
     const shuffleButton = document.createElement("button");
     shuffleButton.innerHTML = "洗";
     shuffleButton.addEventListener("click", () => {
       this.shuffle();
     });
     this.controlArea.appendChild(shuffleButton);
-    const recycleBtn = document.createElement("button");
-    recycleBtn.innerHTML = "收";
-    recycleBtn.addEventListener("click", () => {
+    this.recycleBtn = document.createElement("button");
+    this.recycleBtn.innerHTML = "收";
+    this.recycleBtn.addEventListener("click", () => {
       this.recycle();
     });
-    this.controlArea.appendChild(recycleBtn);
+    this.controlArea.appendChild(this.recycleBtn);
 
     this.shadowRoot.append(this.style);
-    warpper.append(this.cardArea);
-    warpper.append(this.controlArea);
-    this.shadowRoot.append(warpper);
+    this.warpper.append(this.cardArea);
+    this.warpper.append(this.controlArea);
+    this.shadowRoot.append(this.warpper);
   }
 
   init(deckRef, gameController) {
@@ -66,8 +66,8 @@ class SgArea extends HTMLElement {
     this.cardsRef = child(deckRef, "/cards");
     this.areaType = deckRef.key + "-area";
     this.gameController = gameController;
-
     this.classList.add(this.areaType);
+    this.visibilityCheck();
 
     onChildAdded(this.cardsRef, (snapshot) => {
       const key = snapshot.key;
@@ -76,17 +76,28 @@ class SgArea extends HTMLElement {
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
       this.cardArea.prepend(cardWc);
+      this.visibilityCheck();
     });
-    // onChildChanged(this.cardsRef, (snapshot) => {
-    //   // console.log(`on child changed: ${snapshot.key}`);
-    //   // console.log(snapshot.val());
-    // });
+
     onChildRemoved(this.cardsRef, (snapshot) => {
       const key = snapshot.key;
       const value = snapshot.val();
       const cardWc = this.cards[key];
       this.cardArea.removeChild(cardWc);
+      this.visibilityCheck();
     });
+  }
+
+  visibilityCheck() {
+    if (!this.cardArea.hasChildNodes()) {
+      this.warpper.classList.add("hide");
+    } else {
+      this.warpper.classList.remove("hide");
+    }
+  }
+
+  isTableArea() {
+    return this.deckRef.parent.key == "tableDecks";
   }
 
   shuffle() {
@@ -106,6 +117,7 @@ class SgArea extends HTMLElement {
       set(this.cardsRef, cardsData);
     });
   }
+
   recycle() {
     this.gameController.recycle(this.cardsRef);
   }

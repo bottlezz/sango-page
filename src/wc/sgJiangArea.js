@@ -23,9 +23,14 @@ class SgJiangArea extends SgArea {
     this.deckRef = deckRef;
     this.cardsRef = child(deckRef, "/cards");
     this.areaType = deckRef.key + "-area";
+    this.classList.add(this.areaType);
     this.gameController = gameController;
 
-    this.classList.add(this.areaType);
+    if (!this.isTableArea()) {
+      this.controlArea.classList.add("hide");
+    } else {
+      this.recycleBtn.classList.add("hide");
+    }
 
     onChildAdded(child(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;

@@ -14,8 +14,8 @@ import {
 import commonCss from "./css/common.css";
 import { gameController } from "../gameController";
 import { SgTable } from "./sgTable";
-import jiangKu from "../data/jiang.json"
-import paiKu from "../data/pai.json"
+import jiangKu from "../data/jiang.json";
+import paiKu from "../data/pai.json";
 import * as appData from "../data/appData.js";
 
 const template = document.createElement("template");
@@ -30,7 +30,7 @@ ${commonCss}
   </div>
   <div name="name-field">
     <label>Your name</label>
-    <input type="text" id="userName" value="John"><br><br>
+    <input type="text" id="userName"><br><br>
   </div>
   <div name="name-field">
     <label>Player number</label>
@@ -42,7 +42,6 @@ ${commonCss}
 <div name="seat-menu" class="widget hide">
 </div>
 `;
-
 
 class SgGameMenu extends HTMLElement {
   db;
@@ -146,12 +145,12 @@ class SgGameMenu extends HTMLElement {
     const seatMenu = this.shadowRoot.querySelector(`div[name="seat-menu"]`);
     // console.log("render seat");
     seatMenu.classList.remove("hide");
-    seatMenu.innerHTML = ""
+    seatMenu.innerHTML = "";
     for (let i = 0; i < this.playerCount; i++) {
       const seatDom = document.createElement("div");
       const key = `p${i + 1}`;
       const playerNameRef = ref(this.db, `game/${this.gameId}/${key}/name`);
-      seatDom.append(`${key}: `)
+      seatDom.append(`${key}: `);
       seatMenu.appendChild(seatDom);
       const unSub = onValue(playerNameRef, (snapshot) => {
         const pName = snapshot.val();
@@ -162,7 +161,7 @@ class SgGameMenu extends HTMLElement {
           joinButton.innerText = "Join";
           joinButton.addEventListener("click", () => {
             this.joinSeat(key);
-          })
+          });
           seatDom.appendChild(joinButton);
         }
       });
@@ -194,7 +193,7 @@ class SgGameMenu extends HTMLElement {
     // remove database listener.
     this.subs.forEach((unSub) => {
       unSub();
-    })
+    });
   }
 }
 

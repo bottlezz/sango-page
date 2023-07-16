@@ -20,7 +20,7 @@ sg-area::part(card-area) {
 }
 
 .hand-area::part(card-area) {
-  height: 4.2rem;
+  height: 3.7rem;
   overflow: scroll;
 }
 

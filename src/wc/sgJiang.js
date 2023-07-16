@@ -41,7 +41,7 @@ ${css}
       </div>
       </div>
       <div class="skill-hint">
-        <div><span>||技||</span></div>
+        <div><span class="skill-label">-- 武将技 --</span></div>
         <div class="jiang-skill"></div>
       </div>
     

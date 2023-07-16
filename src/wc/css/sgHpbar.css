@@ -1,7 +1,12 @@
 .max-hp-control {
-    display: none;
+  display: none;
 }
 
-:host-context(.current-player) .max-hp-control{
-    display: unset;
+:host-context(.current-player) .max-hp-control {
+  display: unset;
+}
+
+.hp-bar span {
+  display: inline-block;
+  width: 1.6rem;
 }

@@ -13,7 +13,7 @@
     "suit": "diamond",
     "rank": "A",
     "name": "朱雀羽扇",
-    "desc": "距离4"
+    "desc": "4"
   },
   "p4": {
     "suit": "diamond",
@@ -73,7 +73,8 @@
   "p15": {
     "suit": "diamond",
     "rank": "5",
-    "name": "贯石斧"
+    "name": "贯石斧",
+    "desc": "3"
   },
   "p16": {
     "suit": "diamond",
@@ -178,7 +179,8 @@
   "p36": {
     "suit": "diamond",
     "rank": "Q",
-    "name": "方天画戟"
+    "name": "方天画戟",
+    "desc": "4"
   },
   "p37": {
     "suit": "diamond",
@@ -193,12 +195,14 @@
   "p39": {
     "suit": "diamond",
     "rank": "K",
-    "name": "紫骍-1"
+    "name": "紫骍",
+    "desc": "-1"
   },
   "p40": {
     "suit": "diamond",
     "rank": "K",
-    "name": "骅骝+1"
+    "name": "骅骝",
+    "desc": "+1"
   },
   "p41": {
     "suit": "club",
@@ -278,7 +282,8 @@
   "p56": {
     "suit": "club",
     "rank": "5",
-    "name": "的卢+1"
+    "name": "的卢",
+    "desc": "+1"
   },
   "p57": {
     "suit": "club",
@@ -468,12 +473,14 @@
   "p94": {
     "suit": "heart",
     "rank": "5",
-    "name": "麒麟弓"
+    "name": "麒麟弓",
+    "desc": "5"
   },
   "p95": {
     "suit": "heart",
     "rank": "5",
-    "name": "赤兔-1"
+    "name": "赤兔",
+    "desc": "-1"
   },
   "p96": {
     "suit": "heart",
@@ -593,7 +600,8 @@
   "p119": {
     "suit": "heart",
     "rank": "K",
-    "name": "爪黄+1"
+    "name": "爪黄",
+    "desc": "+1"
   },
   "p120": {
     "suit": "heart",
@@ -613,7 +621,8 @@
   "p123": {
     "suit": "spade",
     "rank": "A",
-    "name": "古锭刀"
+    "name": "古锭刀",
+    "desc": "2"
   },
   "p124": {
     "suit": "spade",
@@ -634,7 +643,8 @@
   "p127": {
     "suit": "spade",
     "rank": "2",
-    "name": "寒冰剑"
+    "name": "寒冰剑",
+    "desc": "2"
   },
   "p128": {
     "suit": "spade",
@@ -674,12 +684,14 @@
   "p135": {
     "suit": "spade",
     "rank": "5",
-    "name": "青龙偃月"
+    "name": "青龙偃月",
+    "desc": "3"
   },
   "p136": {
     "suit": "spade",
     "rank": "5",
-    "name": "绝影+1"
+    "name": "绝影",
+    "desc": "+1"
   },
   "p137": {
     "suit": "spade",
@@ -694,7 +706,8 @@
   "p139": {
     "suit": "spade",
     "rank": "6",
-    "name": "青釭剑"
+    "name": "青釭剑",
+    "desc": "2"
   },
   "p140": {
     "suit": "spade",

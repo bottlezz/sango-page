@@ -78,7 +78,7 @@ class sgHpBar extends HTMLElement {
       if (i <= this.cur) {
         xinSpan.innerHTML = "[心]";
       } else {
-        xinSpan.innerHTML = "[  ]";
+        xinSpan.innerHTML = "[--]";
       }
       xinSpan.addEventListener("click", () => {
         if (this.cur >= i) {

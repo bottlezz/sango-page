@@ -27,7 +27,7 @@ ${css}
 <div name="widget" class="card-block">
   <div class="card-widget">
     <div class="card-front">
-      <div style="font-size: 1.5em;"><span name="pai-rank"></span></div>
+      <div><span name="pai-rank"></span></div>
       <div class ="info-line"><span class="pai-name"></span></div>
       <div class ="info-line"><span class="pai-desc"></span></div>
     </div>

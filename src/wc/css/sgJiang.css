@@ -1,19 +1,18 @@
 :host-context(.current-player) .card-widget,
-.card-block.show-front .card-widget{
-
-  width: 7em;
+.card-block.show-front .card-widget {
+  width: 5rem;
   display: inline-block;
 
   .card-back {
-    display: none
+    display: none;
   }
 
   .card-front {
-    display: block
+    display: block;
   }
 }
 
-:host-context(.current-player) .card-controls button[name="draw-btn"]{
+:host-context(.current-player) .card-controls button[name="draw-btn"] {
   display: none;
 }
 
@@ -32,8 +31,13 @@
 
 .skill-hint {
   position: relative;
-  width: 50%;
-  border-bottom: dotted red 2px;
+  width: 80%;
+
+  .skill-label {
+    font-size: 0.8rem;
+    font-weight: bolder;
+    background-color: beige;
+  }
 
   span {
     display: inline-block;
@@ -45,9 +49,15 @@
   display: block;
   position: absolute;
   top: 0;
-  left:0;
+  left: 0;
   background-color: wheat;
-  padding: .5em;
+  padding: 0.5em;
   border: dotted orange 2px;
   width: 12em;
+}
+
+:host-context(.current-player) .skill-hint:hover .jiang-skill {
+  bottom: 0;
+  top: auto;
+  z-index: 30;
 }

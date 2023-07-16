@@ -28,17 +28,20 @@ ${css}
   <div class="card-widget">
     <div class="card-front">
       <div style="font-size: 1.5em;"><span name="pai-rank"></span></div>
-      <div class =".info-line"><span class="pai-name"></span></div>
-      <div class =".info-line"><span class="pai-desc"></span></div>
+      <div class ="info-line"><span class="pai-name"></span></div>
+      <div class ="info-line"><span class="pai-desc"></span></div>
     </div>
     <div class="card-back">
       <p>[牌]</p>
     </div>
   </div>
   <div name="card-controls" class="card-controls">
-    <button name="discard-btn"> 弃 </button>
-    <button name="draw-btn"> 摸 </button>
-    <button name="show-btn"> 亮 </button>
+    <ul>
+      <li name="discard-btn"> 甩 </li>
+      <li name="draw-btn"> 摸 </li>
+      <li name="show-btn"> 亮 </li>
+      <li name="move-btn" class="expand"> 置</li>
+    </ul>
   </div>
 </div>
 `;
@@ -130,10 +133,10 @@ class SgCard extends HTMLElement {
 
   initControls() {
     const discardButton = this.shadowRoot.querySelector(
-      `button[name="discard-btn"]`
+      `li[name="discard-btn"]`
     );
-    const drawButton = this.shadowRoot.querySelector(`button[name="draw-btn"]`);
-    const showButton = this.shadowRoot.querySelector(`button[name="show-btn"]`);
+    const drawButton = this.shadowRoot.querySelector(`li[name="draw-btn"]`);
+    const showButton = this.shadowRoot.querySelector(`li[name="show-btn"]`);
 
     discardButton.addEventListener("click", () => {
       console.log("discarding!");
@@ -148,10 +151,94 @@ class SgCard extends HTMLElement {
       console.log("showing!");
       this.showPai();
     });
+
+    const moveButton = this.shadowRoot.querySelector(`li[name="move-btn"]`);
+    const selfAreaHolder = document.createElement("ul");
+    const selfAreas = this.getPlayerAreaLi(this.gameController.currentPlayer);
+    selfAreas.forEach((liDom) => {
+      selfAreaHolder.appendChild(liDom);
+    });
+
+    moveButton.append(selfAreaHolder);
+
+    const otherPlayersButton = document.createElement("li");
+    otherPlayersButton.innerHTML = "他";
+    otherPlayersButton.classList.add("expand");
+    otherPlayersButton.classList.add("other-target");
+
+    selfAreaHolder.prepend(otherPlayersButton);
+
+    const otherPlayerList = document.createElement("ul");
+    otherPlayersButton.append(otherPlayerList);
+
+    for (let i = 0; i < this.gameController.playerCount; i++) {
+      const playerKey = `p${i + 1}`;
+      if (playerKey == this.gameController.currentPlayer) {
+        continue;
+      }
+      const playerAreaHolder = document.createElement("ul");
+      const playerAreas = this.getPlayerAreaLi(playerKey);
+      playerAreas.forEach((liDom) => {
+        playerAreaHolder.appendChild(liDom);
+      });
+
+      const otherTargetButton = document.createElement("li");
+
+      otherTargetButton.innerHTML = playerKey;
+      otherTargetButton.classList.add("expand");
+      otherTargetButton.append(playerAreaHolder);
+      otherPlayerList.appendChild(otherTargetButton);
+    }
   }
 
   disconnectedCallback() {
     this.unSub();
+  }
+
+  getPlayerAreaLi(playerKey) {
+    const zhuang = document.createElement("li");
+    zhuang.innerHTML = "装";
+    zhuang.dataset.path =
+      this.gameController.getPlayerPath(playerKey) + "/zhuang";
+    zhuang.addEventListener("click", () => {
+      this.gameController.moveCardToPlayerArea(
+        this.cardRef,
+        playerKey,
+        "zhuang"
+      );
+    });
+
+    const pan = document.createElement("li");
+    pan.innerHTML = "判";
+    pan.dataset.path = this.gameController.getPlayerPath(playerKey) + "/pan";
+    pan.addEventListener("click", () => {
+      this.gameController.moveCardToPlayerArea(this.cardRef, playerKey, "pan");
+    });
+
+    const other1 = document.createElement("li");
+    other1.innerHTML = "区1";
+    other1.dataset.path =
+      this.gameController.getPlayerPath(playerKey) + "/other1";
+    other1.addEventListener("click", () => {
+      this.gameController.moveCardToPlayerArea(
+        this.cardRef,
+        playerKey,
+        "other1"
+      );
+    });
+
+    const other2 = document.createElement("li");
+    other2.innerHTML = "区2";
+    other2.dataset.path =
+      this.gameController.getPlayerPath(playerKey) + "/other2";
+    other2.addEventListener("click", () => {
+      this.gameController.moveCardToPlayerArea(
+        this.cardRef,
+        playerKey,
+        "other2"
+      );
+    });
+    return [zhuang, pan, other1, other2];
   }
 }
 

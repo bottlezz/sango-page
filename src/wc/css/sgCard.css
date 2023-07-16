@@ -9,18 +9,15 @@
   top: 0;
   left: 0;
   padding: 0.1em;
-
+  z-index: 20;
   button {
     display: inline-block;
-    margin-top: 3px;
-    height: 2em;
+    height: 2rem;
   }
 }
 
 .info-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  font-size: 0.8rem;
 }
 
 .card-block {
@@ -34,6 +31,7 @@
     padding: 2px;
     width: 2em;
     display: inline-block;
+    height: 3.8rem;
   }
 }
 
@@ -41,7 +39,7 @@
   border: solid blue 1px;
 }
 
-.card-block.show-front button[name="show-btn"] {
+.card-block.show-front li[name="show-btn"] {
   background-color: white;
 }
 
@@ -63,22 +61,55 @@ span.spade::before {
   content: "\2660";
 }
 
-.card-controls button[name="discard-btn"] {
+.card-controls ul {
+  display: flex;
+  background-color: wheat;
+  margin: 0;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 2.3rem;
+  padding: 0.1rem;
+  box-shadow: 0.1rem 0.1rem 0.1rem black;
+  border: dotted 1px black;
+}
+
+.card-controls li {
+  display: block;
+  position: relative;
+}
+.card-controls li.expand > ul {
+  position: absolute;
+  display: none;
+}
+.card-controls li.expand:hover > ul {
+  display: unset;
+  left: 100%;
+}
+
+.card-controls li:hover {
+  background-color: antiquewhite;
+}
+
+li[name="move-btn"] {
   display: none;
 }
 
-:host-context(.current-player) .card-controls button[name="discard-btn"] {
-  display: inline-block;
+:host-context(.current-player) li[name="discard-btn"] {
+  display: unset;
+}
+:host-context(.current-player) li[name="move-btn"] {
+  display: unset;
 }
 
+/* add hover to card-block later */
 :host-context(.player-seated) .card-block:hover .card-controls {
-  display: inline-block;
+  display: unset;
 }
 
 :host-context(.current-player) .card-widget,
 :host-context(.discard-area) .card-widget,
 .card-block.show-front .card-widget {
-  width: 4em;
+  width: 3.5rem;
   display: inline-block;
 
   .card-back {

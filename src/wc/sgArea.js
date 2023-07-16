@@ -35,6 +35,7 @@ class SgArea extends HTMLElement {
 
     this.warpper = document.createElement("div");
     this.warpper.classList.add("wrapper");
+
     this.cardArea = document.createElement("div");
     this.cardArea.setAttribute("part", "card-area");
     this.cardArea.setAttribute("name", "card-area");
@@ -59,6 +60,23 @@ class SgArea extends HTMLElement {
     this.warpper.append(this.cardArea);
     this.warpper.append(this.controlArea);
     this.shadowRoot.append(this.warpper);
+  }
+
+  getAreaName() {
+    switch (this.areaType) {
+      case "jiang-area":
+        return "将";
+      case "pai-area":
+        return "牌";
+      case "zhuang-area":
+        return "装";
+      case "hand-area":
+        return "牌";
+      case "other1-area":
+        return "区1";
+      case "other2-area":
+        return "区2";
+    }
   }
 
   init(deckRef, gameController) {

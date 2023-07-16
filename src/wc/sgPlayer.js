@@ -76,8 +76,26 @@ class SgPlayer extends HTMLElement {
 
     this.jiangArea = document.createElement("sg-jiangarea");
     this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);
+
+    this.zhuangArea = document.createElement("sg-area");
+    this.zhuangArea.init(child(playerRef, `/zhuang`), this.gameController);
+
+    this.panArea = document.createElement("sg-area");
+    this.panArea.init(child(playerRef, `/pan`), this.gameController);
+
+    this.other1Area = document.createElement("sg-area");
+    this.other1Area.init(child(playerRef, `/other1`), this.gameController);
+    this.other2Area = document.createElement("sg-area");
+    this.other2Area.init(child(playerRef, `/other2`), this.gameController);
+    // this.other3Area = document.createElement("sg-area");
+    // this.other3Area.init(child(playerRef, `/other3`), this.gameController);
+
     playerDeckAreaWdight.append(this.handArea);
     playerDeckAreaWdight.append(this.jiangArea);
+    playerDeckAreaWdight.append(this.zhuangArea);
+    playerDeckAreaWdight.append(this.panArea);
+    playerDeckAreaWdight.append(this.other1Area);
+    playerDeckAreaWdight.append(this.other2Area);
   }
 
   renderPlayer(playerName) {
@@ -92,9 +110,8 @@ class SgPlayer extends HTMLElement {
     if (this.gameController.userName == playerName) {
       this.assginAsCurrentPlayer();
     }
-    
   }
 }
 
-export {SgPlayer};
+export { SgPlayer };
 customElements.define("sg-player", SgPlayer);

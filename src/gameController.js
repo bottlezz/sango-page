@@ -107,6 +107,10 @@ class gameController {
     updates[toPath + "/" + key] = value;
     update(dbRef, updates);
   }
+
+  getPlayerPath(playerKey) {
+    return `game/${this.gameId}/${playerKey}`;
+  }
 }
 
 export { gameController };

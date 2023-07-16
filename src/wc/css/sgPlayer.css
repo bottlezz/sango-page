@@ -12,9 +12,44 @@ p {
   margin: 0.3em;
 }
 
-.hand-area::part(card-area) {
+sg-area::part(card-area) {
   display: flex;
   gap: 0.2rem;
   flex-wrap: wrap;
   border: none;
+}
+
+sg-area,
+sg-jiangarea {
+  display: flex;
+}
+.hand-area::before {
+  content: "牌:";
+  padding: 0.1rem;
+  width: 2rem;
+}
+.zhuang-area::before {
+  content: "装:";
+  width: 2rem;
+  padding: 0.1rem;
+}
+.pan-area::before {
+  content: "判:";
+  width: 2rem;
+  padding: 0.1rem;
+}
+.jiang-area::before {
+  content: "将:";
+  width: 2rem;
+  padding: 0.1rem;
+}
+.other1-area::before {
+  content: "区1:";
+  width: 2rem;
+  padding: 0.1rem;
+}
+.other2-area::before {
+  content: "区2:";
+  width: 2rem;
+  padding: 0.1rem;
 }

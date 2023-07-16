@@ -1,3 +1,8 @@
+.control-area {
+  display: none;
+  padding: 0.1rem;
+}
+
 :host-context(.table-public) div[name="card-area"] {
   display: flex;
   gap: 0.2rem;
@@ -6,12 +11,12 @@
   gap: 0.1rem;
 }
 
-.wrapper {
-  height: 100%;
-  padding: 0.1rem;
+:host-context(.table-public) .control-area {
+  display: unset;
 }
 
-.control-area {
+.wrapper {
+  height: 100%;
   padding: 0.1rem;
 }
 

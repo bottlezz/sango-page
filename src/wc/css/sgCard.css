@@ -25,6 +25,7 @@
   width: auto;
   position: relative;
   background-color: white;
+  cursor: grab;
 
   .card-widget {
     border: red solid 1px;
@@ -65,33 +66,23 @@ span.spade::before {
   display: flex;
   background-color: wheat;
   margin: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
-  width: 2.3rem;
+  gap: 0.1rem;
   padding: 0.1rem;
   box-shadow: 0.1rem 0.1rem 0.1rem black;
   border: dotted 1px black;
+  flex-direction: column;
 }
 
 .card-controls li {
   display: block;
   position: relative;
-}
-.card-controls li.expand > ul {
-  position: absolute;
-  display: none;
-}
-.card-controls li.expand:hover > ul {
-  display: unset;
-  left: 100%;
+  width: 1.2rem;
 }
 
 .card-controls li:hover {
   background-color: antiquewhite;
-}
-
-li[name="move-btn"] {
-  display: none;
 }
 
 :host-context(.current-player) li[name="discard-btn"] {

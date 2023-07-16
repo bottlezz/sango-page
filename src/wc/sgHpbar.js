@@ -71,7 +71,6 @@ class sgHpBar extends HTMLElement {
   renderHp() {
     const hpBarSpan = this.shadowRoot.querySelector(".hp-bar");
     hpBarSpan.innerHTML = "";
-    console.log(`hp: ${this.cur}/${this.max}`);
     for (let i = 1; i <= this.max; i++) {
       const xinSpan = document.createElement("span");
       xinSpan.dataset.hpVal = i;

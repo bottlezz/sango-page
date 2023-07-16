@@ -19,10 +19,13 @@
   height: 100%;
   width: 100%;
   padding: 0.1rem;
+  min-height: 1rem;
+  border: dotted 1px black;
 }
 
-/* div[name="card-area"]::after {
-  content: "";
-  gap: 0.1rem;
-  flex: auto;
-} */
+.card-area {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+  border: none;
+}

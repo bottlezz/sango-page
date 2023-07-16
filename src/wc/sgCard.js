@@ -37,10 +37,10 @@ ${css}
   </div>
   <div name="card-controls" class="card-controls">
     <ul>
-      <li name="discard-btn"> 甩 </li>
+      <li name="play-btn"> 出 </li>
+      <li name="discard-btn"> 弃 </li>
       <li name="draw-btn"> 摸 </li>
       <li name="show-btn"> 亮 </li>
-      <li name="move-btn" class="expand"> 置</li>
     </ul>
   </div>
 </div>
@@ -98,6 +98,15 @@ class SgCard extends HTMLElement {
       }
     });
 
+    const cardPathUrl = this.cardRef.toString();
+    const dbPathUrl = ref(this.gameController.db).toString();
+    const cardPath = cardPathUrl.replace(dbPathUrl, "");
+    this.dataset.path = cardPath;
+    this.setAttribute("draggable", "true");
+    this.addEventListener("dragstart", (e) => {
+      console.log("draggggggg");
+      e.dataTransfer.setData("text", cardPath);
+    });
     this.initControls();
   }
 
@@ -135,60 +144,26 @@ class SgCard extends HTMLElement {
     const discardButton = this.shadowRoot.querySelector(
       `li[name="discard-btn"]`
     );
+    const playButton = this.shadowRoot.querySelector(`li[name="play-btn"]`);
+
     const drawButton = this.shadowRoot.querySelector(`li[name="draw-btn"]`);
     const showButton = this.shadowRoot.querySelector(`li[name="show-btn"]`);
 
     discardButton.addEventListener("click", () => {
-      console.log("discarding!");
       this.discardPai();
     });
+
+    playButton.addEventListener("click", () => {
+      this.discardPai();
+    });
+
     drawButton.addEventListener("click", () => {
-      console.log("drawing!");
       this.drawPai();
     });
 
     showButton.addEventListener("click", () => {
-      console.log("showing!");
       this.showPai();
     });
-
-    const moveButton = this.shadowRoot.querySelector(`li[name="move-btn"]`);
-    const selfAreaHolder = document.createElement("ul");
-    const selfAreas = this.getPlayerAreaLi(this.gameController.currentPlayer);
-    selfAreas.forEach((liDom) => {
-      selfAreaHolder.appendChild(liDom);
-    });
-
-    moveButton.append(selfAreaHolder);
-
-    const otherPlayersButton = document.createElement("li");
-    otherPlayersButton.innerHTML = "他";
-    otherPlayersButton.classList.add("expand");
-    otherPlayersButton.classList.add("other-target");
-
-    selfAreaHolder.prepend(otherPlayersButton);
-
-    const otherPlayerList = document.createElement("ul");
-    otherPlayersButton.append(otherPlayerList);
-
-    for (let i = 0; i < this.gameController.playerCount; i++) {
-      const playerKey = `p${i + 1}`;
-      if (playerKey == this.gameController.currentPlayer) {
-        continue;
-      }
-      const playerAreaHolder = document.createElement("ul");
-      const playerAreas = this.getPlayerAreaLi(playerKey);
-      playerAreas.forEach((liDom) => {
-        playerAreaHolder.appendChild(liDom);
-      });
-
-      const otherTargetButton = document.createElement("li");
-
-      otherTargetButton.innerHTML = playerKey;
-      otherTargetButton.classList.add("expand");
-      otherTargetButton.append(playerAreaHolder);
-      otherPlayerList.appendChild(otherTargetButton);
-    }
   }
 
   disconnectedCallback() {

@@ -12,8 +12,22 @@
   }
 }
 
-:host-context(.current-player) .card-controls button[name="draw-btn"] {
+button[name="draw-btn"],
+button[name="discard-btn"],
+button[name="show-btn"] {
   display: none;
+}
+
+:host-context(.current-player) button[name="discard-btn"] {
+  display: unset;
+}
+
+:host-context(.current-player) button[name="show-btn"] {
+  display: unset;
+}
+
+:host-context(.table-public) button[name="draw-btn"] {
+  display: unset;
 }
 
 .card-block.show-front {

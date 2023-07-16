@@ -22,23 +22,6 @@ class gameController {
     this.gameId = gameId;
   }
 
-  moveItem(fromPath, toPath) {
-    // delete from game/1/p1/shoupai/cards/key
-    // add to game/1/p2/shoupai/cards with "/newKey" and value
-    console.log(`move item from: ${fromPath} to: ${toPath}`);
-    let dbRef = ref(this.db);
-    get(child(dbRef, fromPath)).then((snapshot) => {
-      if (snapshot.exists()) {
-        const value = snapshot.val();
-        const newKey = snapshot.key;
-        const updates = {};
-        updates[fromPath] = null;
-        updates[toPath + "/" + newKey] = value;
-        update(dbRef, updates);
-      }
-    });
-  }
-
   lockPlayerSelection() {
     this.rootComponent.lockPlayerSelection();
   }
@@ -98,6 +81,29 @@ class gameController {
         remove(cardRef);
         // move to target area
         const targetPath = `game/${this.gameId}/${player}/${area}/cards`;
+        this.addItem(targetPath, snapshot.key, value);
+      }
+    });
+  }
+
+  moveCardFromPathToRef(fromPath, targetRef) {
+    const cardRef = ref(db, fromPath);
+    get(cardRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        // get value
+        const value = snapshot.val();
+        if (value && value.show) {
+          value.show = "0";
+        }
+        // move to target area
+        const targetPath = targetRef
+          .toString()
+          .replace(ref(this.db).toString(), "");
+        if (fromPath.includes(targetPath)) {
+          return;
+        }
+        // remove from db
+        remove(cardRef);
         this.addItem(targetPath, snapshot.key, value);
       }
     });

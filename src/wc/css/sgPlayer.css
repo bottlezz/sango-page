@@ -12,19 +12,20 @@ p {
   margin: 0.3em;
 }
 
-sg-area::part(card-area) {
-  display: flex;
-  gap: 0.2rem;
-  flex-wrap: wrap;
-  border: none;
+.hand-area {
+  height: 3.9rem;
+}
+.hand-area::part(wrapper) {
+  overflow: hidden;
 }
 
-.hand-area::part(card-area) {
-  height: 3.7rem;
-  overflow: scroll;
+.hand-area:hover::part(wrapper) {
+  z-index: 30;
+  position: relative;
+  overflow: visible;
 }
 
-.current-player .hand-area::part(card-area) {
+.current-player .hand-area {
   height: auto;
   overflow: visible;
 }
@@ -32,6 +33,7 @@ sg-area::part(card-area) {
 sg-area,
 sg-jiangarea {
   display: flex;
+  align-items: center;
 }
 .hand-area::before {
   content: "牌:";
@@ -57,9 +59,11 @@ sg-jiangarea {
   content: "区1:";
   width: 2rem;
   padding: 0.1rem;
+  font-size: small;
 }
 .other2-area::before {
   content: "区2:";
   width: 2rem;
   padding: 0.1rem;
+  font-size: small;
 }

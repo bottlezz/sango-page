@@ -35,8 +35,10 @@ class SgArea extends HTMLElement {
 
     this.warpper = document.createElement("div");
     this.warpper.classList.add("wrapper");
+    this.warpper.setAttribute("part", "wrapper");
 
     this.cardArea = document.createElement("div");
+    this.cardArea.classList.add("card-area");
     this.cardArea.setAttribute("part", "card-area");
     this.cardArea.setAttribute("name", "card-area");
 
@@ -85,7 +87,7 @@ class SgArea extends HTMLElement {
     this.areaType = deckRef.key + "-area";
     this.gameController = gameController;
     this.classList.add(this.areaType);
-    this.visibilityCheck();
+    // this.visibilityCheck();
 
     onChildAdded(this.cardsRef, (snapshot) => {
       const key = snapshot.key;
@@ -94,7 +96,7 @@ class SgArea extends HTMLElement {
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
       this.cardArea.prepend(cardWc);
-      this.visibilityCheck();
+      // this.visibilityCheck();
     });
 
     onChildRemoved(this.cardsRef, (snapshot) => {
@@ -102,7 +104,19 @@ class SgArea extends HTMLElement {
       const value = snapshot.val();
       const cardWc = this.cards[key];
       this.cardArea.removeChild(cardWc);
-      this.visibilityCheck();
+      // this.visibilityCheck();
+    });
+
+    this.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const fromPath = e.dataTransfer.getData("text");
+      this.gameController.moveCardFromPathToRef(
+        fromPath,
+        child(this.deckRef, "/cards")
+      );
+    });
+    this.addEventListener("dragover", (e) => {
+      e.preventDefault();
     });
   }
 

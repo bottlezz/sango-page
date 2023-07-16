@@ -77,6 +77,9 @@ class gameController {
       if (snapshot.exists()) {
         // get value
         const value = snapshot.val();
+        if (value.show) {
+          value.show = "0";
+        }
         // remove from db
         remove(cardRef);
         // add to discard pile

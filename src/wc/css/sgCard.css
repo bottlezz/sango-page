@@ -101,13 +101,14 @@ li[name="move-btn"] {
   display: unset;
 }
 
-/* add hover to card-block later */
 :host-context(.player-seated) .card-block:hover .card-controls {
   display: unset;
 }
 
 :host-context(.current-player) .card-widget,
 :host-context(.discard-area) .card-widget,
+:host-context(.zhuang-area) .card-widget,
+:host-context(.pan-area) .card-widget,
 .card-block.show-front .card-widget {
   width: 3.5rem;
   display: inline-block;

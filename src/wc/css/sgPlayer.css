@@ -19,6 +19,16 @@ sg-area::part(card-area) {
   border: none;
 }
 
+.hand-area::part(card-area) {
+  height: 4.2rem;
+  overflow: scroll;
+}
+
+.current-player .hand-area::part(card-area) {
+  height: auto;
+  overflow: visible;
+}
+
 sg-area,
 sg-jiangarea {
   display: flex;

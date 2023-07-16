@@ -120,6 +120,23 @@ class gameController {
   getPlayerPath(playerKey) {
     return `game/${this.gameId}/${playerKey}`;
   }
+
+  assignRoles() {
+    let roles;
+    if (this.playerCount == 6) {
+      roles = ["忠", "忠", "反", "反", "内", "主"];
+    } else {
+      roles = ["忠", "忠", "忠", "反", "反", "反", "内", "主"];
+    }
+    for (let i = 0; i < this.playerCount; i++) {
+      const len = roles.length;
+      const idx = Math.floor(Math.random() * len);
+      const role = roles[idx];
+      roles.splice(idx, 1);
+      const dbPath = `game/${this.gameId}/p${i + 1}/role`;
+      set(ref(this.db, dbPath), role);
+    }
+  }
 }
 
 export { gameController };

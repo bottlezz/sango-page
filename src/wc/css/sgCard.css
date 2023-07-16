@@ -66,19 +66,19 @@ span.spade::before {
   display: flex;
   background-color: wheat;
   margin: 0;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.1rem;
   padding: 0.1rem;
+  width: 2.4rem;
   box-shadow: 0.1rem 0.1rem 0.1rem black;
   border: dotted 1px black;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 .card-controls li {
   display: block;
   position: relative;
-  width: 1.2rem;
 }
 
 .card-controls li:hover {

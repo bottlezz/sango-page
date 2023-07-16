@@ -37,10 +37,10 @@ ${css}
   </div>
   <div name="card-controls" class="card-controls">
     <ul>
-      <li name="play-btn"> 出 </li>
-      <li name="discard-btn"> 弃 </li>
       <li name="draw-btn"> 摸 </li>
       <li name="show-btn"> 亮 </li>
+      <li name="play-btn"> 出 </li>
+      <li name="discard-btn"> 弃 </li>
     </ul>
   </div>
 </div>

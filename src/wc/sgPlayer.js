@@ -19,9 +19,14 @@ template.innerHTML = `
 ${commonCss}
 ${sgPlayerCss}
 </style>
-<div name="widget" class="widget hide">
-  <div name="player-game-area" class="hide">
-    <p><label name="player-name">pName</label> </p>
+<div name="widget" class="widget">
+  <div name="player-game-area">
+    <p>
+      <span class="player-key"></span>
+      <span>: </span>
+      [<span class="player-role">-</span><span class="player-role-marker">匿</span>]
+      <span class="player-name"></span> 
+    </p>
     <p><span class="hp"></span></p>
     <div name="deck-area" calss="widget"></div>
   </div>
@@ -58,14 +63,32 @@ class SgPlayer extends HTMLElement {
     hpSpan.append(hpWc);
     hpWc.init(child(playerRef, "/hp"), gameController);
 
+    const playerKeySpan = this.shadowRoot.querySelector(".player-key");
+    const playerRoleSpan = this.shadowRoot.querySelector(".player-role");
+    const playerNameSpan = this.shadowRoot.querySelector(".player-name");
+    playerKeySpan.innerHTML = this.playerRef.key;
+
     onValue(child(playerRef, "/name"), (snapshot) => {
       if (snapshot.exists()) {
         const playerName = snapshot.val();
-        this.renderPlayer(playerName);
+        playerNameSpan.innerHTML = playerName;
+        if (this.gameController.userName == playerName) {
+          this.assginAsCurrentPlayer();
+        }
       }
     });
 
-    onValue(child(playerRef, "/hp"), (snapshot) => {});
+    onValue(child(playerRef, "/role"), (snapshot) => {
+      if (snapshot.exists()) {
+        const playerRole = snapshot.val();
+        if (playerRole == "主" || playerRole == "内") {
+          playerRoleSpan.classList.add("king");
+        } else {
+          playerRoleSpan.classList.remove("king");
+        }
+        playerRoleSpan.innerHTML = playerRole;
+      }
+    });
 
     const playerDeckAreaWdight = this.shadowRoot.querySelector(
       `div[name="deck-area"]`
@@ -104,12 +127,6 @@ class SgPlayer extends HTMLElement {
       "label[name='player-name']"
     );
     playerNameWidget.innerHTML = `${this.playerRef.key} : ${playerName}`;
-    this.shadowRoot
-      .querySelector(`div[name="player-game-area"]`)
-      .classList.remove("hide");
-    if (this.gameController.userName == playerName) {
-      this.assginAsCurrentPlayer();
-    }
   }
 }
 

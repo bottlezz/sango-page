@@ -38,10 +38,24 @@ class SgTable extends HTMLElement {
     this.initGame();
   }
 
+  getRoundMenu() {
+    const roundMenu = document.createElement("div");
+    roundMenu.className = "round-menu";
+    const rollRolesBtn = document.createElement("button");
+    rollRolesBtn.innerHTML = "身份";
+    rollRolesBtn.addEventListener("click", () => {
+      this.gameController.assignRoles();
+    });
+    roundMenu.appendChild(rollRolesBtn);
+    return roundMenu;
+  }
+
   initGame() {
     const container = this.shadowRoot.querySelector(".table-container");
     const tableDeckWidget = document.createElement("div");
     tableDeckWidget.classList.add("table-public");
+    const roundMenu = this.getRoundMenu();
+    tableDeckWidget.appendChild(roundMenu);
     container.appendChild(tableDeckWidget);
     for (let i = 0; i < this.playerCount; i++) {
       const sgPlayer = new SgPlayer();

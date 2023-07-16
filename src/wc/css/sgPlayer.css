@@ -67,3 +67,19 @@ sg-jiangarea {
   padding: 0.1rem;
   font-size: small;
 }
+
+.player-role {
+  display: none;
+}
+.player-role.king {
+  display: inline;
+}
+.current-player .player-role {
+  display: inline;
+}
+.current-player .player-role-marker {
+  display: none;
+}
+.player-role.king ~ .player-role-marker {
+  display: none;
+}

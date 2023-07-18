@@ -25,6 +25,9 @@ class SgJiangArea extends SgArea {
     this.areaType = deckRef.key + "-area";
     this.classList.add(this.areaType);
     this.gameController = gameController;
+    if (this.isTableArea()) {
+      this.classList.add("table-area");
+    }
 
     if (!this.isTableArea()) {
       this.controlArea.classList.add("hide");
@@ -36,6 +39,9 @@ class SgJiangArea extends SgArea {
       const key = snapshot.key;
       const value = snapshot.val();
       const cardWc = document.createElement("sg-jiang");
+      if (this.isTableArea()) {
+        cardWc.dataset.cardType = "table";
+      }
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
       this.cardArea.prepend(cardWc);

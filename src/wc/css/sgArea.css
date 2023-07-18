@@ -15,6 +15,10 @@
   display: unset;
 }
 
+:host(.table-area.jiang-area) {
+  opacity: 0.9;
+}
+
 .wrapper {
   height: 100%;
   width: 100%;

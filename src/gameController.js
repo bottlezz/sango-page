@@ -137,6 +137,29 @@ class gameController {
       set(ref(this.db, dbPath), role);
     }
   }
+
+  isTableItem(dbRef) {
+    const pathStr = dbRef.toString();
+    return pathStr.includes("/tableDecks/");
+  }
+
+  shuffleDeck(deckRef) {
+    const cardsRef = child(deckRef, "/cards");
+    get(cardsRef).then((snapshot) => {
+      if (!snapshot.exists()) return;
+      const cardsData = snapshot.val();
+      const keys = Object.keys(cardsData);
+      const len = keys.length;
+      for (let i = 0; i < len; i++) {
+        const from = Math.floor(Math.random() * len);
+        const to = Math.floor(Math.random() * len);
+        const fromVal = cardsData[keys[from]];
+        cardsData[keys[from]] = cardsData[keys[to]];
+        cardsData[keys[to]] = fromVal;
+      }
+      set(cardsRef, cardsData);
+    });
+  }
 }
 
 export { gameController };

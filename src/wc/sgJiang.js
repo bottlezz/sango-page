@@ -122,6 +122,7 @@ class SgJiang extends HTMLElement {
     const nameSpan = this.shadowRoot.querySelector(".jiang-name");
     const hpSpan = this.shadowRoot.querySelector(".jiang-hp");
     const forceSpan = this.shadowRoot.querySelector(".jiang-force");
+    const frontDiv = this.shadowRoot.querySelector(".card-front");
 
     nameSpan.innerHTML = jiang.name;
     hpSpan.innerHTML = jiang.health + "HP";
@@ -131,6 +132,22 @@ class SgJiang extends HTMLElement {
     } else {
       genderSpan.innerHTML = "&#9792;";
     }
+
+    switch (jiang.force) {
+      case "魏":
+        frontDiv.className = "card-front wei";
+        break;
+      case "蜀":
+        frontDiv.className = "card-front shu";
+        break;
+      case "吴":
+        frontDiv.className = "card-front wu";
+        break;
+      default:
+        frontDiv.className = "card-front qun";
+        break;
+    }
+
     const skill = jiang.skill.replaceAll("/", "<br><br>");
     this.shadowRoot.querySelector(".jiang-skill").innerHTML = skill;
 
@@ -163,6 +180,13 @@ class SgJiang extends HTMLElement {
       console.log("showing!");
       this.showJiang();
     });
+
+    if (this.dataset.cardType == "table") {
+      this.addEventListener("click", () => {
+        this.drawJiang();
+      });
+      this.cardControlWidget.remove();
+    }
   }
 
   disconnectedCallback() {

@@ -25,7 +25,6 @@
   width: auto;
   position: relative;
   background-color: white;
-  cursor: grab;
 
   .card-widget {
     border: red solid 1px;

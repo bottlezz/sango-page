@@ -9,7 +9,24 @@
 
   .card-front {
     display: block;
+    height: 100%;
   }
+}
+
+.card-front.shu {
+  background-image: linear-gradient(rgba(200, 0, 0, 0.5), white);
+}
+
+.card-front.wu {
+  background-image: linear-gradient(rgba(0, 150, 0, 0.8), white);
+}
+
+.card-front.wei {
+  background-image: linear-gradient(rgba(0, 0, 180, 0.6), white);
+}
+
+.card-front.qun {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), white);
 }
 
 button[name="draw-btn"],
@@ -40,17 +57,15 @@ button[name="show-btn"] {
 
 .jiang-skill {
   display: none;
-  z-index: 10;
 }
 
 .skill-hint {
-  position: relative;
-  width: 80%;
+  text-align: center;
+  position: absolute;
+  bottom: 0;
 
   .skill-label {
-    font-size: 0.8rem;
     font-weight: bolder;
-    background-color: beige;
   }
 
   span {
@@ -61,17 +76,31 @@ button[name="show-btn"] {
 
 .skill-hint:hover .jiang-skill {
   display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: fixed;
+  bottom: 0;
+  right: 0;
   background-color: wheat;
   padding: 0.5em;
   border: dotted orange 2px;
-  width: 12em;
+  width: 15em;
 }
 
 :host-context(.current-player) .skill-hint:hover .jiang-skill {
   bottom: 0;
   top: auto;
   z-index: 30;
+}
+
+.card-controls {
+  top: -0.5rem;
+  left: auto;
+  right: 0;
+  width: 1.5rem;
+  padding-top: 0;
+  box-shadow: -1px 2px 3px 1px;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.jiang-name {
+  font-weight: bolder;
 }

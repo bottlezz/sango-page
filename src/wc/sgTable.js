@@ -47,6 +47,37 @@ class SgTable extends HTMLElement {
       this.gameController.assignRoles();
     });
     roundMenu.appendChild(rollRolesBtn);
+
+    const jiangShuffleBtn = document.createElement("button");
+    jiangShuffleBtn.innerHTML = "洗将";
+    jiangShuffleBtn.addEventListener("click", () => {
+      this.gameController.shuffleDeck(
+        ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`)
+      );
+    });
+    roundMenu.appendChild(jiangShuffleBtn);
+
+    const paiShuffleBtn = document.createElement("button");
+    paiShuffleBtn.innerHTML = "洗牌";
+    paiShuffleBtn.addEventListener("click", () => {
+      this.gameController.shuffleDeck(
+        ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`)
+      );
+    });
+    roundMenu.appendChild(paiShuffleBtn);
+
+    const startRoundBtn = document.createElement("button");
+    startRoundBtn.innerHTML = "开！";
+    startRoundBtn.addEventListener("click", () => {
+      this.gameController.shuffleDeck(
+        ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`)
+      );
+      this.gameController.shuffleDeck(
+        ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`)
+      );
+    });
+    roundMenu.appendChild(startRoundBtn);
+
     return roundMenu;
   }
 

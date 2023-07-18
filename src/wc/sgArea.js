@@ -23,6 +23,8 @@ class SgArea extends HTMLElement {
   areaType;
   cardArea;
   cardsRef;
+  dbPathStr;
+  isTable;
   cards = {};
 
   constructor() {
@@ -83,11 +85,16 @@ class SgArea extends HTMLElement {
 
   init(deckRef, gameController) {
     this.deckRef = deckRef;
+    this.dbPathStr = deckRef.toString();
     this.cardsRef = child(deckRef, "/cards");
     this.areaType = deckRef.key + "-area";
     this.gameController = gameController;
+    this.isTable = this.gameController.isTableItem(this.deckRef);
+
     this.classList.add(this.areaType);
-    // this.visibilityCheck();
+    if (this.isTableArea()) {
+      this.classList.add("table-area");
+    }
 
     onChildAdded(this.cardsRef, (snapshot) => {
       const key = snapshot.key;
@@ -96,7 +103,6 @@ class SgArea extends HTMLElement {
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
       this.cardArea.prepend(cardWc);
-      // this.visibilityCheck();
     });
 
     onChildRemoved(this.cardsRef, (snapshot) => {
@@ -104,7 +110,6 @@ class SgArea extends HTMLElement {
       const value = snapshot.val();
       const cardWc = this.cards[key];
       this.cardArea.removeChild(cardWc);
-      // this.visibilityCheck();
     });
 
     this.addEventListener("drop", (e) => {
@@ -133,21 +138,7 @@ class SgArea extends HTMLElement {
   }
 
   shuffle() {
-    get(this.cardsRef).then((snapshot) => {
-      if (!snapshot.exists()) return;
-      const cardsData = snapshot.val();
-      const keys = Object.keys(cardsData);
-      const len = keys.length;
-      for (let i = 0; i < len; i++) {
-        const from = Math.floor(Math.random() * len);
-        const to = Math.floor(Math.random() * len);
-        const fromVal = cardsData[keys[from]];
-        cardsData[keys[from]] = cardsData[keys[to]];
-        cardsData[keys[to]] = fromVal;
-      }
-      console.log(cardsData);
-      set(this.cardsRef, cardsData);
-    });
+    this.gameController.shuffleDeck(this.deckRef);
   }
 
   recycle() {

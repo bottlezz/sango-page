@@ -91,6 +91,10 @@ span.spade::before {
   display: unset;
 }
 
+:host-context(.table-area) li[name="play-btn"] {
+  display: none;
+}
+
 :host-context(.player-seated) .card-block:hover .card-controls {
   display: unset;
 }

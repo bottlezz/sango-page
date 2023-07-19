@@ -6,8 +6,8 @@ import { gameController } from "../gameController.js";
 import commonCss from "./css/common.css";
 import tableCss from "./css/sgTable.css";
 import { SgArea } from "./sgArea.js";
-import "./sgArea.js";
 import { SgPlayer } from "./sgPlayer.js";
+import { SgPaiArea } from "./sgPaiArea.js";
 import "./sgJiangArea.js";
 
 class SgTable extends HTMLElement {
@@ -60,23 +60,21 @@ class SgTable extends HTMLElement {
     const paiShuffleBtn = document.createElement("button");
     paiShuffleBtn.innerHTML = "洗牌";
     paiShuffleBtn.addEventListener("click", () => {
-      this.gameController.shuffleDeck(
-        ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`)
-      );
+      this.gameController.resetPai();
     });
     roundMenu.appendChild(paiShuffleBtn);
 
-    const startRoundBtn = document.createElement("button");
-    startRoundBtn.innerHTML = "开！";
-    startRoundBtn.addEventListener("click", () => {
-      this.gameController.shuffleDeck(
-        ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`)
-      );
-      this.gameController.shuffleDeck(
-        ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`)
-      );
-    });
-    roundMenu.appendChild(startRoundBtn);
+    // const startRoundBtn = document.createElement("button");
+    // startRoundBtn.innerHTML = "开！";
+    // startRoundBtn.addEventListener("click", () => {
+    //   this.gameController.shuffleDeck(
+    //     ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`)
+    //   );
+    //   this.gameController.shuffleDeck(
+    //     ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`)
+    //   );
+    // });
+    // roundMenu.appendChild(startRoundBtn);
 
     return roundMenu;
   }
@@ -111,7 +109,7 @@ class SgTable extends HTMLElement {
     );
     tableDeckWidget.appendChild(this.jiangArea);
 
-    this.paiArea = new SgArea();
+    this.paiArea = new SgPaiArea();
     this.paiArea.init(
       ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`),
       this.gameController

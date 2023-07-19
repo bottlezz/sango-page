@@ -17,9 +17,11 @@ class gameController {
   userName;
   playerCount;
   rootComponent;
+  paiBottomCardsPath;
   constructor(db, gameId) {
     this.db = db;
     this.gameId = gameId;
+    this.paiBottomCardsPath = `game/${this.gameId}/tableDecks/paiBottom/cards`;
   }
 
   lockPlayerSelection() {
@@ -147,17 +149,59 @@ class gameController {
     const cardsRef = child(deckRef, "/cards");
     get(cardsRef).then((snapshot) => {
       if (!snapshot.exists()) return;
-      const cardsData = snapshot.val();
-      const keys = Object.keys(cardsData);
-      const len = keys.length;
-      for (let i = 0; i < len; i++) {
-        const from = Math.floor(Math.random() * len);
-        const to = Math.floor(Math.random() * len);
-        const fromVal = cardsData[keys[from]];
-        cardsData[keys[from]] = cardsData[keys[to]];
-        cardsData[keys[to]] = fromVal;
-      }
+      const cardsData = this.shuffleData(snapshot.val());
       set(cardsRef, cardsData);
+    });
+  }
+
+  shuffleData(cardsData) {
+    const keys = Object.keys(cardsData);
+    const len = keys.length;
+    for (let i = 0; i < len; i++) {
+      const from = Math.floor(Math.random() * len);
+      const to = Math.floor(Math.random() * len);
+      const fromVal = cardsData[keys[from]];
+      cardsData[keys[from]] = cardsData[keys[to]];
+      cardsData[keys[to]] = fromVal;
+    }
+    return cardsData;
+  }
+
+  resetPai() {
+    const discardCardsRef = ref(
+      db,
+      `game/${this.gameId}/tableDecks/discard/cards`
+    );
+    const paiCardsRef = ref(db, `game/${this.gameId}/tableDecks/pai/cards`);
+    const paiBottomCardsRef = ref(db, this.paiBottomCardsPath);
+    get(discardCardsRef).then((snapshot) => {
+      let discardCardsData = {};
+      if (snapshot.exists()) {
+        discardCardsData = snapshot.val();
+      }
+
+      get(paiBottomCardsRef).then((paiBottomSnap) => {
+        let paiBottomCardsData = {};
+        if (paiBottomSnap.exists()) {
+          paiBottomCardsData = paiBottomSnap.val();
+        }
+        get(paiCardsRef).then((paiSnap) => {
+          let paiCardsData = {};
+          if (paiSnap.exists()) {
+            paiCardsData = paiSnap.val();
+          }
+          const newCardsData = {
+            ...discardCardsData,
+            ...paiCardsData,
+            ...paiBottomCardsData,
+          };
+          this.shuffleData(newCardsData);
+
+          set(paiCardsRef, newCardsData);
+        });
+        remove(paiBottomCardsRef);
+      });
+      remove(discardCardsRef);
     });
   }
 }

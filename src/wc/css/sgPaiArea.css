@@ -1,0 +1,24 @@
+.wrapper {
+  height: 100%;
+  overflow-y: scroll;
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.pai-board {
+  height: 75%;
+  padding: 0.2rem;
+  display: flex;
+  justify-content: space-around;
+  gap: 0.1rem;
+
+  & div {
+    border: double black 3px;
+    width: 100%;
+    text-align: center;
+  }
+}

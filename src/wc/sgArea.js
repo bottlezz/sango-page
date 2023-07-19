@@ -114,6 +114,7 @@ class SgArea extends HTMLElement {
 
     this.addEventListener("drop", (e) => {
       e.preventDefault();
+      console.log("areaDrop");
       const fromPath = e.dataTransfer.getData("text");
       this.gameController.moveCardFromPathToRef(
         fromPath,

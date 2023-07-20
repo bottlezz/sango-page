@@ -12,6 +12,10 @@ p {
   margin: 0.3em;
 }
 
+.debuff {
+  cursor: pointer;
+}
+
 .hand-area {
   height: 3.9rem;
 }
@@ -90,4 +94,18 @@ sg-jiangarea {
 
 :host {
   box-shadow: 1px 1px 4px 1px;
+}
+
+div[name="player-game-area"] {
+  position: relative;
+}
+
+div[name="deck-area"] {
+  margin-top: 1rem;
+}
+
+.jiang-area.locked {
+  position: absolute;
+  top: 0;
+  right: 0;
 }

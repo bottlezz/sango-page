@@ -45,10 +45,8 @@ class SgJiangArea extends SgArea {
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
       this.cardArea.prepend(cardWc);
-    });
-    onChildChanged(child(deckRef, "/cards"), (snapshot) => {
-      // console.log(`on child changed: ${snapshot.key}`);
-      // console.log(snapshot.val());
+
+      this.lockJiangArea();
     });
     onChildRemoved(child(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;
@@ -57,7 +55,19 @@ class SgJiangArea extends SgArea {
       // console.log(value);
       const cardWc = this.cards[key];
       this.cardArea.removeChild(cardWc);
+      this.lockJiangArea();
     });
+  }
+
+  lockJiangArea() {
+    if (
+      this.cardArea.childElementCount <= 2 &&
+      !this.classList.contains("locked")
+    ) {
+      this.classList.add("locked");
+    } else {
+      this.classList.remove("locked");
+    }
   }
 }
 

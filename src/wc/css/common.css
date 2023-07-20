@@ -3,6 +3,14 @@ div[data-display="hide"],
   display: none;
 }
 
+span {
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 div.widget {
   border: red solid 1px;
   padding: 2px;

@@ -9,4 +9,5 @@
 .hp-bar span {
   display: inline-block;
   width: 1.6rem;
+  cursor: pointer;
 }

@@ -83,3 +83,7 @@ sg-jiangarea {
 .player-role.king ~ .player-role-marker {
   display: none;
 }
+
+.debuff.on {
+  color: red;
+}

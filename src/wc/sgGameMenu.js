@@ -76,22 +76,16 @@ class SgGameMenu extends HTMLElement {
     if (playerNum == 6) {
       initData = appData.initDataMock6;
     } else {
-      initData = appData.initDataMock8;
+      // initData = appData.initDataMock8;
+      initData = appData.initDataMock6;
     }
 
-    const initJiangDeckCards = Object.keys(jiangKu).map((key) => {
-      return { id: key, show: "0" };
-    });
-    const initPaiDeckCards = Object.keys(paiKu).map((key) => {
-      return { id: key, show: "0" };
-    });
-
     initData.tableDecks.jiang = {
-      cards: initJiangDeckCards,
+      cards: this.gameController.getShuffledJiang(),
       display: "normal",
     };
     initData.tableDecks.pai = {
-      cards: initPaiDeckCards,
+      cards: this.gameController.getShuffledPai(),
       display: "normal",
     };
     return initData;

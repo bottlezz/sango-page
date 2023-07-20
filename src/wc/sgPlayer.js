@@ -23,8 +23,10 @@ ${sgPlayerCss}
   <div name="player-game-area">
     <p>
       <span class="player-key"></span>
-      <span>: </span>
       [<span class="player-role">-</span><span class="player-role-marker">匿</span>]
+      <span>: </span>
+      <span class="debuff debuff-0">[翻面]</span><span class="debuff debuff-1">[连环]</span>
+      <span> - </span>
       <span class="player-name"></span> 
     </p>
     <p><span class="hp"></span></p>
@@ -37,6 +39,7 @@ class SgPlayer extends HTMLElement {
   playerRef;
   gameController;
   shadowRoot;
+  debuff = "00";
   constructor() {
     super();
     this.shadowRoot = this.attachShadow({ mode: "open" });
@@ -89,6 +92,47 @@ class SgPlayer extends HTMLElement {
         playerRoleSpan.innerHTML = playerRole;
       }
     });
+
+    String.prototype.replaceAt = function (index, replacement) {
+      return (
+        this.substring(0, index) +
+        replacement +
+        this.substring(index + replacement.length)
+      );
+    };
+
+    onValue(child(playerRef, "/debuff"), (snapshot) => {
+      if (snapshot.exists()) {
+        const debuff = snapshot.val();
+        for (let i = 0; i < debuff.length; i++) {
+          const debufSpan = this.shadowRoot.querySelector(`.debuff-${i}`);
+          if (debuff[i] == "0") {
+            debufSpan.classList.remove("on");
+            this.debuff = this.debuff.replaceAt(i, "0");
+          } else {
+            if (!debufSpan.classList.contains("on")) {
+              debufSpan.classList.add("on");
+            }
+            this.debuff = this.debuff.replaceAt(i, "1");
+          }
+        }
+        console.log(this.debuff);
+      }
+    });
+
+    for (let i = 0; i < 2; i++) {
+      this.shadowRoot
+        .querySelector(`.debuff-${i}`)
+        .addEventListener("click", () => {
+          if (this.debuff[i] == "0") {
+            this.debuff = this.debuff.replaceAt(i, "1");
+          } else {
+            this.debuff = this.debuff.replaceAt(i, "0");
+          }
+          console.log("debuff click");
+          set(child(playerRef, "/debuff"), this.debuff);
+        });
+    }
 
     const playerDeckAreaWdight = this.shadowRoot.querySelector(
       `div[name="deck-area"]`

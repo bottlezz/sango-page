@@ -43,6 +43,10 @@ button[name="show-btn"] {
   display: unset;
 }
 
+:host-context(.table-public) button[name="show-btn"] {
+  display: unset;
+}
+
 :host-context(.table-public) button[name="draw-btn"] {
   display: unset;
 }

@@ -10,6 +10,8 @@ import {
   onValue,
 } from "firebase/database";
 
+import jiangKu from "./data/jiang.json";
+import paiKu from "./data/pai.json";
 class gameController {
   db;
   gameId;
@@ -203,6 +205,63 @@ class gameController {
       });
       remove(discardCardsRef);
     });
+  }
+
+  resetTable() {
+    const updates = {};
+
+    // reset players
+    for (let i = 0; i < this.playerCount; i++) {
+      const playerPath = `game/${this.gameId}/p${i + 1}`;
+      updates[`${playerPath}/jiang/cards`] = {};
+      updates[`${playerPath}/hand/cards`] = {};
+      updates[`${playerPath}/pan/cards`] = {};
+      updates[`${playerPath}/zhuang/cards`] = {};
+      updates[`${playerPath}/other1/cards`] = {};
+      updates[`${playerPath}/other2/cards`] = {};
+    }
+
+    const tableDeckPath = `game/${this.gameId}/tableDecks`;
+    updates[`${tableDeckPath}/discard`] = {};
+    updates[`${tableDeckPath}/paiBottom`] = {};
+    updates[`${tableDeckPath}/jiang`] = {};
+    updates[`${tableDeckPath}/pai`] = { cards: this.getShuffledPai() };
+    const dbRef = ref(this.db);
+    update(dbRef, updates);
+  }
+
+  getShuffledJiang() {
+    const initJiangDeckCards = Object.keys(jiangKu).map((key) => {
+      return { id: key, show: "0" };
+    });
+    this.shuffleData(initJiangDeckCards);
+    this.shuffleData(initJiangDeckCards);
+    return initJiangDeckCards;
+  }
+
+  getShuffledPai() {
+    const initPaiDeckCards = Object.keys(paiKu).map((key) => {
+      return { id: key, show: "0" };
+    });
+    this.shuffleData(initPaiDeckCards);
+    this.shuffleData(initPaiDeckCards);
+    return initPaiDeckCards;
+  }
+
+  dispatchJiang() {
+    const jiangCards = this.getShuffledJiang();
+    const updates = {};
+
+    for (let i = 0; i < 6; i++) {
+      const jiangs = jiangCards.splice(i * 7, 7);
+      updates[`game/${this.gameId}/p${i + 1}/jiang/cards`] = jiangs;
+    }
+
+    updates[`game/${this.gameId}/tableDecks/jiang`] = {};
+    console.log(updates);
+
+    const dbRef = ref(this.db);
+    update(dbRef, updates);
   }
 }
 

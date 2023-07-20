@@ -14,6 +14,8 @@ const playerMock = {
   name: "p",
   state: "off",
   hp: "4/4",
+  role: "",
+  debuff: "00",
   ...playerDecksMock,
 };
 const jiangDeckMock1 = {

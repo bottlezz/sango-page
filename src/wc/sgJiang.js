@@ -181,12 +181,12 @@ class SgJiang extends HTMLElement {
       this.showJiang();
     });
 
-    if (this.dataset.cardType == "table") {
-      this.addEventListener("click", () => {
-        this.drawJiang();
-      });
-      this.cardControlWidget.remove();
-    }
+    // if (this.dataset.cardType == "table") {
+    //   this.addEventListener("click", () => {
+    //     this.drawJiang();
+    //   });
+    //   // this.cardControlWidget.remove();
+    // }
   }
 
   disconnectedCallback() {

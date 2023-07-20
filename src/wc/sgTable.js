@@ -49,11 +49,9 @@ class SgTable extends HTMLElement {
     roundMenu.appendChild(rollRolesBtn);
 
     const jiangShuffleBtn = document.createElement("button");
-    jiangShuffleBtn.innerHTML = "洗将";
+    jiangShuffleBtn.innerHTML = "发将";
     jiangShuffleBtn.addEventListener("click", () => {
-      this.gameController.shuffleDeck(
-        ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`)
-      );
+      this.gameController.dispatchJiang();
     });
     roundMenu.appendChild(jiangShuffleBtn);
 
@@ -64,17 +62,12 @@ class SgTable extends HTMLElement {
     });
     roundMenu.appendChild(paiShuffleBtn);
 
-    // const startRoundBtn = document.createElement("button");
-    // startRoundBtn.innerHTML = "开！";
-    // startRoundBtn.addEventListener("click", () => {
-    //   this.gameController.shuffleDeck(
-    //     ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`)
-    //   );
-    //   this.gameController.shuffleDeck(
-    //     ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`)
-    //   );
-    // });
-    // roundMenu.appendChild(startRoundBtn);
+    const startRoundBtn = document.createElement("button");
+    startRoundBtn.innerHTML = "清台";
+    startRoundBtn.addEventListener("click", () => {
+      this.gameController.resetTable();
+    });
+    roundMenu.appendChild(startRoundBtn);
 
     return roundMenu;
   }

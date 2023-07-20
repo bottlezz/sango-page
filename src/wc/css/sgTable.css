@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   /* grid-template-rows: 1fr 1fr 1fr 1fr 1fr; */
-  grid-gap: 0.2rem;
+  grid-gap: 0.5rem;
   margin: 20px;
 }
 
@@ -31,7 +31,8 @@
   grid-template-columns: 3rem 1fr 1fr 1fr;
   grid-template-rows: 5rem 8rem;
   gap: 0.5rem;
-
+  box-shadow: 1px 1px 4px 1px;
+  padding: 0.3rem;
   .jiang-area {
     grid-area: 1 / 1 / span 1 / span 1;
     overflow-y: scroll;

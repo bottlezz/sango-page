@@ -1,6 +1,6 @@
 :host-context(.current-player) .card-widget,
 .card-block.show-front .card-widget {
-  width: 5rem;
+  width: 4.9rem;
   display: inline-block;
 
   .card-back {

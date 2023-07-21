@@ -20,16 +20,15 @@ ${commonCss}
 ${sgPlayerCss}
 </style>
 <div name="widget" class="widget">
+  <div class="player-name"></div> 
   <div name="player-game-area">
     <p>
       <span class="player-key"></span>
       [<span class="player-role">-</span><span class="player-role-marker">匿</span>]
       <span>: </span>
-      <span class="debuff debuff-0">[翻面]</span><span class="debuff debuff-1">[连环]</span>
-      <span> - </span>
-      <span class="player-name"></span> 
+      <span class="debuff debuff-0">[翻]</span><span class="debuff debuff-1">[连]</span>
     </p>
-    <p><span class="hp"></span></p>
+    <p class="hp-holder"><span class="hp"></span></p>
     <div name="deck-area" calss="widget"></div>
   </div>
 </div>
@@ -68,13 +67,13 @@ class SgPlayer extends HTMLElement {
 
     const playerKeySpan = this.shadowRoot.querySelector(".player-key");
     const playerRoleSpan = this.shadowRoot.querySelector(".player-role");
-    const playerNameSpan = this.shadowRoot.querySelector(".player-name");
+    const playerNameItem = this.shadowRoot.querySelector(".player-name");
     playerKeySpan.innerHTML = this.playerRef.key;
 
     onValue(child(playerRef, "/name"), (snapshot) => {
       if (snapshot.exists()) {
         const playerName = snapshot.val();
-        playerNameSpan.innerHTML = playerName;
+        playerNameItem.innerHTML = playerName;
         if (this.gameController.userName == playerName) {
           this.assginAsCurrentPlayer();
         }
@@ -163,14 +162,6 @@ class SgPlayer extends HTMLElement {
     playerDeckAreaWdight.append(this.panArea);
     playerDeckAreaWdight.append(this.other1Area);
     playerDeckAreaWdight.append(this.other2Area);
-  }
-
-  renderPlayer(playerName) {
-    console.log(`render player: ${this.playerRef.key}`);
-    const playerNameWidget = this.shadowRoot.querySelector(
-      "label[name='player-name']"
-    );
-    playerNameWidget.innerHTML = `${this.playerRef.key} : ${playerName}`;
   }
 }
 

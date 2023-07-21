@@ -29,3 +29,43 @@
   flex-wrap: wrap;
   border: none;
 }
+
+:host(.zhuang-area) sg-card {
+  width: 25%;
+}
+
+:host(.pan-area) sg-card {
+  width: 33%;
+}
+
+:host(.zhuang-area) sg-card:hover,
+:host(.pan-area) sg-card:hover {
+  z-index: 40;
+  overflow: visible;
+}
+
+:host(.zhuang-area) .card-area,
+:host(.pan-area) .card-area,
+:host(.other1-area) .card-area,
+:host(.other2-area) .card-area {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+:host(.zhuang-area) .card-area:hover,
+:host(.pan-area) .card-area:hover {
+  overflow: visible;
+  z-index: 40;
+  box-shadow: 1px 1px 4px 1px;
+  background-color: white;
+  position: absolute;
+}
+
+:host(.other1-area) .card-area:hover,
+:host(.other2-area) .card-area:hover {
+  overflow: visible;
+  flex-wrap: wrap;
+  z-index: 40;
+  box-shadow: 1px 1px 4px 1px;
+  background-color: white;
+}

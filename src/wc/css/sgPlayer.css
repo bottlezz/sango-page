@@ -4,10 +4,6 @@
   margin: 0.2em;
 }
 
-:host-context(.player-seated) div[name="join-seat-menu"] {
-  display: none;
-}
-
 p {
   margin: 0.3em;
 }
@@ -16,7 +12,7 @@ p {
   cursor: pointer;
 }
 
-.hand-area {
+sg-area {
   height: 3.9rem;
 }
 .hand-area::part(wrapper) {
@@ -38,38 +34,70 @@ sg-area,
 sg-jiangarea {
   display: flex;
   align-items: center;
+  width: 100%;
 }
+
+.jiang-area {
+  display: none;
+}
+
+.current-player .jiang-area {
+  display: flex;
+}
+
+div[name="deck-area"] {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 .hand-area::before {
+  position: absolute;
   content: "牌:";
-  padding: 0.1rem;
+  padding: 0.5rem;
   width: 2rem;
 }
+
+.zhuang-area,
+.other1-area {
+  width: 60%;
+}
+
+.pan-area,
+.other2-area {
+  width: 36%;
+}
+
 .zhuang-area::before {
+  position: absolute;
   content: "装:";
   width: 2rem;
-  padding: 0.1rem;
+  padding: 0.5rem;
 }
 .pan-area::before {
+  position: absolute;
   content: "判:";
   width: 2rem;
-  padding: 0.1rem;
+  padding: 0.5rem;
 }
 .jiang-area::before {
+  position: absolute;
   content: "将:";
   width: 2rem;
-  padding: 0.1rem;
+  padding: 0.5rem;
 }
 .other1-area::before {
+  position: absolute;
   content: "区1:";
   width: 2rem;
-  padding: 0.1rem;
-  font-size: small;
+  padding: 0.5rem;
 }
 .other2-area::before {
+  position: absolute;
   content: "区2:";
   width: 2rem;
-  padding: 0.1rem;
-  font-size: small;
+  padding: 0.5rem;
 }
 
 .player-role {
@@ -94,19 +122,46 @@ sg-jiangarea {
 
 :host {
   box-shadow: 1px 1px 4px 1px;
-  min-width: 19rem;
+  min-width: 20rem;
 }
 
-div[name="player-game-area"] {
+:host > div[name="widget"] {
   position: relative;
 }
 
-div[name="deck-area"] {
-  margin-top: 1rem;
-}
-
 .jiang-area.locked {
+  display: flex;
   position: absolute;
   top: 0;
   right: 0;
+  width: auto;
+}
+
+.jiang-area.locked::part(card-area) {
+  justify-content: space-around;
+  gap: 0;
+}
+
+.jiang-area.locked::part(wrapper) {
+  border: none;
+}
+
+.jiang-area.locked::before {
+  content: none;
+}
+
+.player-name {
+  position: absolute;
+  top: -0.7rem;
+  left: 1rem;
+  width: 30%;
+  background: white;
+  box-shadow: 1px 1px 2px 0px;
+  text-align: center;
+  overflow: hidden;
+  opacity: 0.9;
+}
+
+.hp-holder {
+  width: 45%;
 }

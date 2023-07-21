@@ -60,11 +60,10 @@ class SgJiangArea extends SgArea {
   }
 
   lockJiangArea() {
-    if (
-      this.cardArea.childElementCount <= 2 &&
-      !this.classList.contains("locked")
-    ) {
-      this.classList.add("locked");
+    if (this.cardArea.childElementCount <= 2) {
+      if (!this.classList.contains("locked")) {
+        this.classList.add("locked");
+      }
     } else {
       this.classList.remove("locked");
     }

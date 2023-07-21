@@ -18,6 +18,8 @@
 
 .info-line {
   font-size: 0.8rem;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 .card-block {

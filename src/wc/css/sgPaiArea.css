@@ -17,7 +17,7 @@
   gap: 0.1rem;
 
   & div {
-    border: double black 3px;
+    border: dotted black 1px;
     width: 100%;
     text-align: center;
   }

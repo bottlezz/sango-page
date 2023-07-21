@@ -94,6 +94,7 @@ sg-jiangarea {
 
 :host {
   box-shadow: 1px 1px 4px 1px;
+  min-width: 19rem;
 }
 
 div[name="player-game-area"] {

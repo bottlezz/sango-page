@@ -56,16 +56,6 @@
   padding-bottom: 2px;
 }
 
-:host(.zhuang-area) .card-area:hover,
-:host(.pan-area) .card-area:hover {
-  overflow: visible;
-  z-index: 35;
-  box-shadow: 1px 1px 4px 1px;
-  flex-wrap: wrap;
-  position: relative;
-  background-color: wheat;
-}
-
 :host(.other1-area) .card-area:hover,
 :host(.other2-area) .card-area:hover {
   overflow: visible;

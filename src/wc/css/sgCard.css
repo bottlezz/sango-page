@@ -3,6 +3,7 @@
 }
 .card-front {
   display: none;
+  background-color: antiquewhite;
 }
 
 .card-controls {
@@ -29,7 +30,7 @@
   display: inline-block;
   width: auto;
   position: relative;
-  background-color: white;
+  background-color: wheat;
   box-shadow: 1px 1px 1px 0px;
 
   .card-widget {
@@ -50,9 +51,14 @@
     border-color: red;
   }
 }
-.card-block.show-front .card-widget {
-  border-color: blue;
-  background-color: wheat;
+.card-block.show-front {
+  .card-widget {
+    border-color: blue;
+    background-color: azure;
+  }
+  .card-front {
+    background-color: azure;
+  }
 }
 
 .card-block.show-front li[name="show-btn"] {

@@ -72,12 +72,53 @@ class SgTable extends HTMLElement {
     return roundMenu;
   }
 
+  getCardMenu() {
+    const cardMenu = document.createElement("div");
+    cardMenu.className = "card-menu hide";
+
+    const drawButton = document.createElement("button");
+    drawButton.innerHTML = "摸";
+    drawButton.addEventListener("click", () => {
+      this.gameController.drawSelectedCards();
+    });
+    const discardButton = document.createElement("button");
+    discardButton.innerHTML = "弃";
+    discardButton.addEventListener("click", () => {
+      this.gameController.discardSelectedCards();
+    });
+    const playButton = document.createElement("button");
+    playButton.innerHTML = "出";
+    playButton.addEventListener("click", () => {
+      this.gameController.discardSelectedCards();
+    });
+    const showButton = document.createElement("button");
+    showButton.innerHTML = "亮";
+    showButton.addEventListener("click", () => {
+      this.gameController.showSelectedCards();
+    });
+
+    const peakButton = document.createElement("button");
+
+    cardMenu.appendChild(drawButton);
+    cardMenu.appendChild(discardButton);
+
+    cardMenu.appendChild(playButton);
+    cardMenu.appendChild(showButton);
+    // cardMenu.appendChild(peakButton);
+    return cardMenu;
+  }
+
   initGame() {
     const container = this.shadowRoot.querySelector(".table-container");
     const tableDeckWidget = document.createElement("div");
     tableDeckWidget.classList.add("table-public");
+
     const roundMenu = this.getRoundMenu();
+    const cardMenu = this.getCardMenu();
+    this.cardMenu = cardMenu;
+    tableDeckWidget.append(cardMenu);
     tableDeckWidget.appendChild(roundMenu);
+
     container.appendChild(tableDeckWidget);
     for (let i = 0; i < this.playerCount; i++) {
       const sgPlayer = new SgPlayer();
@@ -136,6 +177,16 @@ class SgTable extends HTMLElement {
       );
       playerDom.classList.add(slotClass);
     }
+  }
+
+  hideCardMenu() {
+    if (!this.classList.contains("hide")) {
+      this.cardMenu.classList.add("hide");
+    }
+  }
+
+  showCardMenu() {
+    this.cardMenu.classList.remove("hide");
   }
 }
 

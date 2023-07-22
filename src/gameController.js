@@ -20,6 +20,7 @@ class gameController {
   playerCount;
   rootComponent;
   paiBottomCardsPath;
+  selectedCards = [];
   constructor(db, gameId) {
     this.db = db;
     this.gameId = gameId;
@@ -106,6 +107,25 @@ class gameController {
         if (fromPath.includes(targetPath)) {
           return;
         }
+        // remove from db
+        remove(cardRef);
+        this.addItem(targetPath, snapshot.key, value);
+      }
+    });
+  }
+
+  moveCardRefToTargetRef(cardRef, targetRef) {
+    get(cardRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        // get value
+        const value = snapshot.val();
+        if (value && value.show) {
+          value.show = "0";
+        }
+        // move to target area
+        const targetPath = targetRef
+          .toString()
+          .replace(ref(this.db).toString(), "");
         // remove from db
         remove(cardRef);
         this.addItem(targetPath, snapshot.key, value);
@@ -262,6 +282,50 @@ class gameController {
 
     const dbRef = ref(this.db);
     update(dbRef, updates);
+  }
+
+  addSelectedCard(sgCard) {
+    this.selectedCards.push(sgCard);
+    console.log("selcted count : " + this.selectedCards.length);
+    this.rootComponent.showCardMenu();
+  }
+
+  removeSelectedCard(sgCard) {
+    const index = this.selectedCards.indexOf(sgCard);
+    if (index !== -1) {
+      this.selectedCards.splice(index, 1);
+    }
+    console.log("selcted count : " + this.selectedCards.length);
+    if (this.selectedCards.length == 0) {
+      this.rootComponent.hideCardMenu();
+    }
+  }
+
+  drawSelectedCards() {
+    this.selectedCards.forEach((wc) => {
+      wc.drawPai();
+    });
+  }
+
+  discardSelectedCards() {
+    this.selectedCards.forEach((wc) => {
+      wc.discardPai();
+    });
+  }
+
+  showSelectedCards() {
+    for (let i = this.selectedCards.length - 1; i >= 0; i--) {
+      const wc = this.selectedCards[i];
+      wc.showPai();
+      wc.unselectCard();
+    }
+  }
+
+  dropSeletedCards(targetCardsRef) {
+    this.selectedCards;
+    this.selectedCards.forEach((wc) => {
+      this.moveCardRefToTargetRef(wc.cardRef, targetCardsRef);
+    });
   }
 }
 

@@ -28,7 +28,7 @@
 .table-public {
   grid-area: 2 / 1 / span 3 / span 3;
   display: grid;
-  grid-template-columns: 3rem 1fr 1fr 1fr;
+  grid-template-columns: 3rem 1fr 1fr 3rem 1fr;
   grid-template-rows: 5rem 8rem;
   gap: 0.5rem;
   box-shadow: 1px 1px 4px 1px;
@@ -56,7 +56,7 @@
   }
 
   .pai-area {
-    grid-area: 1 / 4 / span 2 / span 1;
+    grid-area: 1 / 5 / span 2 / span 1;
     overflow-y: hidden;
     background-color: white;
     border: solid 1px black;
@@ -73,5 +73,22 @@
     grid-area: 2 / 1;
     background-color: white;
     border: solid 1px black;
+  }
+
+  .card-menu {
+    grid-area: 1 / 4 / span 2;
+    background-color: white;
+    border: solid 1px black;
+    display: flex;
+    padding: 0.2rem;
+    flex-direction: column;
+    justify-content: space-around;
+
+    > button {
+      height: 2.6rem;
+    }
+  }
+  .card-menu.hide {
+    display: none;
   }
 }

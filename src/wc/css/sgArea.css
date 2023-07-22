@@ -3,14 +3,6 @@
   padding: 0.1rem;
 }
 
-:host-context(.table-public) div[name="card-area"] {
-  display: flex;
-  gap: 0.2rem;
-  flex-wrap: wrap;
-  background-color: white;
-  gap: 0.1rem;
-}
-
 :host(.table-area.jiang-area) {
   opacity: 0.9;
 }
@@ -28,6 +20,7 @@
   gap: 0.2rem;
   flex-wrap: wrap;
   border: none;
+  padding: 0.2rem;
 }
 
 :host(.zhuang-area) sg-card {

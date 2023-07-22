@@ -23,6 +23,7 @@ template.innerHTML = `
 <style>
 ${commonCss}
 </style>
+<h2>S-G-S online</h2>
 <div name="login-menu" class="widget">
   <div name="gameId-field">
     <label>Game id</label>

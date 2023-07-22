@@ -116,10 +116,25 @@ class SgArea extends HTMLElement {
       e.preventDefault();
       console.log("areaDrop");
       const fromPath = e.dataTransfer.getData("text");
-      this.gameController.moveCardFromPathToRef(
-        fromPath,
-        child(this.deckRef, "/cards")
-      );
+
+      // is in selected wc
+      let isSelected = false;
+      for (let i = 0; i < this.gameController.selectedCards.length; i++) {
+        const wc = this.gameController.selectedCards[i];
+        if (wc.cardRef.toString().includes(fromPath)) {
+          isSelected = true;
+          break;
+        }
+      }
+
+      if (!isSelected) {
+        this.gameController.moveCardFromPathToRef(
+          fromPath,
+          child(this.deckRef, "/cards")
+        );
+      } else {
+        this.gameController.dropSeletedCards(child(this.deckRef, "/cards"));
+      }
     });
     this.addEventListener("dragover", (e) => {
       e.preventDefault();

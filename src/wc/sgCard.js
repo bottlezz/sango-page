@@ -79,6 +79,7 @@ class SgCard extends HTMLElement {
   }
 
   showPai() {
+    console.log("showPai");
     if (this.cardData.show != "1") {
       this.gameController.showCard(this.cardRef);
     } else {
@@ -140,7 +141,21 @@ class SgCard extends HTMLElement {
     }
   }
 
+  selectCard() {
+    const cardBlock = this.shadowRoot.querySelector(".card-block");
+    this.gameController.addSelectedCard(this);
+    if (!cardBlock.classList.contains("selected")) {
+      cardBlock.classList.add("selected");
+    }
+  }
+  unselectCard() {
+    const cardBlock = this.shadowRoot.querySelector(".card-block");
+    cardBlock.classList.remove("selected");
+    this.gameController.removeSelectedCard(this);
+  }
+
   initControls() {
+    const cardBlock = this.shadowRoot.querySelector(".card-block");
     const discardButton = this.shadowRoot.querySelector(
       `li[name="discard-btn"]`
     );
@@ -148,6 +163,24 @@ class SgCard extends HTMLElement {
 
     const drawButton = this.shadowRoot.querySelector(`li[name="draw-btn"]`);
     const showButton = this.shadowRoot.querySelector(`li[name="show-btn"]`);
+
+    cardBlock.addEventListener("click", (e) => {
+      // const rect = e.target.getBoundingClientRect();
+      // const x = e.clientX - rect.left; //x position within the element.
+      // const y = e.clientY - rect.top; //y position within the element.
+      if (cardBlock.classList.contains("selected")) {
+        this.unselectCard();
+        // if (y < rect.height / 2) {
+        //   console.log("click top");
+        // } else {
+        //   console.log("click bot");
+        // }
+      } else {
+        this.selectCard();
+      }
+
+      // console.log("Left? : " + x + " ; Top? : " + y + ".");
+    });
 
     discardButton.addEventListener("click", () => {
       this.discardPai();
@@ -167,6 +200,7 @@ class SgCard extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.gameController.removeSelectedCard(this);
     this.unSub();
   }
 

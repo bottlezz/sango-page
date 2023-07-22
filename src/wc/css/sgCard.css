@@ -1,3 +1,6 @@
+:host {
+  position: relative;
+}
 .card-front {
   display: none;
 }
@@ -30,7 +33,7 @@
   box-shadow: 1px 1px 1px 0px;
 
   .card-widget {
-    border: red solid 1px;
+    border: brown solid 1px;
     padding: 2px;
     width: 2em;
     display: inline-block;
@@ -38,8 +41,17 @@
   }
 }
 
-.card-block.show-front {
-  border: solid blue 1px;
+.card-block.selected {
+  top: -0.2rem;
+  z-index: 40;
+  box-shadow: 1px 1px 6px 1px;
+
+  .card-widget {
+    border-color: red;
+  }
+}
+.card-block.show-front .card-widget {
+  border-color: blue;
 }
 
 .card-block.show-front li[name="show-btn"] {
@@ -98,7 +110,7 @@ span.spade::before {
   display: none;
 }
 
-:host-context(.player-seated) .card-block:hover .card-controls {
+:host-context(.jiang-area) .card-block:hover .card-controls {
   display: unset;
 }
 

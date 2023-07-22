@@ -14,8 +14,6 @@ import {
 import commonCss from "./css/common.css";
 import { gameController } from "../gameController";
 import { SgTable } from "./sgTable";
-import jiangKu from "../data/jiang.json";
-import paiKu from "../data/pai.json";
 import * as appData from "../data/appData.js";
 
 const template = document.createElement("template");

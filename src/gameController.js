@@ -252,7 +252,11 @@ class gameController {
 
   getShuffledJiang() {
     const initJiangDeckCards = Object.keys(jiangKu).map((key) => {
-      return { id: key, show: "0" };
+      if (!jiangKu[key].disable) {
+        return { id: key, show: "0" };
+      } else {
+        return {};
+      }
     });
     this.shuffleData(initJiangDeckCards);
     this.shuffleData(initJiangDeckCards);

@@ -38,7 +38,7 @@ ${commonCss}
     <input type="text" id="playerCount" value="6"><br><br>
   </div>
   <button name="play-btn" class="game-menu-button">Play</button>
-  <button name="reset-btn" class="game-menu-button">Reset DB</button>
+  <button name="reset-btn" class="game-menu-button hide">Reset DB</button>
 </div>
 <div name="seat-menu" class="widget hide">
 </div>

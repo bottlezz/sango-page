@@ -62,9 +62,9 @@ class SgTable extends HTMLElement {
     });
     roundMenu.appendChild(paiShuffleBtn);
 
-    const startRoundBtn = document.createElement("button");
+    const startRoundBtn = document.createElement("span");
     startRoundBtn.innerHTML = "清台";
-    startRoundBtn.addEventListener("click", () => {
+    startRoundBtn.addEventListener("dblclick", () => {
       this.gameController.resetTable();
     });
     roundMenu.appendChild(startRoundBtn);

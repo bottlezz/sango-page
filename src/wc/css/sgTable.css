@@ -76,6 +76,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+
+    > span {
+      text-align: center;
+    }
   }
 
   .card-menu {

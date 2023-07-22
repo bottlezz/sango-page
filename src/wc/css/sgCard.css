@@ -52,6 +52,7 @@
 }
 .card-block.show-front .card-widget {
   border-color: blue;
+  background-color: wheat;
 }
 
 .card-block.show-front li[name="show-btn"] {

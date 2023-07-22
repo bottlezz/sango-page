@@ -69,7 +69,8 @@ class SgPaiArea extends SgArea {
       const fromPath = e.dataTransfer.getData("text");
       this.gameController.moveCardFromPathToRef(
         fromPath,
-        child(this.deckRef, "/cards")
+        child(this.deckRef, "/cards"),
+        false
       );
     });
 

@@ -34,17 +34,9 @@
 :host-context(.current-player) sg-card {
   width: auto;
 }
-:host(.zhuang-area) .card-area:hover sg-card {
-  width: unset;
-}
+
 :host(.pan-area) sg-card {
   width: 28%;
-}
-
-:host(.zhuang-area) sg-card:hover,
-:host(.pan-area) sg-card:hover {
-  z-index: 40;
-  overflow: visible;
 }
 
 :host(.zhuang-area) .card-area,
@@ -52,7 +44,7 @@
 :host(.other1-area) .card-area,
 :host(.other2-area) .card-area {
   flex-wrap: nowrap;
-  overflow: hidden;
+  overflow: scroll;
   padding-bottom: 2px;
 }
 

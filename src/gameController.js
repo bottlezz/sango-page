@@ -91,13 +91,13 @@ class gameController {
     });
   }
 
-  moveCardFromPathToRef(fromPath, targetRef) {
+  moveCardFromPathToRef(fromPath, targetRef, resetShow = true) {
     const cardRef = ref(db, fromPath);
     get(cardRef).then((snapshot) => {
       if (snapshot.exists()) {
         // get value
         const value = snapshot.val();
-        if (value && value.show) {
+        if (value && value.show && resetShow) {
           value.show = "0";
         }
         // move to target area

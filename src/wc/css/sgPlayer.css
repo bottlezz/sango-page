@@ -69,35 +69,27 @@ div[name="deck-area"] {
   width: 36%;
 }
 
-.zhuang-area::before {
+sg-area::before {
   position: absolute;
-  content: "装:";
   width: 2rem;
   padding: 0.5rem;
+  z-index: -1;
+}
+
+.zhuang-area::before {
+  content: "装:";
 }
 .pan-area::before {
-  position: absolute;
   content: "判:";
-  width: 2rem;
-  padding: 0.5rem;
 }
 .jiang-area::before {
-  position: absolute;
   content: "将:";
-  width: 2rem;
-  padding: 0.5rem;
 }
 .other1-area::before {
-  position: absolute;
   content: "区1:";
-  width: 2rem;
-  padding: 0.5rem;
 }
 .other2-area::before {
-  position: absolute;
   content: "区2:";
-  width: 2rem;
-  padding: 0.5rem;
 }
 
 .player-role {

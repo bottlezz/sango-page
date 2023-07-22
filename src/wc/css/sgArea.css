@@ -34,8 +34,18 @@
   width: 25%;
 }
 
+:host(.zhuang-area) sg-card {
+  width: 20%;
+}
+
+:host-context(.current-player) sg-card {
+  width: auto;
+}
+:host(.zhuang-area) .card-area:hover sg-card {
+  width: unset;
+}
 :host(.pan-area) sg-card {
-  width: 33%;
+  width: 28%;
 }
 
 :host(.zhuang-area) sg-card:hover,
@@ -50,15 +60,17 @@
 :host(.other2-area) .card-area {
   flex-wrap: nowrap;
   overflow: hidden;
+  padding-bottom: 2px;
 }
 
 :host(.zhuang-area) .card-area:hover,
 :host(.pan-area) .card-area:hover {
   overflow: visible;
-  z-index: 40;
+  z-index: 35;
   box-shadow: 1px 1px 4px 1px;
-  background-color: white;
-  position: absolute;
+  flex-wrap: wrap;
+  position: relative;
+  background-color: wheat;
 }
 
 :host(.other1-area) .card-area:hover,

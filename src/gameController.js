@@ -276,7 +276,7 @@ class gameController {
     const jiangCards = this.getShuffledJiang();
     const updates = {};
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       const jiangs = jiangCards.splice(i * 7, 7);
       updates[`game/${this.gameId}/p${i + 1}/jiang/cards`] = jiangs;
     }

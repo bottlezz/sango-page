@@ -25,7 +25,7 @@ ${commonCss}
 <div name="login-menu" class="widget">
   <div name="gameId-field">
     <label>Game id</label>
-    <input type="text" id="gameId" value="1"> <br> <br>
+    <input type="text" id="gameId" value="6"> <br> <br>
   </div>
   <div name="name-field">
     <label>Your name</label>

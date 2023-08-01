@@ -10,7 +10,6 @@
 .wrapper {
   height: 100%;
   width: 100%;
-  padding: 0.1rem;
   min-height: 1rem;
   border: dotted 1px black;
 }
@@ -23,14 +22,6 @@
   padding: 0.2rem;
 }
 
-:host(.zhuang-area) sg-card {
-  width: 25%;
-}
-
-:host(.zhuang-area) sg-card {
-  width: 20%;
-}
-
 :host-context(.current-player) sg-card {
   width: auto;
 }
@@ -39,7 +30,6 @@
   width: 28%;
 }
 
-:host(.zhuang-area) .card-area,
 :host(.pan-area) .card-area,
 :host(.other1-area) .card-area,
 :host(.other2-area) .card-area {
@@ -55,4 +45,12 @@
   z-index: 40;
   box-shadow: 1px 1px 4px 1px;
   background-color: white;
+}
+
+:host(.zhuang-area) .card-area {
+  flex-wrap: nowrap;
+  flex-direction: column;
+  overflow: scroll;
+  padding-bottom: 2px;
+  min-height: none;
 }

@@ -20,17 +20,32 @@ ${commonCss}
 ${sgPlayerCss}
 </style>
 <div name="widget" class="widget">
-  <div class="player-name"></div> 
+  
+
   <div name="player-game-area">
+    <div class="ui-widget">
+      <div class="player-info">
+        <span class="player-key"> </span><span>: </span>
+        [<span class="player-role">-</span><span class="player-role-marker">匿</span>]
+        <span class="player-name"></span>
+      </div> 
+      <div "hp-holder"><span class="hp"></span></div>
+      <div class="jiang1 jiang-block" data-jiang-id="j1">
+        <div class="area1"></div>
+      </div> 
+      <div class="jiang2 jiang-block" data-jiang-id="j1">
+        <div class="area2"></div>
+      </div> 
+      <div name="deck-area" class="decks">
+        <div class="hand-count">2</div>
+      </div>
+    </div>
     <p>
-      <span class="player-key"></span>
-      [<span class="player-role">-</span><span class="player-role-marker">匿</span>]
-      <span>: </span>
       <span class="debuff debuff-0">[翻]</span><span class="debuff debuff-1">[连]</span>
     </p>
-    <p class="hp-holder"><span class="hp"></span></p>
-    <div name="deck-area" calss="widget"></div>
+    
   </div>
+
 </div>
 `;
 
@@ -54,6 +69,8 @@ class SgPlayer extends HTMLElement {
     this.widget.classList.add("current-player");
     this.gameController.lockPlayerSelection();
   }
+
+  renderJiang() {}
 
   init(playerRef, gameController) {
     this.playerRef = playerRef;
@@ -139,20 +156,25 @@ class SgPlayer extends HTMLElement {
 
     this.handArea = document.createElement("sg-area");
     this.handArea.init(child(playerRef, `/hand`), this.gameController);
+    this.handArea.classList.add("hide");
 
     this.jiangArea = document.createElement("sg-jiangarea");
     this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);
+    this.jiangArea.classList.add("hide");
 
     this.zhuangArea = document.createElement("sg-area");
     this.zhuangArea.init(child(playerRef, `/zhuang`), this.gameController);
 
     this.panArea = document.createElement("sg-area");
     this.panArea.init(child(playerRef, `/pan`), this.gameController);
+    this.panArea.classList.add("hide");
 
     this.other1Area = document.createElement("sg-area");
     this.other1Area.init(child(playerRef, `/other1`), this.gameController);
     this.other2Area = document.createElement("sg-area");
     this.other2Area.init(child(playerRef, `/other2`), this.gameController);
+    this.other1Area.classList.add("hide");
+    this.other2Area.classList.add("hide");
     // this.other3Area = document.createElement("sg-area");
     // this.other3Area.init(child(playerRef, `/other3`), this.gameController);
 

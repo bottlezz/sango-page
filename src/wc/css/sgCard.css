@@ -123,7 +123,6 @@ span.spade::before {
 
 :host-context(.current-player) .card-widget,
 :host-context(.discard-area) .card-widget,
-:host-context(.zhuang-area) .card-widget,
 :host-context(.pan-area) .card-widget,
 .card-block.show-front .card-widget {
   width: 3.5rem;
@@ -135,5 +134,28 @@ span.spade::before {
 
   .card-front {
     display: block;
+  }
+}
+
+:host-context(.zhuang-area) .card-block {
+  display: block;
+
+  .card-widget {
+    display: block;
+    height: unset;
+    width: unset;
+
+    .card-back {
+      display: none;
+    }
+
+    .card-front {
+      display: block;
+
+      .card-suit,
+      .info-line {
+        display: inline;
+      }
+    }
   }
 }

@@ -20,8 +20,6 @@ ${commonCss}
 ${sgPlayerCss}
 </style>
 <div name="widget" class="widget">
-  
-
   <div name="player-game-area">
     <div class="ui-widget">
       <div class="player-info">
@@ -37,7 +35,7 @@ ${sgPlayerCss}
         <div class="area2"></div>
       </div> 
       <div name="deck-area" class="decks">
-        <div class="hand-count">2</div>
+        <div class="hand-count"><span>2</span></div>
       </div>
     </div>
     <p>

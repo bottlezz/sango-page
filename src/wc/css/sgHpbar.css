@@ -6,8 +6,13 @@
   display: unset;
 }
 
+p {
+  margin: 0px;
+}
+
 .hp-bar span {
   display: inline-block;
-  width: 1.6rem;
+  width: 1.4rem;
   cursor: pointer;
+  color: red;
 }

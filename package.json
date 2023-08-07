@@ -17,6 +17,7 @@
     "firebase": "^10.0.0",
     "html-webpack-plugin": "^5.5.3",
     "material-icons": "^1.13.9",
+    "material-symbols": "^0.10.3",
     "style-loader": "^3.3.3",
     "url-loader": "^4.1.1",
     "webpack": "^5.88.1",

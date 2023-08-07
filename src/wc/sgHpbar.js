@@ -14,18 +14,24 @@ import {
 
 import commonCss from "./css/common.css";
 import hpbarCss from "./css/sgHpbar.css";
+import "material-symbols";
 const template = document.createElement("template");
 template.innerHTML = `
 <style>
 ${hpbarCss}
+${commonCss}
 </style>
-<span class="hp-bar">
-  <span>[心]</span>
-  <span>[心]</span>
-  <span>[ ]</span>
-  <span>[ ]</span>
+<span class="max-hp-control">
+  <span class="add-max-btn material-symbols-outlined">heart_plus</span> 
+  / <span class="reduce-max-btn material-symbols-outlined">heart_minus</span>
 </span>
-<span class="max-hp-control">( <button class="reduce-max-btn">-</button> / <button class="add-max-btn">+</button> )</span>
+<p class="hp-bar">
+  <span>[心]</span>
+  <span>[心]</span>
+  <span>[ ]</span>
+  <span>[ ]</span>
+</p>
+
 `;
 
 class sgHpBar extends HTMLElement {
@@ -74,10 +80,11 @@ class sgHpBar extends HTMLElement {
     for (let i = 1; i <= this.max; i++) {
       const xinSpan = document.createElement("span");
       xinSpan.dataset.hpVal = i;
+      xinSpan.className = "material-icons";
       if (i <= this.cur) {
-        xinSpan.innerHTML = "[心]";
+        xinSpan.innerHTML = "favorite";
       } else {
-        xinSpan.innerHTML = "[--]";
+        xinSpan.innerHTML = "favorite_border";
       }
       xinSpan.addEventListener("click", () => {
         if (this.cur >= i) {

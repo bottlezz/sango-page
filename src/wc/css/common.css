@@ -28,9 +28,5 @@ div.widget:empty {
   background: transparent; /* make scrollbar transparent */
 }
 
-@font-face {
-  font-family: "ZhiMangXing";
-  src: url("./ZhiMangXing-Regular.ttf") format("ttf");
-}
-
 @import "material-icons/iconfont/material-icons.css";
+@import "material-symbols";

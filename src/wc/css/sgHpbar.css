@@ -1,18 +1,17 @@
 .max-hp-control {
   display: none;
+  font-family: "Material Symbols Outlined";
+  font-size: large;
 }
 
 :host-context(.current-player) .max-hp-control {
-  display: unset;
-}
-
-p {
-  margin: 0px;
+  display: block;
 }
 
 .hp-bar span {
+  font-family: "Material Icons";
   display: inline-block;
-  width: 1.4rem;
+  font-size: large;
   cursor: pointer;
   color: red;
 }

@@ -27,6 +27,3 @@ div.widget:empty {
   height: 0px;
   background: transparent; /* make scrollbar transparent */
 }
-
-@import "material-icons/iconfont/material-icons.css";
-@import "material-symbols";

@@ -14,7 +14,6 @@ import {
 
 import commonCss from "./css/common.css";
 import hpbarCss from "./css/sgHpbar.css";
-import "material-symbols";
 const template = document.createElement("template");
 template.innerHTML = `
 <style>
@@ -22,15 +21,15 @@ ${hpbarCss}
 ${commonCss}
 </style>
 <span class="max-hp-control">
-  <span class="add-max-btn material-symbols-outlined">heart_plus</span> 
-  / <span class="reduce-max-btn material-symbols-outlined">heart_minus</span>
+  <span class="add-max-btn material-symbols-outlined">heart_plus</span>
+  <span class="reduce-max-btn material-symbols-outlined">heart_minus</span>
 </span>
-<p class="hp-bar">
+<span class="hp-bar">
   <span>[心]</span>
   <span>[心]</span>
   <span>[ ]</span>
   <span>[ ]</span>
-</p>
+</span>
 
 `;
 

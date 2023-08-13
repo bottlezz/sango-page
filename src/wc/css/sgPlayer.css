@@ -101,10 +101,6 @@ sg-area::before {
   opacity: 0.9;
 } */
 
-.hp-holder {
-  width: 45%;
-}
-
 .jiang-block {
   width: 9rem;
   height: 11rem;
@@ -112,7 +108,12 @@ sg-area::before {
   border: solid 1px;
 }
 
-.ui-widget {
+.current-player div[name="player-game-area"] {
+  display: flex;
+  gap: 1rem;
+}
+
+.open-info {
   width: 18rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -124,11 +125,15 @@ sg-area::before {
   grid-area: 1 / 2;
 }
 
-.jiang1 {
+.jiang1-area {
   grid-area: 1 / 1 / span 3 / span 1;
 }
-.jiang2 {
+.jiang2-area {
   grid-area: 3 / 2 / span 3 / span 1;
+}
+
+.hp-holder {
+  grid-area: 2 / 2;
 }
 
 .decks {

@@ -27,35 +27,31 @@ template.innerHTML = `
 <style>
 ${css}
 </style>
-<div name="widget" class="card-block">
-  <div class="card-widget">
-    <div class="card-front">
-      <div class="jiang-desc">
-      <div class="info-line">
-        <span class="jiang-name"></span>
-        <span class="jiang-gender"></span>
-      </div>
-      <div class="info-line">
-        <span class="jiang-force"></span>
-        <span class="jiang-hp"></span>
-      </div>
-      </div>
-      <div class="skill-hint">
-        <div><span class="skill-label">-- 武将技 --</span></div>
-        <div class="jiang-skill"></div>
-      </div>
-    
+<div class="card-block">
+  <div class="card-front">
+    <div class="jiang-desc">
+    <div class="info-line">
+      <span class="jiang-name"></span>
+      <span class="jiang-gender"></span>
     </div>
-    <div class="card-back">
-      <p>[将]</p>
+    <div class="info-line">
+      <span class="jiang-force"></span>
+      <span class="jiang-hp"></span>
+    </div>
+    </div>
+    <div class="skill-hint">
+      <div><span class="skill-label">技</span></div>
+      <div class="jiang-skill"></div>
     </div>
   </div>
-  <div name="card-controls" class="card-controls">
-  
-    <button name="discard-btn"> 弃 </button>
-    <button name="draw-btn"> 摸 </button>
-    <button name="show-btn"> 亮 </button>
+  <div class="card-back">
+    <p>[将]</p>
   </div>
+</div>
+<div name="card-controls" class="card-controls">
+  <button name="discard-btn"> 弃 </button>
+  <button name="draw-btn"> 摸 </button>
+  <button name="show-btn"> 亮 </button>
 </div>
 `;
 class SgJiang extends HTMLElement {
@@ -111,6 +107,16 @@ class SgJiang extends HTMLElement {
         this.cardData = snapshot.val();
         this.renderCard();
       }
+    });
+
+    const cardPathUrl = this.cardRef.toString();
+    const dbPathUrl = ref(this.gameController.db).toString();
+    const cardPath = cardPathUrl.replace(dbPathUrl, "");
+    this.dataset.path = cardPath;
+    this.setAttribute("draggable", "true");
+    this.addEventListener("dragstart", (e) => {
+      console.log("draggggggg");
+      e.dataTransfer.setData("text", cardPath);
     });
 
     this.initControls();

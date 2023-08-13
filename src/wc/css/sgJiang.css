@@ -1,16 +1,24 @@
-:host-context(.current-player) .card-widget,
-.card-block.show-front .card-widget {
-  width: 4.9rem;
+:host-context(.current-player) .card-block,
+.card-block.show-front {
   display: inline-block;
+  width: 100%;
+  height: 100%;
 
   .card-back {
     display: none;
   }
 
   .card-front {
-    display: block;
+    display: grid;
     height: 100%;
   }
+}
+
+:host {
+  display: inline-block;
+  background-color: antiquewhite;
+  height: 11rem;
+  width: 9rem;
 }
 
 .card-front.shu {

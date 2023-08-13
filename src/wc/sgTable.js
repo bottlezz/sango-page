@@ -136,13 +136,6 @@ class SgTable extends HTMLElement {
       );
     }
 
-    this.jiangArea = document.createElement("sg-jiangarea");
-    this.jiangArea.init(
-      ref(this.db, `game/${this.gameController.gameId}/tableDecks/jiang`),
-      this.gameController
-    );
-    tableDeckWidget.appendChild(this.jiangArea);
-
     this.paiArea = new SgPaiArea();
     this.paiArea.init(
       ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`),

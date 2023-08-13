@@ -280,9 +280,9 @@ class gameController {
     for (let i = 0; i < 6; i++) {
       const jiangs = jiangCards.splice(i * 7, 7);
       updates[`game/${this.gameId}/p${i + 1}/jiang/cards`] = jiangs;
+      updates[`game/${this.gameId}/p${i + 1}/jiang1`] = {};
+      updates[`game/${this.gameId}/p${i + 1}/jiang2`] = {};
     }
-
-    updates[`game/${this.gameId}/tableDecks/jiang`] = {};
     console.log(updates);
 
     const dbRef = ref(this.db);

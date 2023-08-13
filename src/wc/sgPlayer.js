@@ -21,29 +21,24 @@ ${sgPlayerCss}
 </style>
 <div name="widget" class="widget">
   <div name="player-game-area">
-    <div class="ui-widget">
+    <div class="open-info">
       <div class="player-info">
         <span class="player-key"> </span><span>: </span>
         [<span class="player-role">-</span><span class="player-role-marker">匿</span>]
         <span class="player-name"></span>
       </div> 
-      <div "hp-holder"><span class="hp"></span></div>
-      <div class="jiang1 jiang-block" data-jiang-id="j1">
-        <div class="area1"></div>
-      </div> 
-      <div class="jiang2 jiang-block" data-jiang-id="j1">
-        <div class="area2"></div>
-      </div> 
+      <div class="hp-holder"><span class="hp"></span></div>
       <div name="deck-area" class="decks">
         <div class="hand-count"><span>2</span></div>
       </div>
     </div>
-    <p>
-      <span class="debuff debuff-0">[翻]</span><span class="debuff debuff-1">[连]</span>
-    </p>
-    
   </div>
-
+  <div name="addtional-area">
+    <div>
+      <span class="debuff debuff-0">[翻]</span>
+      <span class="debuff debuff-1">[连]</span>
+    </div>
+  </div>
 </div>
 `;
 
@@ -54,17 +49,64 @@ class SgPlayer extends HTMLElement {
   debuff = "00";
   constructor() {
     super();
+
     this.shadowRoot = this.attachShadow({ mode: "open" });
     let clone = template.content.cloneNode(true);
 
     this.shadowRoot.append(clone);
     this.widget = this.shadowRoot.querySelector("div[name='widget']");
+    const playerGameArea = this.shadowRoot.querySelector(
+      `div[name="player-game-area"]`
+    );
+    const playerDeckAreaWdight = this.shadowRoot.querySelector(
+      `div[name="deck-area"]`
+    );
+    const openInfo = this.shadowRoot.querySelector(`.open-info`);
+    this.handArea = document.createElement("sg-area");
+
+    this.handArea.classList.add("hide");
+
+    this.jiangArea = document.createElement("sg-jiangarea");
+
+    this.jiangArea.classList.add("hide");
+
+    this.jiang1Area = document.createElement("sg-jiangarea");
+
+    this.jiang1Area.classList.add("jiang-block");
+
+    this.jiang2Area = document.createElement("sg-jiangarea");
+    this.jiang2Area.classList.add("jiang-block");
+
+    this.zhuangArea = document.createElement("sg-area");
+
+    this.panArea = document.createElement("sg-area");
+    this.panArea.classList.add("hide");
+
+    this.other1Area = document.createElement("sg-area");
+    this.other2Area = document.createElement("sg-area");
+    this.other1Area.classList.add("hide");
+    this.other2Area.classList.add("hide");
+    // this.other3Area = document.createElement("sg-area");
+    // this.other3Area.init(child(playerRef, `/other3`), this.gameController);
+
+    // playerDeckAreaWdight.append(this.jiangArea);
+    playerDeckAreaWdight.append(this.zhuangArea);
+    playerDeckAreaWdight.append(this.panArea);
+    playerDeckAreaWdight.append(this.other1Area);
+    playerDeckAreaWdight.append(this.other2Area);
+
+    playerGameArea.append(this.handArea);
+    openInfo.append(this.jiang1Area);
+    openInfo.append(this.jiang2Area);
+
+    this.widget.append(this.jiangArea);
   }
 
   assginAsCurrentPlayer() {
     this.gameController.currentPlayer = this.playerRef.key;
     this.classList.add("current-player");
     this.widget.classList.add("current-player");
+    this.handArea.classList.remove("hide");
     this.gameController.lockPlayerSelection();
   }
 
@@ -148,40 +190,14 @@ class SgPlayer extends HTMLElement {
         });
     }
 
-    const playerDeckAreaWdight = this.shadowRoot.querySelector(
-      `div[name="deck-area"]`
-    );
-
-    this.handArea = document.createElement("sg-area");
     this.handArea.init(child(playerRef, `/hand`), this.gameController);
-    this.handArea.classList.add("hide");
-
-    this.jiangArea = document.createElement("sg-jiangarea");
     this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);
-    this.jiangArea.classList.add("hide");
-
-    this.zhuangArea = document.createElement("sg-area");
+    this.jiang1Area.init(child(playerRef, `/jiang1`), this.gameController);
     this.zhuangArea.init(child(playerRef, `/zhuang`), this.gameController);
-
-    this.panArea = document.createElement("sg-area");
     this.panArea.init(child(playerRef, `/pan`), this.gameController);
-    this.panArea.classList.add("hide");
-
-    this.other1Area = document.createElement("sg-area");
     this.other1Area.init(child(playerRef, `/other1`), this.gameController);
-    this.other2Area = document.createElement("sg-area");
     this.other2Area.init(child(playerRef, `/other2`), this.gameController);
-    this.other1Area.classList.add("hide");
-    this.other2Area.classList.add("hide");
-    // this.other3Area = document.createElement("sg-area");
-    // this.other3Area.init(child(playerRef, `/other3`), this.gameController);
-
-    playerDeckAreaWdight.append(this.handArea);
-    playerDeckAreaWdight.append(this.jiangArea);
-    playerDeckAreaWdight.append(this.zhuangArea);
-    playerDeckAreaWdight.append(this.panArea);
-    playerDeckAreaWdight.append(this.other1Area);
-    playerDeckAreaWdight.append(this.other2Area);
+    this.jiang2Area.init(child(playerRef, `/jiang2`), this.gameController);
   }
 }
 

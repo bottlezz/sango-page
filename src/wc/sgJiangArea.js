@@ -57,6 +57,19 @@ class SgJiangArea extends SgArea {
       this.cardArea.removeChild(cardWc);
       this.lockJiangArea();
     });
+
+    this.addEventListener("drop", (e) => {
+      e.preventDefault();
+      console.log("areaDrop");
+      const fromPath = e.dataTransfer.getData("text");
+      this.gameController.moveCardFromPathToRef(
+        fromPath,
+        child(this.deckRef, "/cards")
+      );
+    });
+    this.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
   }
 
   lockJiangArea() {

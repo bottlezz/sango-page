@@ -246,11 +246,11 @@ class SgPlayer extends HTMLElement {
       this.handCountSpan.innerHTML = this.handArea.cardCount;
     });
 
-    onValue(child(playerRef, `/area1`), () => {
+    onValue(child(playerRef, `/other1`), () => {
       this.area1CountSpan.innerHTML = this.other1Area.cardCount;
     });
 
-    onValue(child(playerRef, `/area2`), () => {
+    onValue(child(playerRef, `/other2`), () => {
       this.area2CountSpan.innerHTML = this.other2Area.cardCount;
     });
 

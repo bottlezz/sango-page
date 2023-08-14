@@ -35,14 +35,6 @@ ${css}
       <p>[牌]</p>
     </div>
   </div>
-  <div name="card-controls" class="card-controls">
-    <ul>
-      <li name="draw-btn"> 摸 </li>
-      <li name="show-btn"> 亮 </li>
-      <li name="play-btn"> 出 </li>
-      <li name="discard-btn"> 弃 </li>
-    </ul>
-  </div>
 </div>
 `;
 
@@ -156,13 +148,6 @@ class SgCard extends HTMLElement {
 
   initControls() {
     const cardBlock = this.shadowRoot.querySelector(".card-block");
-    const discardButton = this.shadowRoot.querySelector(
-      `li[name="discard-btn"]`
-    );
-    const playButton = this.shadowRoot.querySelector(`li[name="play-btn"]`);
-
-    const drawButton = this.shadowRoot.querySelector(`li[name="draw-btn"]`);
-    const showButton = this.shadowRoot.querySelector(`li[name="show-btn"]`);
 
     cardBlock.addEventListener("click", (e) => {
       // const rect = e.target.getBoundingClientRect();
@@ -178,24 +163,7 @@ class SgCard extends HTMLElement {
       } else {
         this.selectCard();
       }
-
       // console.log("Left? : " + x + " ; Top? : " + y + ".");
-    });
-
-    discardButton.addEventListener("click", () => {
-      this.discardPai();
-    });
-
-    playButton.addEventListener("click", () => {
-      this.discardPai();
-    });
-
-    drawButton.addEventListener("click", () => {
-      this.drawPai();
-    });
-
-    showButton.addEventListener("click", () => {
-      this.showPai();
     });
   }
 

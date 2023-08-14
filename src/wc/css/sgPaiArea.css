@@ -10,12 +10,11 @@
 }
 
 .pai-board {
-  height: 75%;
+  height: 5rem;
   padding: 0.2rem;
   display: flex;
   justify-content: space-around;
   gap: 0.2rem;
-
   & div {
     border: dotted black 1px;
     width: 100%;

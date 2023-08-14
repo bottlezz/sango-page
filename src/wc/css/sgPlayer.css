@@ -10,7 +10,7 @@ p {
 
 div[name="addtional-area"] {
   display: flex;
-  margin: 0.2rem 0 0.2rem 0;
+  margin: 0.2rem 0 0.1rem 0;
 }
 
 .debuff-area {
@@ -101,10 +101,12 @@ sg-area::before {
 :host {
   box-shadow: 1px 1px 4px 1px;
   width: 19rem;
+  height: 20rem;
 }
 
 :host(.current-player) {
   width: unset;
+  height: unset;
 }
 
 :host > div[name="widget"] {
@@ -114,7 +116,7 @@ sg-area::before {
 .jiang-block {
   width: 9rem;
   height: 10rem;
-  background-color: aqua;
+  background-color: azure;
   border: solid 1px;
   overflow: hidden;
 }

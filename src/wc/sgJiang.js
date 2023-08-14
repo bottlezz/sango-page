@@ -30,15 +30,16 @@ ${css}
 <div class="card-block">
   <div class="card-front">
     <div class="jiang-desc">
-    <div class="info-line">
-      <span class="jiang-name"></span>
-      <span class="jiang-gender"></span>
+      <div class="info-line">
+        <span class="jiang-name"></span>
+        <span class="jiang-gender"></span>
+      </div>
+      <div class="info-line">
+        <span class="jiang-force"></span>
+        <span class="jiang-hp"></span>
+      </div>
     </div>
-    <div class="info-line">
-      <span class="jiang-force"></span>
-      <span class="jiang-hp"></span>
-    </div>
-    </div>
+    <div><span name="show-btn"> 亮 </span></div>
     <div class="skill-hint">
       <div><span class="skill-label">技</span></div>
       <div class="jiang-skill"></div>
@@ -51,7 +52,6 @@ ${css}
 <div name="card-controls" class="card-controls">
   <button name="discard-btn"> 弃 </button>
   <button name="draw-btn"> 摸 </button>
-  <button name="show-btn"> 亮 </button>
 </div>
 `;
 class SgJiang extends HTMLElement {
@@ -171,7 +171,7 @@ class SgJiang extends HTMLElement {
       `button[name="discard-btn"]`
     );
     const drawButton = this.shadowRoot.querySelector(`button[name="draw-btn"]`);
-    const showButton = this.shadowRoot.querySelector(`button[name="show-btn"]`);
+    const showButton = this.shadowRoot.querySelector(`span[name="show-btn"]`);
 
     discardButton.addEventListener("click", () => {
       console.log("discarding!");

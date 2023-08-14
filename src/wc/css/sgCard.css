@@ -159,3 +159,31 @@ span.spade::before {
     }
   }
 }
+
+:host-context(.pan-area) .card-block {
+  display: block;
+  font-size: small;
+  width: 4.8rem;
+  overflow: hidden;
+  .card-widget {
+    display: block;
+    height: unset;
+    width: 100%;
+
+    .card-back {
+      display: none;
+    }
+
+    .card-front {
+      display: block;
+
+      .card-suit,
+      .info-line {
+        display: inline;
+        .pai-desc {
+          display: none;
+        }
+      }
+    }
+  }
+}

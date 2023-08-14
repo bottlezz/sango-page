@@ -12,6 +12,7 @@
   width: 100%;
   min-height: 1rem;
   border: dotted 1px black;
+  overflow: scroll;
 }
 
 .card-area {
@@ -22,31 +23,6 @@
   padding: 0.2rem;
 }
 
-:host-context(.current-player) sg-card {
-  width: auto;
-}
-
-:host(.pan-area) sg-card {
-  width: 28%;
-}
-
-:host(.pan-area) .card-area,
-:host(.other1-area) .card-area,
-:host(.other2-area) .card-area {
-  flex-wrap: nowrap;
-  overflow: scroll;
-  padding-bottom: 2px;
-}
-
-:host(.other1-area) .card-area:hover,
-:host(.other2-area) .card-area:hover {
-  overflow: visible;
-  flex-wrap: wrap;
-  z-index: 40;
-  box-shadow: 1px 1px 4px 1px;
-  background-color: white;
-}
-
 :host(.zhuang-area) .card-area {
   flex-wrap: nowrap;
   flex-direction: column;
@@ -55,9 +31,21 @@
   min-height: none;
 }
 
+:host(.pan-area) .card-area {
+  flex-wrap: nowrap;
+  overflow: scroll;
+  gap: 2px;
+  min-height: none;
+  padding: 2px;
+}
+
 :host(.jiang-block) .wrapper {
   border: none;
   .card-area {
     padding: 0;
   }
+}
+
+:host-context(.current-player) .card-area:hover {
+  box-shadow: none;
 }

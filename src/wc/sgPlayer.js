@@ -43,9 +43,13 @@ ${sgPlayerCss}
     </div>
   </div>
   <div name="addtional-area">
-    <div>
-      <span class="debuff debuff-0">[翻]</span>
-      <span class="debuff debuff-1">[连]</span>
+    <div class="debuff-area">
+      <span class="debuff debuff-0 "><span class="material-symbols-outlined">
+      flip_camera_android
+      </span></span>
+      <span class="debuff debuff-1"><span class="material-symbols-outlined">
+      link
+      </span></span>
     </div>
   </div>
 </div>
@@ -64,11 +68,15 @@ class SgPlayer extends HTMLElement {
 
     this.shadowRoot.append(clone);
     this.widget = this.shadowRoot.querySelector("div[name='widget']");
-    const playerGameArea = this.shadowRoot.querySelector(
+    this.playerGameArea = this.shadowRoot.querySelector(
       `div[name="player-game-area"]`
     );
     const playerDeckAreaWdight = this.shadowRoot.querySelector(
       `div[name="deck-area"]`
+    );
+
+    this.addtionalArea = this.shadowRoot.querySelector(
+      `div[name="addtional-area"]`
     );
 
     const paiInfo = this.shadowRoot.querySelector(`.pai-info`);
@@ -78,11 +86,9 @@ class SgPlayer extends HTMLElement {
     this.handArea.classList.add("hide");
 
     this.jiangArea = document.createElement("sg-jiangarea");
-
     this.jiangArea.classList.add("hide");
 
     this.jiang1Area = document.createElement("sg-jiangarea");
-
     this.jiang1Area.classList.add("jiang-block");
 
     this.jiang2Area = document.createElement("sg-jiangarea");
@@ -91,18 +97,14 @@ class SgPlayer extends HTMLElement {
     this.zhuangArea = document.createElement("sg-area");
 
     this.panArea = document.createElement("sg-area");
-    this.panArea.classList.add("hide");
 
     this.other1Area = document.createElement("sg-area");
     this.other2Area = document.createElement("sg-area");
     this.other1Area.classList.add("hide");
     this.other2Area.classList.add("hide");
-    // this.other3Area = document.createElement("sg-area");
-    // this.other3Area.init(child(playerRef, `/other3`), this.gameController);
 
-    // playerDeckAreaWdight.append(this.jiangArea);
     playerDeckAreaWdight.append(this.zhuangArea);
-    playerDeckAreaWdight.append(this.panArea);
+    this.addtionalArea.append(this.panArea);
 
     paiInfo.append(this.handArea);
     paiInfo.append(this.other1Area);
@@ -122,6 +124,7 @@ class SgPlayer extends HTMLElement {
     this.other2Area.classList.remove("hide");
 
     this.gameController.lockPlayerSelection();
+    this.widget.appendChild(this.playerGameArea);
   }
 
   renderJiang() {}

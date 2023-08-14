@@ -30,7 +30,15 @@ ${sgPlayerCss}
       <div class="hp-holder"><span class="hp"></span></div>
       <div name="deck-area" class="decks">
         <div class="hand-count"><span>2</span></div>
+        <div class="area1-count"><span>2<span></div>
+        <div class="area2-count"><span>2<span></div>
+        <div class="jiang-pick"><span class="material-symbols-outlined">
+        group
+        </span></div>
       </div>
+    </div>
+    <div class="pai-info">
+    
     </div>
   </div>
   <div name="addtional-area">
@@ -61,6 +69,8 @@ class SgPlayer extends HTMLElement {
     const playerDeckAreaWdight = this.shadowRoot.querySelector(
       `div[name="deck-area"]`
     );
+
+    const paiInfo = this.shadowRoot.querySelector(`.pai-info`);
     const openInfo = this.shadowRoot.querySelector(`.open-info`);
     this.handArea = document.createElement("sg-area");
 
@@ -92,10 +102,10 @@ class SgPlayer extends HTMLElement {
     // playerDeckAreaWdight.append(this.jiangArea);
     playerDeckAreaWdight.append(this.zhuangArea);
     playerDeckAreaWdight.append(this.panArea);
-    playerDeckAreaWdight.append(this.other1Area);
-    playerDeckAreaWdight.append(this.other2Area);
 
-    playerGameArea.append(this.handArea);
+    paiInfo.append(this.handArea);
+    paiInfo.append(this.other1Area);
+    paiInfo.append(this.other2Area);
     openInfo.append(this.jiang1Area);
     openInfo.append(this.jiang2Area);
 
@@ -107,6 +117,8 @@ class SgPlayer extends HTMLElement {
     this.classList.add("current-player");
     this.widget.classList.add("current-player");
     this.handArea.classList.remove("hide");
+    this.other1Area.classList.remove("hide");
+    this.other2Area.classList.remove("hide");
     this.gameController.lockPlayerSelection();
   }
 
@@ -189,6 +201,19 @@ class SgPlayer extends HTMLElement {
           set(child(playerRef, "/debuff"), this.debuff);
         });
     }
+
+    this.shadowRoot
+      .querySelector(".jiang-pick")
+      .addEventListener("click", () => {
+        this.jiangArea.classList.toggle("hide");
+      });
+
+    // <div class="hand-count"><span>2</span></div>
+    // <div class="area1-count"><span>2<span></div>
+    // <div class="area2-count"><span>2<span></div>
+    this.handCountSpan = this.shadowRoot.querySelector(`.hand-cout > span`);
+    this.area1CountSpan = this.shadowRoot.querySelector(`.area1-cout > span`);
+    this.area2CountSpan = this.shadowRoot.querySelector(`.area2-cout > span`);
 
     this.handArea.init(child(playerRef, `/hand`), this.gameController);
     this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);

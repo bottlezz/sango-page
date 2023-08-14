@@ -20,11 +20,11 @@ sg-jiangarea {
 }
 
 .jiang-area {
-  display: none;
+  display: flex;
 }
 
-.current-player .jiang-area {
-  display: flex;
+.jiang-area.hide {
+  display: none;
 }
 
 .pan-area,
@@ -103,7 +103,7 @@ sg-area::before {
 
 .jiang-block {
   width: 9rem;
-  height: 11rem;
+  height: 10rem;
   background-color: aqua;
   border: solid 1px;
 }
@@ -119,6 +119,13 @@ sg-area::before {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 2rem 5rem 1fr 3.5rem 3.5rem;
   gap: 0.1rem;
+}
+
+.current-player .pai-info {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 9rem 1fr 1fr;
+  width: 100%;
 }
 
 .player-name {
@@ -169,4 +176,55 @@ sg-area::before {
       }
     }
   }
+
+  .area1-count {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    align-items: center;
+    border: dotted 1px;
+    > span {
+      font-size: large;
+      font-family: fantasy;
+
+      &::before {
+        content: "\e3d0";
+        font-family: "Material Icons";
+      }
+    }
+  }
+
+  .area2-count {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    align-items: center;
+    border: dotted 1px;
+    > span {
+      font-size: large;
+      font-family: fantasy;
+
+      &::before {
+        content: "\e3d1";
+        font-family: "Material Icons";
+      }
+    }
+  }
+
+  .jiang-pick {
+    display: none;
+  }
+}
+
+.current-player .jiang-pick {
+  font-family: "Material Symbols Outlined";
+  font-size: larger;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  align-items: center;
+  border: dotted 1px;
 }

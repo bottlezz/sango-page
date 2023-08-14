@@ -1,13 +1,13 @@
 .table-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  /* grid-template-rows: 1fr 1fr 1fr 1fr 1fr; */
+  /* grid-template-rows: 1fr 1fr 1fr 1fr; */
   grid-gap: 0.5rem;
   margin: 20px;
 }
 
 .slot0 {
-  grid-area: 5 / 1 / span 2 / span 3;
+  grid-area: 3 / 1 / span 1 / span 3;
 }
 .slot1 {
   grid-area: 1/1;
@@ -26,7 +26,7 @@
 }
 
 .table-public {
-  grid-area: 2 / 1 / span 3 / span 3;
+  grid-area: 2 / 1 / span 1 / span 3;
   display: grid;
   grid-template-columns: 3rem 1fr 1fr 3rem 1fr;
   grid-template-rows: 5rem 8rem;

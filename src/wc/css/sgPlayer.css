@@ -19,17 +19,23 @@ sg-jiangarea {
   width: 100%;
 }
 
+.pai-info {
+  position: absolute;
+  top: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 9rem 1fr 1fr;
+  max-height: 10rem;
+  width: 100%;
+  overflow: hidden;
+}
+
 .jiang-area {
   display: flex;
 }
 
 .jiang-area.hide {
   display: none;
-}
-
-.pan-area,
-.other2-area {
-  width: 36%;
 }
 
 sg-area::before {
@@ -68,49 +74,11 @@ sg-area::before {
   position: relative;
 }
 
-.jiang-area.locked {
-  display: flex;
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: auto;
-}
-
-.jiang-area.locked::part(card-area) {
-  justify-content: space-around;
-  gap: 0;
-}
-
-.jiang-area.locked::part(wrapper) {
-  border: none;
-}
-
-.jiang-area.locked::before {
-  content: none;
-}
-
-/* .player-name { */
-/* position: absolute;
-  top: -0.7rem;
-  left: 1rem;
-  width: 30%;
-  background: white;
-  box-shadow: 1px 1px 2px 0px;
-  text-align: center;
-  overflow: hidden;
-  opacity: 0.9;
-} */
-
 .jiang-block {
   width: 9rem;
   height: 10rem;
   background-color: aqua;
   border: solid 1px;
-}
-
-.current-player div[name="player-game-area"] {
-  display: flex;
-  gap: 1rem;
 }
 
 .open-info {
@@ -122,6 +90,7 @@ sg-area::before {
 }
 
 .current-player .pai-info {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 9rem 1fr 1fr;
@@ -143,15 +112,16 @@ sg-area::before {
   grid-area: 2 / 2;
 }
 
+.hand-area {
+  overflow: scroll;
+}
+
 .decks {
   grid-area: 4 / 1 / span 2 / span 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr;
   gap: 1px;
-  .hand-area {
-    grid-area: 1 / 4 / span 1 / span 1;
-  }
 
   .zhuang-area {
     grid-area: 1 / 1 / span 4 / span 3;
@@ -218,13 +188,31 @@ sg-area::before {
   }
 }
 
-.current-player .jiang-pick {
-  font-family: "Material Symbols Outlined";
-  font-size: larger;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-around;
-  align-items: center;
-  border: dotted 1px;
+.current-player {
+  & .area1-count {
+    display: none;
+  }
+  & .area2-count {
+    display: none;
+  }
+
+  & .hand-count {
+    display: none;
+  }
+
+  & .jiang-pick {
+    font-family: "Material Symbols Outlined";
+    font-size: larger;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    align-items: center;
+    border: dotted 1px;
+  }
+
+  & div[name="player-game-area"] {
+    display: flex;
+    gap: 1rem;
+  }
 }

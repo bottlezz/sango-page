@@ -7,6 +7,7 @@ import {
   onValue,
   child,
   onChildAdded,
+  onChildChanged,
 } from "firebase/database";
 
 import "./sgHpbar.js";
@@ -119,6 +120,7 @@ class SgPlayer extends HTMLElement {
     this.handArea.classList.remove("hide");
     this.other1Area.classList.remove("hide");
     this.other2Area.classList.remove("hide");
+
     this.gameController.lockPlayerSelection();
   }
 
@@ -208,12 +210,46 @@ class SgPlayer extends HTMLElement {
         this.jiangArea.classList.toggle("hide");
       });
 
+    this.shadowRoot
+      .querySelector(".hand-count")
+      .addEventListener("click", () => {
+        this.handArea.classList.toggle("hide");
+        this.other1Area.classList.add("hide");
+        this.other2Area.classList.add("hide");
+      });
+    this.shadowRoot
+      .querySelector(".area1-count")
+      .addEventListener("click", () => {
+        this.handArea.classList.add("hide");
+        this.other1Area.classList.toggle("hide");
+        this.other2Area.classList.add("hide");
+      });
+    this.shadowRoot
+      .querySelector(".area2-count")
+      .addEventListener("click", () => {
+        this.handArea.classList.add("hide");
+        this.other1Area.classList.add("hide");
+        this.other2Area.classList.toggle("hide");
+      });
+
     // <div class="hand-count"><span>2</span></div>
     // <div class="area1-count"><span>2<span></div>
     // <div class="area2-count"><span>2<span></div>
-    this.handCountSpan = this.shadowRoot.querySelector(`.hand-cout > span`);
-    this.area1CountSpan = this.shadowRoot.querySelector(`.area1-cout > span`);
-    this.area2CountSpan = this.shadowRoot.querySelector(`.area2-cout > span`);
+    this.handCountSpan = this.shadowRoot.querySelector(`.hand-count > span`);
+    this.area1CountSpan = this.shadowRoot.querySelector(`.area1-count > span`);
+    this.area2CountSpan = this.shadowRoot.querySelector(`.area2-count > span`);
+
+    onValue(child(playerRef, `/hand`), () => {
+      this.handCountSpan.innerHTML = this.handArea.cardCount;
+    });
+
+    onValue(child(playerRef, `/area1`), () => {
+      this.area1CountSpan.innerHTML = this.other1Area.cardCount;
+    });
+
+    onValue(child(playerRef, `/area2`), () => {
+      this.area2CountSpan.innerHTML = this.other2Area.cardCount;
+    });
 
     this.handArea.init(child(playerRef, `/hand`), this.gameController);
     this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);

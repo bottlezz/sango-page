@@ -90,6 +90,7 @@ class SgArea extends HTMLElement {
     this.areaType = deckRef.key + "-area";
     this.gameController = gameController;
     this.isTable = this.gameController.isTableItem(this.deckRef);
+    this.cardCount = 0;
 
     this.classList.add(this.areaType);
     if (this.isTableArea()) {
@@ -103,6 +104,7 @@ class SgArea extends HTMLElement {
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
       this.cardArea.prepend(cardWc);
+      this.cardCount++;
     });
 
     onChildRemoved(this.cardsRef, (snapshot) => {
@@ -110,6 +112,7 @@ class SgArea extends HTMLElement {
       const value = snapshot.val();
       const cardWc = this.cards[key];
       this.cardArea.removeChild(cardWc);
+      this.cardCount--;
     });
 
     this.addEventListener("drop", (e) => {

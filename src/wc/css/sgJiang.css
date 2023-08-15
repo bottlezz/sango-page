@@ -11,7 +11,7 @@
   .card-front {
     display: grid;
     height: 100%;
-    font-size: x-large;
+    font-size: large;
   }
 }
 
@@ -129,7 +129,7 @@ button[name="show-btn"] {
 }
 
 .info-line {
-  font-size: x-large;
+  font-size: large;
   vertical-align: middle;
   padding: 0.2rem;
 }

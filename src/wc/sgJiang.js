@@ -35,7 +35,6 @@ ${css}
         <span class="jiang-gender"></span>
       </div>
       <div class="info-line">
-        <span class="jiang-force"></span>
         <span class="jiang-hp"></span>
       </div>
     </div>
@@ -120,12 +119,10 @@ class SgJiang extends HTMLElement {
     const genderSpan = this.shadowRoot.querySelector(".jiang-gender");
     const nameSpan = this.shadowRoot.querySelector(".jiang-name");
     const hpSpan = this.shadowRoot.querySelector(".jiang-hp");
-    const forceSpan = this.shadowRoot.querySelector(".jiang-force");
     const frontDiv = this.shadowRoot.querySelector(".card-front");
 
     nameSpan.innerHTML = jiang.name;
-    hpSpan.innerHTML = jiang.health + "HP";
-    forceSpan.innerHTML = jiang.force;
+    hpSpan.innerHTML = jiang.health;
     if (jiang.gender == "M") {
       genderSpan.innerHTML = "&#9794;";
     } else {

@@ -11,6 +11,7 @@
   .card-front {
     display: grid;
     height: 100%;
+    font-size: x-large;
   }
 }
 
@@ -64,9 +65,10 @@ button[name="show-btn"] {
   top: 0;
   right: 0;
   font-weight: bolder;
+  padding: 0.2rem;
+  padding-top: 0;
   & span {
     display: inline-block;
-    padding: 0.2rem;
   }
 }
 
@@ -123,4 +125,18 @@ button[name="show-btn"] {
 
 .jiang-name {
   font-weight: bolder;
+  font-family: fangsong;
+}
+
+.info-line {
+  font-size: x-large;
+  vertical-align: middle;
+  padding: 0.2rem;
+}
+
+.jiang-hp::before {
+  font-family: "Material Symbols Outlined";
+  content: "\e87d";
+  display: inline-block;
+  vertical-align: middle;
 }

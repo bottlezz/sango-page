@@ -3,7 +3,7 @@
   width: 100%;
   height: 100%;
 
-  & .card-back {
+  > .card-back {
     width: 100%;
     height: 100%;
     text-align: center;
@@ -19,11 +19,11 @@
 }
 :host-context(.current-player) .card-block,
 .card-block.show-front {
-  & .card-back {
+  > .card-back {
     display: none;
   }
 
-  & .card-front {
+  > .card-front {
     display: grid;
     height: 100%;
     font-size: large;

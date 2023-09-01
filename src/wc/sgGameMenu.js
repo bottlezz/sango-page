@@ -31,7 +31,7 @@ ${commonCss}
     <label>Your name</label>
     <input type="text" id="userName"><br><br>
   </div>
-  <div name="name-field">
+  <div name="name-field" class="hide">
     <label>Player number</label>
     <input type="text" id="playerCount" value="6"><br><br>
   </div>

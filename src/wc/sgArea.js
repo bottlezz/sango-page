@@ -115,6 +115,14 @@ class SgArea extends HTMLElement {
       this.cardCount--;
     });
 
+    onChildChanged(this.cardsRef, (snapshot) => {
+      const cardData = snapshot.val();
+      console.log(cardData);
+      if (cardData.show == "1") {
+        this.classList.remove("hide");
+      }
+    });
+
     this.addEventListener("drop", (e) => {
       e.preventDefault();
       console.log("areaDrop");

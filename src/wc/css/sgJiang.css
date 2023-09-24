@@ -25,7 +25,7 @@
 
   > .card-front {
     display: grid;
-    height: 100%;
+    height: 97%;
     font-size: large;
   }
 }
@@ -38,19 +38,19 @@
 }
 
 .card-front.shu {
-  background-image: linear-gradient(rgba(200, 0, 0, 0.5), white);
+  border: solid rgba(200, 0, 0, 0.5) 3px;
 }
 
 .card-front.wu {
-  background-image: linear-gradient(rgba(0, 150, 0, 0.8), white);
+  border: solid rgba(0, 150, 0, 0.8) 3px;
 }
 
 .card-front.wei {
-  background-image: linear-gradient(rgba(0, 0, 180, 0.6), white);
+  border: solid rgba(0, 0, 180, 0.6) 3px;
 }
 
 .card-front.qun {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.6), white);
+  border: solid rgba(0, 0, 0, 0.6) 3px;
 }
 
 button[name="draw-btn"],
@@ -147,6 +147,9 @@ button[name="show-btn"] {
   font-size: large;
   vertical-align: middle;
   padding: 0.2rem;
+  & span {
+    background-color: rgba(255, 255, 255, 0.7);
+  }
 }
 
 .jiang-hp::before {

@@ -120,6 +120,8 @@ class SgJiang extends HTMLElement {
     const nameSpan = this.shadowRoot.querySelector(".jiang-name");
     const hpSpan = this.shadowRoot.querySelector(".jiang-hp");
     const frontDiv = this.shadowRoot.querySelector(".card-front");
+    frontDiv.style.backgroundImage = 'url("imgs/j.jpg")';
+    // frontDiv.style.backgroundColor = "yellow";
 
     nameSpan.innerHTML = jiang.name;
     hpSpan.innerHTML = jiang.health;

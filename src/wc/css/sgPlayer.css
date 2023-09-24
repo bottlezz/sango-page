@@ -251,9 +251,9 @@ sg-area::before {
   & .pai-info {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 8rem 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 1fr;
     width: 100%;
-    max-height: unset;
+    max-height: 16.8rem;
   }
 }

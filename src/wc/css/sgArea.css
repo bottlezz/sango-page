@@ -24,9 +24,8 @@
 }
 
 :host(.zhuang-area) .card-area {
-  flex-wrap: nowrap;
-  flex-direction: column;
   overflow: scroll;
+  flex-wrap: nowrap;
   padding-bottom: 2px;
   min-height: none;
 }

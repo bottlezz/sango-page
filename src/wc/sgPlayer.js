@@ -235,6 +235,19 @@ class SgPlayer extends HTMLElement {
         this.other2Area.classList.toggle("hide");
       });
 
+    this.addDragAndDrop(
+      this.shadowRoot.querySelector(".hand-count"),
+      "handArea"
+    );
+    this.addDragAndDrop(
+      this.shadowRoot.querySelector(".area1-count"),
+      "other1Area"
+    );
+    this.addDragAndDrop(
+      this.shadowRoot.querySelector(".area2-count"),
+      "other2Area"
+    );
+
     // <div class="hand-count"><span>2</span></div>
     // <div class="area1-count"><span>2<span></div>
     // <div class="area2-count"><span>2<span></div>
@@ -262,6 +275,44 @@ class SgPlayer extends HTMLElement {
     this.other1Area.init(child(playerRef, `/other1`), this.gameController);
     this.other2Area.init(child(playerRef, `/other2`), this.gameController);
     this.jiang2Area.init(child(playerRef, `/jiang2`), this.gameController);
+  }
+
+  addDragAndDrop(item, name) {
+    item.addEventListener("drop", (e) => {
+      e.preventDefault();
+      console.log("areaDrop");
+      const fromPath = e.dataTransfer.getData("text");
+
+      // is in selected wc
+      let isSelected = false;
+      for (let i = 0; i < this.gameController.selectedCards.length; i++) {
+        const wc = this.gameController.selectedCards[i];
+        if (wc.cardRef.toString().includes(fromPath)) {
+          isSelected = true;
+          break;
+        }
+      }
+      let deckRef = null;
+      if (name == "handArea") {
+        deckRef = this.handArea.deckRef;
+      } else if (name == "other1Area") {
+        deckRef = this.other1Area.deckRef;
+      } else if (name == "other2Area") {
+        deckRef = this.other2Area.deckRef;
+      }
+
+      if (!isSelected) {
+        this.gameController.moveCardFromPathToRef(
+          fromPath,
+          child(deckRef, "/cards")
+        );
+      } else {
+        this.gameController.dropSeletedCards(child(deckRef, "/cards"));
+      }
+    });
+    item.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
   }
 }
 

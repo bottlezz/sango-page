@@ -4,6 +4,7 @@
 .card-front {
   display: none;
   background-color: antiquewhite;
+  height: 100%;
 }
 
 .card-controls {
@@ -24,6 +25,12 @@
   font-size: 0.8rem;
   overflow: visible;
   white-space: nowrap;
+  .pai-name {
+    writing-mode: vertical-rl;
+  }
+  .pai-desc {
+    font-size: 1rem;
+  }
 }
 
 .card-block {
@@ -36,9 +43,14 @@
   .card-widget {
     border: brown solid 1px;
     padding: 2px;
-    width: 2em;
+    width: 1.2rem;
     display: inline-block;
-    height: 3.2rem;
+    height: 6.4rem;
+
+    & span {
+      display: block;
+      text-align: center;
+    }
   }
 }
 
@@ -67,20 +79,28 @@
 
 span.club::before {
   content: "\2663";
+  display: block;
+  margin-bottom: -0.3rem;
 }
 
 span.heart::before {
   content: "\2665";
   color: red;
+  display: block;
+  margin-bottom: -0.3rem;
 }
 
 span.diamond::before {
   content: "\2666";
   color: red;
+  display: block;
+  margin-bottom: -0.3rem;
 }
 
 span.spade::before {
   content: "\2660";
+  display: block;
+  margin-bottom: -0.3rem;
 }
 
 .card-controls ul {
@@ -125,7 +145,7 @@ span.spade::before {
 :host-context(.discard-area) .card-widget,
 :host-context(.pan-area) .card-widget,
 .card-block.show-front .card-widget {
-  width: 3.5rem;
+  width: 1.2rem;
   display: inline-block;
 
   .card-back {
@@ -138,13 +158,8 @@ span.spade::before {
 }
 
 :host-context(.zhuang-area) .card-block {
-  display: block;
-
   .card-widget {
-    display: block;
-    height: unset;
-    width: unset;
-
+    width: 1rem;
     .card-back {
       display: none;
     }
@@ -155,6 +170,9 @@ span.spade::before {
       .card-suit,
       .info-line {
         display: inline;
+        .pai-name {
+          margin-left: -1px;
+        }
       }
     }
   }
@@ -176,7 +194,13 @@ span.spade::before {
 
     .card-front {
       display: block;
-
+      & span {
+        display: inline;
+        writing-mode: unset;
+        &::before {
+          display: inline;
+        }
+      }
       .card-suit,
       .info-line {
         display: inline;

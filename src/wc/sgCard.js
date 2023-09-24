@@ -32,7 +32,7 @@ ${css}
       <div class ="info-line"><span class="pai-desc"></span></div>
     </div>
     <div class="card-back">
-      <p>[牌]</p>
+      <p>牌</p>
     </div>
   </div>
 </div>

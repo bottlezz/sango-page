@@ -27,7 +27,6 @@
     display: grid;
     height: 96%;
     font-size: large;
-    background-size: cover;
   }
 }
 
@@ -47,11 +46,11 @@
 }
 
 .card-front.wei {
-  border: solid rgba(0, 0, 180, 0.6) 3px;
+  border: solid rgba(0, 0, 180, 0.8) 3px;
 }
 
 .card-front.qun {
-  border: solid rgba(0, 0, 0, 0.6) 3px;
+  border: solid rgba(0, 0, 0, 0.8) 3px;
 }
 
 button[name="draw-btn"],
@@ -78,8 +77,8 @@ button[name="show-btn"] {
 
 .show-ctrl {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 1px;
+  right: 1px;
   font-weight: bolder;
   padding: 0.2rem;
   padding-top: 0;
@@ -97,6 +96,11 @@ button[name="show-btn"] {
 
 .jiang-skill {
   display: none;
+}
+
+.jiang-desc {
+  background-size: cover;
+  margin: 1px;
 }
 
 .skill-hint {

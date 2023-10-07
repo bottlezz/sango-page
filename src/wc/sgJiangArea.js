@@ -65,6 +65,9 @@ class SgJiangArea extends SgArea {
       e.preventDefault();
       console.log("areaDrop");
       const fromPath = e.dataTransfer.getData("text");
+      if (!fromPath.includes("/jiang")) {
+        return;
+      }
       this.gameController.moveCardFromPathToRef(
         fromPath,
         child(this.deckRef, "/cards")

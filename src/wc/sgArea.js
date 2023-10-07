@@ -132,6 +132,9 @@ class SgArea extends HTMLElement {
       console.log("areaDrop");
       const fromPath = e.dataTransfer.getData("text");
 
+      if (fromPath.includes("/jiang")) {
+        return;
+      }
       // is in selected wc
       let isSelected = false;
       for (let i = 0; i < this.gameController.selectedCards.length; i++) {

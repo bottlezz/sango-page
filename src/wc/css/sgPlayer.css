@@ -153,7 +153,6 @@ sg-area::before {
 
   .zhuang-area {
     grid-area: 1 / 1 / span 4 / span 3;
-    min-height: 7rem;
   }
 
   .hand-count {
@@ -165,8 +164,7 @@ sg-area::before {
     border: dotted 1px;
     > span {
       font-size: large;
-      font-family: fantasy;
-
+     
       &::before {
         content: "\e14d";
         font-family: "Material Icons";
@@ -183,7 +181,6 @@ sg-area::before {
     border: dotted 1px;
     > span {
       font-size: large;
-      font-family: fantasy;
 
       &::before {
         content: "\e3d0";
@@ -201,7 +198,6 @@ sg-area::before {
     border: dotted 1px;
     > span {
       font-size: large;
-      font-family: fantasy;
 
       &::before {
         content: "\e3d1";

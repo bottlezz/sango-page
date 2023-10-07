@@ -126,24 +126,13 @@ span.spade::before {
   background-color: antiquewhite;
 }
 
-:host-context(.current-player) li[name="discard-btn"] {
-  display: unset;
-}
-:host-context(.current-player) li[name="move-btn"] {
+:host(.jiang-area-card) .card-block:hover .card-controls {
   display: unset;
 }
 
-:host-context(.table-area) li[name="play-btn"] {
-  display: none;
-}
-
-:host-context(.jiang-area) .card-block:hover .card-controls {
-  display: unset;
-}
-
-:host-context(.current-player) .card-widget,
-:host-context(.discard-area) .card-widget,
-:host-context(.pan-area) .card-widget,
+:host(.current-player) .card-widget,
+:host(.discard-area-card) .card-widget,
+:host(.pan-area-card) .card-widget,
 .card-block.show-front .card-widget {
   width: 1.2rem;
   display: inline-block;
@@ -157,7 +146,7 @@ span.spade::before {
   }
 }
 
-:host-context(.zhuang-area) .card-block {
+:host(.zhuang-area-card) .card-block {
   .card-widget {
     width: 1rem;
     .card-back {
@@ -178,7 +167,7 @@ span.spade::before {
   }
 }
 
-:host-context(.pan-area) .card-block {
+:host(.pan-area-card) .card-block {
   display: block;
   font-size: small;
   width: 4.8rem;

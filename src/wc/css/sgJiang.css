@@ -17,7 +17,7 @@
     font-weight: bolder;
   }
 }
-:host-context(.current-player) .card-block,
+:host(.current-player) .card-block,
 .card-block.show-front {
   > .card-back {
     display: none;
@@ -59,19 +59,19 @@ button[name="show-btn"] {
   display: none;
 }
 
-:host-context(.current-player) button[name="discard-btn"] {
+:host(.current-player) button[name="discard-btn"] {
   display: unset;
 }
 
-:host-context(.current-player) button[name="show-btn"] {
+:host(.current-player) button[name="show-btn"] {
   display: unset;
 }
 
-:host-context(.table-public) button[name="show-btn"] {
+:host(.table-public) button[name="show-btn"] {
   display: unset;
 }
 
-:host-context(.table-public) button[name="draw-btn"] {
+:host(.table-public) button[name="draw-btn"] {
   display: unset;
 }
 
@@ -133,7 +133,7 @@ button[name="show-btn"] {
   width: 15em;
 }
 
-:host-context(.current-player) .skill-hint:hover .jiang-skill {
+:host(.current-player) .skill-hint:hover .jiang-skill {
   bottom: 0;
   top: auto;
   z-index: 30;

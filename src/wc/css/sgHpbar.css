@@ -4,7 +4,7 @@
   font-size: large;
 }
 
-:host-context(.current-player) .max-hp-control {
+:host(.current-player) .max-hp-control {
   display: block;
 }
 

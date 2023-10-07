@@ -25,13 +25,13 @@ template.innerHTML = `
 ${css}
 </style>
 <div name="widget" class="card-block">
-  <div class="card-widget">
-    <div class="card-front">
+  <div class="card-widget" part="card-widget">
+    <div class="card-front" part="card-front">
       <div class="card-suit"><span name="pai-rank"></span></div>
       <div class ="info-line"><span class="pai-name"></span></div>
       <div class ="info-line"><span class="pai-desc"></span></div>
     </div>
-    <div class="card-back">
+    <div class="card-back" part="card-back">
       <p>牌</p>
     </div>
   </div>

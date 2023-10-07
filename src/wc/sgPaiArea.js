@@ -47,12 +47,14 @@ class SgPaiArea extends SgArea {
       const key = snapshot.key;
       const value = snapshot.val();
       const cardWc = document.createElement("sg-card");
+      cardWc.className = this.areaType + "-card";
       this.cards[key] = cardWc;
       cardWc.init(
         ref(this.gameController.db, `${paiBottomCardsPath}/${key}`),
         value,
         this.gameController
       );
+      cardWc.setAttribute("exportparts", "card-widget");
       this.cardArea.appendChild(cardWc);
     });
 

@@ -42,6 +42,9 @@ class SgJiangArea extends SgArea {
       if (this.isTableArea()) {
         cardWc.dataset.cardType = "table";
       }
+      if (this.classList.contains("current-player")) {
+        cardWc.classList.add("current-player");
+      }
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
       this.cardArea.prepend(cardWc);

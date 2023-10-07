@@ -118,7 +118,16 @@ class SgPlayer extends HTMLElement {
   assginAsCurrentPlayer() {
     this.gameController.currentPlayer = this.playerRef.key;
     this.classList.add("current-player");
+
     this.widget.classList.add("current-player");
+    this.handArea.classList.add("current-player");
+    this.other1Area.classList.add("current-player");
+    this.other2Area.classList.add("current-player");
+    this.jiangArea.classList.add("current-player");
+    this.jiang1Area.classList.add("current-player");
+    this.jiang2Area.classList.add("current-player");
+    this.hpWc.classList.add("current-player");
+
     this.handArea.classList.remove("hide");
     this.other1Area.classList.remove("hide");
     this.other2Area.classList.remove("hide");
@@ -136,6 +145,7 @@ class SgPlayer extends HTMLElement {
 
     const hpSpan = this.shadowRoot.querySelector(".hp");
     const hpWc = document.createElement("sg-hpbar");
+    this.hpWc = hpWc;
     hpSpan.append(hpWc);
     hpWc.init(child(playerRef, "/hp"), gameController);
 

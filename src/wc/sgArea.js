@@ -103,6 +103,10 @@ class SgArea extends HTMLElement {
       const cardWc = document.createElement("sg-card");
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
+      cardWc.className = this.areaType + "-card";
+      if (this.classList.contains("current-player")) {
+        cardWc.classList.add("current-player");
+      }
       this.cardArea.prepend(cardWc);
       this.cardCount++;
     });

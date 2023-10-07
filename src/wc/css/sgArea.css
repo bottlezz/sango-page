@@ -45,6 +45,6 @@
   }
 }
 
-:host-context(.current-player) .card-area:hover {
+:host(.current-player) .card-area:hover {
   box-shadow: none;
 }

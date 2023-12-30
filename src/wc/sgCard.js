@@ -100,6 +100,12 @@ class SgCard extends HTMLElement {
       console.log("draggggggg");
       e.dataTransfer.setData("text", cardPath);
     });
+    // this.addEventListener("touchstart", (e) => {
+    //   console.log("touch");
+    // });
+    this.addEventListener("touchmove", (e) => {
+      console.log("touchmoveCard");
+    });
     this.initControls();
   }
 

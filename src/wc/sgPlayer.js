@@ -52,6 +52,15 @@ ${sgPlayerCss}
       </span></span>
     </div>
   </div>
+  <div name="drag-on-view">
+    <div class="hand-drop">手牌</div>
+    <div class="area1-drop">1区</div>
+    <div class="area2-drop">2区</div>
+    <div class="zhuang-drop">装备</div>
+    <div class="pan-drop">判定</div>
+  </div>
+  <div name="click-on-view">
+  </div> 
 </div>
 `;
 
@@ -77,6 +86,11 @@ class SgPlayer extends HTMLElement {
 
     this.addtionalArea = this.shadowRoot.querySelector(
       `div[name="addtional-area"]`
+    );
+
+    this.dragOnView = this.shadowRoot.querySelector(`div[name="drag-on-view"]`);
+    this.clickOnView = this.shadowRoot.querySelector(
+      `div[name="click-on-view"]`
     );
 
     const paiInfo = this.shadowRoot.querySelector(`.pai-info`);
@@ -113,6 +127,22 @@ class SgPlayer extends HTMLElement {
     openInfo.append(this.jiang2Area);
 
     this.widget.append(this.jiangArea);
+    this.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      this.dragOnView.classList.add("drag-over");
+    });
+
+    this.addEventListener("dragleave", (e) => {
+      this.dragOnView.classList.remove("drag-over");
+    });
+
+    this.addEventListener("drop", (e) => {
+      this.dragOnView.classList.remove("drag-over");
+    });
+
+    // this.addEventListener("pointerenter", (e) => {
+    //   console.log("touchoverpalyer");
+    // });
   }
 
   assginAsCurrentPlayer() {
@@ -258,6 +288,14 @@ class SgPlayer extends HTMLElement {
       "other2Area"
     );
 
+    const areas = ["hand", "area1", "area2", "pan", "zhuang"];
+    areas.forEach((element) => {
+      this.addDragAndDrop(
+        this.shadowRoot.querySelector(`.${element}-drop`),
+        `${element}Area`
+      );
+    });
+
     // <div class="hand-count"><span>2</span></div>
     // <div class="area1-count"><span>2<span></div>
     // <div class="area2-count"><span>2<span></div>
@@ -309,6 +347,10 @@ class SgPlayer extends HTMLElement {
         deckRef = this.other1Area.deckRef;
       } else if (name == "other2Area") {
         deckRef = this.other2Area.deckRef;
+      } else if (name == "zhuangArea") {
+        deckRef = this.zhuangArea.deckRef;
+      } else if (name == "panArea") {
+        deckRef = this.panArea.deckRef;
       }
 
       if (!isSelected) {

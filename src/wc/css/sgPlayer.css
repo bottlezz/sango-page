@@ -143,7 +143,25 @@ sg-area::before {
 .hp-holder {
   grid-area: 2 / 2;
 }
+div[name="drag-on-view"] {
+  display: none;
+}
+div[name="drag-on-view"].drag-over {
+  position: absolute;
+  height: 80%;
+  width: 80%;
+  background-color: white;
+  z-index: 50;
+  opacity: 90%;
 
+  top: 0;
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+
+  div {
+    border: dotted 1px;
+  }
+}
 .decks {
   grid-area: 4 / 1 / span 2 / span 1;
   display: grid;
@@ -215,6 +233,9 @@ sg-area::before {
 }
 
 .current-player {
+  div[name="drag-on-view"] {
+    display: none;
+  }
   & .area1-count {
     display: none;
   }

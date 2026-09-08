@@ -56,13 +56,13 @@ class SgCard extends HTMLElement {
   }
 
   discardPai() {
-    this.gameController.moveCardToTableDeck(this.cardRef, "discard");
+    return this.gameController.moveCardToTableDeck(this.cardRef, "discard");
   }
 
   drawPai() {
     // move pai to hand
     if (this.gameController.currentPlayer) {
-      this.gameController.moveCardToPlayerArea(
+      return this.gameController.moveCardToPlayerArea(
         this.cardRef,
         this.gameController.currentPlayer,
         "hand"
@@ -95,10 +95,10 @@ class SgCard extends HTMLElement {
     const dbPathUrl = ref(this.gameController.db).toString();
     const cardPath = cardPathUrl.replace(dbPathUrl, "");
     this.dataset.path = cardPath;
-    this.setAttribute("draggable", "true");
+    this.setAttribute("draggable", "false");
     this.addEventListener("dragstart", (e) => {
-      console.log("draggggggg");
-      e.dataTransfer.setData("text", cardPath);
+      // Pointer drag is implemented by cardDrag.js; never fall back to native text/card dragging.
+      e.preventDefault();
     });
     // this.addEventListener("touchstart", (e) => {
     //   console.log("touch");
@@ -115,6 +115,14 @@ class SgCard extends HTMLElement {
     const itemRank = itemData.rank;
     const itemDesc = itemData.desc;
     const itemName = itemData.name;
+    const judgmentEffects = {
+      "乐不思蜀": "乐",
+      "兵粮寸断": "兵",
+      "闪电": "电",
+    };
+    const effect = this.cardData.judgmentEffect || itemName;
+    this.dataset.effect = judgmentEffects[effect] || '?';
+    if (this.dataset.path?.includes('/pan/cards/')) this.title = `${effect} · 原牌：${itemName}`;
 
     const rankSpan = this.shadowRoot.querySelector(`span[name="pai-rank"]`);
     const descSpan = this.shadowRoot.querySelector(".pai-desc");
@@ -174,6 +182,8 @@ class SgCard extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // CSS ordering keeps live cards mounted; moving an area/popover must not unsubscribe them.
+    if (this.isConnected) return;
     this.gameController.removeSelectedCard(this);
     this.unSub();
   }

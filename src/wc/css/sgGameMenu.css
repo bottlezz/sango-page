@@ -1,0 +1,96 @@
+:host {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 48px 20px;
+  color: #f3efdf;
+  background:
+    radial-gradient(ellipse at 50% 25%, #245b493b, transparent 58%),
+    repeating-linear-gradient(135deg, #d4bf8003 0 1px, transparent 1px 36px),
+    #081e19;
+  font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.menu-shell { width: min(100%, 420px); }
+.brand { text-align: center; margin-bottom: 30px; }
+.brand-emblem {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 58px;
+  margin: 0 auto 22px;
+  border: 1px solid #d76859;
+  border-radius: 3px;
+  color: #f4ead2;
+  background: #8f302a;
+  box-shadow: 4px 4px 0 -1px #081e19, 4px 4px 0 0 #d7685960;
+  font: 700 30px Georgia, "STKaiti", "KaiTi", serif;
+}
+h1 { margin: 10px 0 12px; font: 500 42px "STKaiti", "KaiTi", "Noto Serif SC", serif; letter-spacing: .06em; }
+h1 span { color: #c9b98e; font-size: 20px; letter-spacing: .05em; white-space: nowrap; }
+.widget {
+  width: 100%;
+  padding: 32px;
+  border: 1px solid #cbb8842b;
+  border-radius: 18px;
+  background: linear-gradient(150deg, #18382f, #102b24 75%);
+  box-shadow: 0 24px 64px #00000036, inset 0 1px 0 #ffffff05;
+}
+.card-heading { margin-bottom: 28px; }
+h2 { margin: 10px 0; font-size: 25px; font-weight: 600; letter-spacing: -.03em; }
+.card-heading > p:last-child { margin: 0; color: #a4b7ad; font-size: 13px; line-height: 1.6; }
+.login-form { display: grid; gap: 22px; }
+label { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 9px; color: #e0e5dc; font-size: 13px; font-weight: 500; }
+.input-wrap { position: relative; }
+.input-icon { position: absolute; left: 16px; top: 50%; width: 18px; height: 20px; transform: translateY(-50%); color: #9baf9e; font-size: 19px; line-height: 20px; pointer-events: none; }
+input {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px 12px 46px;
+  border: 1px solid #b9c6ad29;
+  border-radius: 9px;
+  outline: none;
+  color: #f3efdf;
+  background: #071e196b;
+  font-size: 14px;
+  transition: border-color .18s, box-shadow .18s;
+}
+input::placeholder { color: #8a9e92; }
+input:hover { border-color: #b9c6ad55; }
+input:focus { border-color: #d5ba79; box-shadow: 0 0 0 3px #d5ba7917; }
+.field-hint { margin: 8px 0 0; color: #99ada0; font-size: 11px; line-height: 1.5; }
+.game-menu-button, div[name="seat-menu"] button {
+  min-height: 50px;
+  padding: 12px 18px;
+  border: 1px solid #e6cc8b;
+  border-radius: 9px;
+  color: #263024;
+  background: linear-gradient(110deg, #e6d19b, #ccad68);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px #00000018;
+  transition: filter .18s, transform .18s;
+}
+.game-menu-button { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
+.game-menu-button span { font-size: 21px; }
+.game-menu-button:hover, div[name="seat-menu"] button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.game-menu-button:active { transform: translateY(0); }
+button:focus-visible { outline: 2px solid #f1d594; outline-offset: 4px; }
+.card-footer { display: flex; justify-content: flex-end; margin-top: 26px; padding-top: 18px; border-top: 1px solid #c7cdb014; }
+button[name="reset-btn"] { min-height: 32px; padding: 6px 0 6px 10px; border: 0; border-radius: 4px; color: #b8a398; background: transparent; font-size: 11px; cursor: pointer; }
+button[name="reset-btn"]:hover { color: #f0b3a1; }
+div[name="seat-menu"] { display: grid; gap: 8px; }
+div[name="seat-menu"] > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px; border-bottom: 1px solid #ffffff14; overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  :host { padding: 28px 18px; }
+  .brand { margin-bottom: 24px; }
+  .brand-emblem { margin-bottom: 18px; }
+  .widget { padding: 26px 22px; }
+  h1 { font-size: 36px; }
+  input { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  input, button { transition: none !important; }
+}

@@ -1,29 +1,11 @@
-div[data-display="hide"],
-.hide {
-  display: none;
-}
-
+div[data-display="hide"], .hide { display: none !important; }
+:host, *, *::before, *::after { box-sizing: border-box; }
 span {
   cursor: default;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
-
-div.widget {
-  border: red solid 1px;
-  padding: 2px;
-  margin: 2px;
-}
-div.widget:empty {
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
-::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
-  background: transparent; /* make scrollbar transparent */
-}
+button, input { font: inherit; }
+div.widget { margin: 0; }
+div.widget:empty { border: 0; padding: 0; margin: 0; }
+::-webkit-scrollbar { width: 0; height: 0; background: transparent; }

@@ -1,279 +1,154 @@
-.current-player.widget {
-  border: green solid 2px;
-  padding: 0.2em;
-  margin: 0.2em;
-}
-
-p {
-  margin: 0.3em;
-}
-
-div[name="addtional-area"] {
-  display: flex;
-  margin: 0.2rem 0 0.1rem 0;
-}
-
-.debuff-area {
-  display: flex;
-  gap: 0.1rem;
-  margin-right: 0.2rem;
-  font-family: "Material Symbols Outlined";
-  font-size: x-large;
-  & .material-symbols-outlined {
-    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 48;
-  }
-}
-
-.debuff {
-  cursor: pointer;
-}
-
-sg-area,
-sg-jiangarea {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.hand-area,
-.other1-area,
-.other2-area {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.pai-info {
-  position: absolute;
-  top: 0;
-  display: grid;
-  padding: 0.2rem;
-  gap: 0.2rem;
-  grid-template-columns: 1fr;
-  grid-template-rows: 8rem 1fr 1fr;
-  max-height: 10rem;
-  width: 90%;
-  overflow: hidden;
-}
-
-.jiang-area {
-  display: flex;
-}
-
-.jiang-area::part(card-area) {
-  display: flex;
-  gap: 0.2rem;
-  flex-wrap: nowrap;
-  width: 100%;
-  border: none;
-  overflow: scroll;
-}
-
-.jiang-area.hide {
-  display: none;
-}
-
-sg-area::before {
-  position: absolute;
-  width: 2rem;
-  padding: 0.5rem;
-  z-index: -1;
-}
-
-.player-role {
-  display: none;
-}
-.player-role.king {
-  display: inline;
-}
-.current-player .player-role {
-  display: inline;
-}
-.current-player .player-role-marker {
-  display: none;
-}
-.player-role.king ~ .player-role-marker {
-  display: none;
-}
-
-.debuff.on {
-  color: red;
-}
-
 :host {
-  box-shadow: 1px 1px 4px 1px;
-  width: 19rem;
-  height: 20rem;
+  display: block; width: auto; height: auto; min-width: 0; min-height: 0; overflow: visible;
+  border: 2px solid rgba(226, 184, 75, 0.7); border-radius: 0.8rem; color: #f4ead2;
+  background: linear-gradient(145deg, rgba(18, 63, 53, 0.98), rgba(7, 31, 26, 0.98));
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+:host(.current-player) { border-color: #e2b84b; box-shadow: 0 0 0 2px rgba(226, 184, 75, 0.15), 0 0.55rem 1.2rem rgba(0, 0, 0, 0.28); }
+:host(.drag-target) { border-color: #ffe59a; box-shadow: 0 0 0 3px #e2b84b88, 0 0 22px #e2b84b66; background: #194f3c; }
+.widget { position: relative; box-sizing: border-box; width: 100%; height: 100%; padding: 0.55rem; }
+div[name="player-game-area"], .open-info { position: relative; width: 100%; height: 100%; min-width: 0; }
+.open-info { overflow: visible; }
+.general-slots { position: absolute; inset: 0 auto 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; width: 11rem; height: calc(100% - 3.15rem - 6px); overflow: hidden; border-radius: 0.5rem; }
+.jiang-block { width: 100%; height: 100%; min-width: 0; overflow: hidden; border: 0; }
+
+.player-info { position: absolute; top: 0; right: 0; left: 11.75rem; display: flex; align-items: center; gap: 0.3rem; height: 1.45rem; min-width: 0; padding-right: 2.65rem; overflow: hidden; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.7rem; white-space: nowrap; }
+.player-key { display: none; }
+.player-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 800; }
+.player-role, .player-role-marker { position: absolute; top: 0.08rem; right: 0; display: grid; place-items: center; max-width: 2.2rem; height: 1.25rem; overflow: hidden; padding: 0 0.42rem; border: 1px solid rgba(201, 210, 205, 0.35); border-radius: 999px; color: #c9d2cd; background: rgba(255, 255, 255, 0.04); white-space: nowrap; }
+.player-role { display: none; }
+.player-info { gap: 0; padding-right: 1.65rem; overflow: visible; border-bottom: 0; }
+.player-info::after { content: ""; position: absolute; right: 0; bottom: -0.5rem; left: -0.3rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(232,207,139,.34) 8%, rgba(232,207,139,.34) 92%, transparent); }
+.player-role, .player-role-marker { width: 1.25rem; max-width: 1.25rem; padding: 0; border-radius: 50%; font-size: 0.625rem; line-height: 1; }
+:host(.current-player) .player-info::after { display: none; }
+.player-role.king, :host(.current-player) .player-role { display: grid; color: #ffe0a0; border-color: #c98b39; background: rgba(181, 76, 31, 0.22); }
+:host(.current-player) .player-role-marker, .player-role.king ~ .player-role-marker { display: none; }
+.hp-holder { position: absolute; top: 2rem; right: 0; left: 11.75rem; display: flex; align-items: center; height: 1.5rem; min-width: 0; }
+
+.decks { position: absolute; inset: 0; display: grid; grid-template-columns: 11rem minmax(0, 1fr); grid-template-rows: 4.35rem repeat(3, minmax(0, 1fr)); gap: 0.3rem 0.45rem; min-width: 0; min-height: 0; pointer-events: none; }
+.decks > * { pointer-events: auto; }
+.decks .zhuang-area { grid-column: 1; grid-row: 1 / 5; align-self: end; width: 11rem; height: 3.15rem; min-width: 0; overflow: visible; z-index: 3; }
+.hand-count { grid-column: 2; grid-row: 2; }
+.area1-count { grid-column: 2; grid-row: 3; }
+.area2-count { grid-column: 2; grid-row: 4; }
+.hand-count, .area1-count, .area2-count { display: grid; place-items: center; min-width: 0; border: 1px solid rgba(232, 207, 139, 0.22); border-radius: 0.38rem; color: #f4ead2; background: rgba(255, 255, 255, 0.04); cursor: pointer; }
+.hand-count > span, .area1-count > span, .area2-count > span { display: grid; grid-template-columns: 1fr 1.4rem; align-items: center; width: 100%; padding: 0 0.35rem; font-size: 0.68rem; font-weight: 800; }
+.hand-count > span::before { content: "手牌"; }
+.area1-count > span::before { content: "区1"; }
+.area2-count > span::before { content: "区2"; }
+.jiang-pick { display: none; }
+.pai-info { display: none; }
+
+div[name="addtional-area"] { display: contents; }
+.debuff-area { position: absolute; top: 0.5rem; left: calc(100% + 0.45rem); z-index: 12; display: flex; flex-direction: column; gap: 0.25rem; width: 2.65rem; }
+.debuff { display: none; place-items: center; width: 2.65rem; height: 1.2rem; border: 1px solid #68b88f; border-radius: 0.3rem; color: #eafff2; background: linear-gradient(145deg, #34765d, #174b3b); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); font-size: 0.62rem; font-weight: 800; pointer-events: none; }
+.debuff.on { display: grid; }
+.debuff-0 { color: #f5eaff; border-color: #ae86d2; background: linear-gradient(145deg, #79529a, #4b3066); }
+.judgment-area { position: absolute; top: 3.5rem; left: calc(100% + 0.45rem); z-index: 10; display: none; width: 2.65rem; }
+.judgment-area:has(.pan-area.has-cards) { display: block; }
+.judgment-area::before { content: ""; position: absolute; top: 0; bottom: 0; left: -0.3rem; width: 1px; background: linear-gradient(transparent, rgba(232, 207, 139, 0.38) 8%, rgba(232, 207, 139, 0.38) 92%, transparent); }
+.judgment-area .pan-area { display: block; width: 100%; height: auto; min-width: 0; overflow: visible; background: transparent; }
+.judgment-area .pan-area::part(wrapper) { height: auto; overflow: visible; border: 0; background: transparent; }
+.judgment-area .pan-area::part(card-area) { display: flex; flex-direction: column; align-items: stretch; gap: 0.38rem; width: 100%; height: auto; min-height: 0; padding: 0; overflow: visible; }
+
+.player-toolbar { display: none; }
+.drop-picker { width: min(22rem, calc(100vw - 2rem)); padding: 1.1rem; border: 1px solid #c7a75a; border-radius: 0.8rem; color: #f4ead2; background: #0b3027; box-shadow: 0 1rem 3rem #0008; }
+.drop-picker:not([open]) { display: none; }
+.drop-picker::backdrop { background: #001b16aa; }
+.drop-picker h3 { margin: 0 0 0.5rem; color: #f0cc73; }
+.drop-summary { margin: 0 0 1rem; overflow-wrap: anywhere; font-size: 0.85rem; line-height: 1.5; }
+.drop-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+.drop-options[hidden], .judgment-options[hidden] { display: none; }
+.judgment-options { margin-top: 0.8rem; padding-top: 0.65rem; border-top: 1px solid #e8cf8b33; }
+.judgment-label { margin: 0 0 0.5rem; color: #e8cf8b; }
+.judgment-summary { margin: 0 0 0.5rem; color: #aec3b9; font-size: 0.8rem; }
+.judgment-summary:empty { display: none; }
+.drop-picker button { min-height: 2.6rem; padding: 0.4rem; border: 1px solid #e8cf8b55; border-radius: 0.45rem; color: #f4ead2; background: #ffffff0c; cursor: pointer; }
+.drop-picker button:hover, .drop-picker button:focus-visible { outline: 2px solid #e2b84b; outline-offset: 1px; background: #e2b84b25; }
+.drop-picker button:disabled { opacity: 0.5; cursor: wait; }
+.drop-cancel { width: 100%; margin-top: 0.65rem; }
+.drop-error { margin: 0.65rem 0 0; color: #ffb0aa; font-size: 0.8rem; }
+.drop-error:empty { display: none; }
+div[name="drag-on-view"] { display: none; }
+div[name="drag-on-view"].drag-over { position: absolute; inset: 10%; z-index: 50; display: grid; grid-template-rows: repeat(5, 1fr); gap: 0.25rem; padding: 0.5rem; border: 2px solid #e2b84b; border-radius: 0.65rem; background: rgba(8, 43, 36, 0.94); }
+div[name="drag-on-view"].drag-over div { display: grid; place-items: center; border: 1px dashed rgba(255, 232, 167, 0.72); border-radius: 0.35rem; }
+
+:host(.current-player) .player-info { left: 11.45rem; height: 1.85rem; padding: 0 9.75rem 0 0.5rem; }
+:host(.current-player) .hp-holder { top: 0.2rem; right: 2.9rem; left: auto; z-index: 4; width: 6.4rem; height: 1.45rem; }
+:host(.current-player) .decks { display: none; }
+:host(.current-player) .general-slots { width: 11rem; }
+:host(.current-player) div[name="player-game-area"] > .zhuang-area { position: absolute; bottom: 0; left: 0; width: 11rem; height: 3.15rem; min-width: 0; overflow: visible; z-index: 3; border-radius: 0.35rem; }
+:host(.current-player) .pai-info { position: absolute; top: 3.35rem; right: 0; bottom: 0; left: 11.45rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: 4.75rem minmax(0, 1fr); gap: 0.32rem; min-width: 0; min-height: 0; overflow: hidden; }
+:host(.current-player) .hand-area { position: relative; grid-column: 1 / 3; grid-row: 1; min-width: 0; min-height: 0; border: 1px solid rgba(232, 207, 139, 0.2); border-radius: 0.45rem; background: rgba(3, 27, 22, 0.5); }
+:host(.current-player) .other1-area, :host(.current-player) .other2-area { position: relative; min-width: 0; min-height: 0; border: 1px solid rgba(232, 207, 139, 0.2); border-radius: 0.45rem; background: rgba(3, 27, 22, 0.5); }
+:host(.current-player) .other1-area { grid-column: 1; grid-row: 2; }
+:host(.current-player) .other2-area { grid-column: 2; grid-row: 2; }
+:host(.current-player) .hand-area::before, :host(.current-player) .other1-area::before, :host(.current-player) .other2-area::before { position: absolute; top: 50%; left: 0.4rem; z-index: 2; transform: translateY(-50%); color: #d9c991; font-size: 0.65rem; font-weight: 800; pointer-events: none; }
+:host(.current-player) .hand-area::before { content: "手牌 " attr(data-count); }
+:host(.current-player) .other1-area::before { content: "区1 " attr(data-count); }
+:host(.current-player) .other2-area::before { content: "区2 " attr(data-count); }
+:host(.current-player) .hand-area::part(wrapper), :host(.current-player) .other1-area::part(wrapper), :host(.current-player) .other2-area::part(wrapper) { border: 0; }
+:host(.current-player) .hand-area::part(card-area), :host(.current-player) .other1-area::part(card-area), :host(.current-player) .other2-area::part(card-area) { height: 100%; padding: 0.75rem 0.3rem 0.3rem 3.45rem; overflow-x: auto; overflow-y: hidden; }
+.area-panel-heading, .area-panel-actions { display: none; }
+:host(.current-player) .overflow-controls::before { display: none; }
+.pai-info:popover-open { position: fixed; inset: 0; margin: auto; display: flex; flex-direction: column; gap: 0.75rem; width: min(38rem, calc(100vw - 2rem)); height: max-content; max-height: calc(100vh - 2rem); padding: 1rem; overflow: auto; border: 1px solid #c7a75a; border-radius: 0.8rem; color: #f4ead2; background: #0b3027; box-shadow: 0 1rem 4rem #0009; }
+.pai-info:popover-open .area-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.pai-info:popover-open .area-panel-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.pai-info:popover-open button { min-height: 2rem; padding: 0.3rem 0.65rem; border: 1px solid #e8cf8b55; border-radius: 0.4rem; color: #f4ead2; background: #ffffff0c; cursor: pointer; }
+.pai-info:popover-open > sg-area { display: block; flex: none; width: 100%; height: 8rem; }
+.pai-info:popover-open > sg-area::part(card-area) { height: 100%; padding: 0.85rem 0.4rem 0.4rem; align-items: stretch; }
+.pai-info:popover-open > sg-area:not(.has-cards)::after { content: "暂无卡牌"; position: absolute; inset: 0; display: grid; place-items: center; color: #aebeb6; pointer-events: none; }
+.pai-info:popover-open > sg-area { position: relative; }
+:host(.current-player) .player-toolbar { position: absolute; top: 0.55rem; bottom: 0.55rem; left: -4.6rem; z-index: 15; display: flex; flex-direction: column; gap: 0.25rem; width: 4rem; padding: 0.38rem; border: 1px solid rgba(232, 207, 139, 0.27); border-radius: 0.7rem; background: linear-gradient(180deg, rgba(12, 50, 42, 0.98), rgba(5, 28, 24, 0.98)); box-shadow: 0 0.9rem 2rem rgba(0, 0, 0, 0.3); }
+.player-toolbar button { display: grid; place-items: center; width: 100%; height: 1.75rem; padding: 0; border: 1px solid rgba(232, 207, 139, 0.32); border-radius: 0.42rem; color: #e8eee9; background: rgba(255, 255, 255, 0.065); font-size: 0.68rem; font-weight: 800; cursor: pointer; }
+.player-toolbar button:hover, .player-toolbar button.active { color: #192019; border-color: #e2b84b; background: #e2b84b; }
+.player-toolbar .tool-separator { width: 100%; height: 1px; margin: 0.06rem 0; background: linear-gradient(90deg, transparent, rgba(232, 207, 139, 0.55), transparent); }
+.hp-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.hp-controls svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.player-toolbar button:focus-visible { outline: 2px solid #e2b84b; outline-offset: 2px; }
+@media (min-width: 901px) {
+  :host(.current-player) .widget { padding-right: 7.05rem; }
+  :host(.current-player) .player-info { padding-right: 2.75rem; }
+  :host(.current-player) .hp-holder { top: .2rem; right: -6.5rem; width: 5.25rem; justify-content: center; }
+  :host(.current-player) .player-toolbar { left: auto; right: .55rem; width: 6.06rem; padding: 2.2rem 0 0 .75rem; gap: .375rem; border: 0; border-left: 1px solid #e8cf8b38; border-radius: 0; background: transparent; box-shadow: none; }
+  :host(.current-player) .player-toolbar button { flex-shrink: 0; border-color: #e8cf8b2e; background: #ffffff06; }
+  :host(.current-player) .player-toolbar button:hover { background: #ffffff14; color: #f4ead2; }
+  :host(.current-player) .player-toolbar [data-debuff="0"].active { color: #f5eaff; border-color: #ae86d2; background: #654483; }
+  :host(.current-player) .player-toolbar [data-debuff="1"].active { color: #eafff2; border-color: #68b88f; background: #276148; }
+}
+:host(.current-player) .hand-count, :host(.current-player) .area1-count, :host(.current-player) .area2-count { display: none; }
+
+:host(:has(.general-selection-dialog:not(.hide))) { z-index: 201 !important; }
+.general-selection-dialog { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); box-sizing: border-box; width: min(63rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; z-index: 200; display: grid; grid-template-rows: auto auto auto; min-width: 0; min-height: 0; padding: 0.85rem; border: 1px solid rgba(226, 184, 75, 0.65); border-radius: 0.85rem; background: rgba(5, 29, 25, 0.98); box-shadow: 0 1.2rem 4rem rgba(0, 0, 0, 0.6); }
+.general-selection-dialog > header { display: flex; align-items: center; gap: 0.7rem; padding: 0.15rem 0.15rem 0.65rem; }
+.general-selection-dialog > header strong { color: #f0cc73; font: 800 1rem Georgia, "STKaiti", serif; }
+.general-selection-dialog > header span { min-width: 0; color: #aebeb6; font-size: 0.72rem; }
+.general-selection-dialog > header button { margin-left: 0; min-height: 2.2rem; padding: 0.35rem 0.7rem; border: 1px solid rgba(232, 207, 139, 0.3); border-radius: 0.45rem; color: #f4ead2; background: rgba(255, 255, 255, 0.07); cursor: pointer; }
+.general-selection-dialog > header button { margin-left: auto; }
+.general-selection-dialog > footer { display: flex; align-items: center; gap: 0.7rem; margin-top: 0.6rem; padding: 0.75rem 0.15rem 0.15rem; border-top: 1px solid rgba(232,207,139,.18); }
+.selection-status { flex: 1; color: #d8e0db; font-size: 0.78rem; }
+.general-selection-dialog .selection-lock { min-height: 2.2rem; padding: 0.35rem 0.7rem; color: #241800; border: 1px solid #e2b84b; border-radius: 0.45rem; background: linear-gradient(#edc55f, #c88a2d); font-weight: 800; cursor: pointer; }
+.general-selection-dialog .selection-lock:disabled { color: #8f8a79; border-color: rgba(232, 207, 139, 0.16); background: rgba(255, 255, 255, 0.05); cursor: default; }
+.general-selection-dialog.selection-locked > header strong::after { content: " · 已锁定"; color: #aebeb6; font: 500 0.68rem Inter, "Microsoft YaHei", sans-serif; }
+.general-selection { display: block; min-width: 0; min-height: 0; overflow: hidden; border-radius: 0.55rem; background: rgba(2, 19, 16, 0.72); }
+.general-selection::part(wrapper) { border: 0; }
+.general-selection::part(card-area) { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-content: start; gap: 0.55rem; height: auto; padding: 0.65rem; overflow: auto; }
+
+@media (max-width: 900px) {
+  :host(.current-player) .player-toolbar { display: none; }
+  :host(.current-player) .player-info { left: 0; }
+  :host(.current-player) .general-slots { width: 11rem; }
+  :host(.current-player) .pai-info { left: 11.45rem; }
+}
+@media (max-width: 620px) {
+  .widget { padding: 0.4rem; }
+  :host(.current-player) .general-slots { width: 9.5rem; }
+  :host(.current-player) div[name="player-game-area"] > .zhuang-area { width: 9.5rem; }
+  :host(.current-player) .player-info { left: 9.85rem; }
+  :host(.current-player) .pai-info { left: 9.85rem; grid-template-rows: 4.4rem minmax(0, 1fr); }
+  .general-selection-dialog { width: calc(100vw - 0.8rem); padding: 0.45rem; }
+  .general-selection-dialog > header span { display: none; }
+  .general-selection::part(card-area) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; padding: 0.45rem; }
 }
 
-:host(.current-player) {
-  width: unset;
-  height: unset;
-}
-
-:host > div[name="widget"] {
-  position: relative;
-}
-
-.jiang-block {
-  width: 9rem;
-  height: 10rem;
-  background-color: azure;
-  border: solid 1px;
-  overflow: hidden;
-}
-
-.open-info {
-  width: 18rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 2rem 5rem 1fr 3.5rem 3.5rem;
-  gap: 0.1rem;
-}
-
-.player-name {
-  grid-area: 1 / 2;
-}
-
-.jiang1-area {
-  grid-area: 1 / 1 / span 3 / span 1;
-}
-.jiang2-area {
-  grid-area: 3 / 2 / span 3 / span 1;
-}
-
-.hp-holder {
-  grid-area: 2 / 2;
-}
-div[name="drag-on-view"] {
-  display: none;
-}
-div[name="drag-on-view"].drag-over {
-  position: absolute;
-  height: 80%;
-  width: 80%;
-  background-color: white;
-  z-index: 50;
-  opacity: 90%;
-
-  top: 0;
-  display: grid;
-  grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
-
-  div {
-    border: dotted 1px;
-  }
-}
-.decks {
-  grid-area: 4 / 1 / span 2 / span 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr 1fr;
-  gap: 1px;
-
-  .zhuang-area {
-    grid-area: 1 / 1 / span 4 / span 3;
-  }
-
-  .hand-count {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-around;
-    align-items: center;
-    border: dotted 1px;
-    > span {
-      font-size: large;
-      font-weight: bold;
-
-      &::before {
-        content: "\e14d";
-        font-family: "Material Icons";
-      }
-    }
-  }
-
-  .area1-count {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-around;
-    align-items: center;
-    border: dotted 1px;
-    > span {
-      font-size: large;
-      font-weight: bold;
-
-      &::before {
-        content: "\e3d0";
-        font-family: "Material Icons";
-      }
-    }
-  }
-
-  .area2-count {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-around;
-    align-items: center;
-    border: dotted 1px;
-    > span {
-      font-size: large;
-      font-weight: bold;
-
-      &::before {
-        content: "\e3d1";
-        font-family: "Material Icons";
-      }
-    }
-  }
-
-  .jiang-pick {
-    display: none;
-  }
-}
-
-.current-player {
-  div[name="drag-on-view"] {
-    display: none;
-  }
-  & .area1-count {
-    display: none;
-  }
-  & .area2-count {
-    display: none;
-  }
-
-  & .hand-count {
-    display: none;
-  }
-
-  & .jiang-pick {
-    font-family: "Material Symbols Outlined";
-    font-size: larger;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-around;
-    align-items: center;
-    border: dotted 1px;
-  }
-
-  & div[name="player-game-area"] {
-    display: flex;
-    gap: 1rem;
-  }
-
-  & div[name="player-game-area"] {
-    display: flex;
-    gap: 1rem;
-  }
-
-  & .pai-info {
-    position: relative;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    grid-template-rows: 1fr;
-    width: 100%;
-    max-height: 16.8rem;
-  }
-}
+@media (min-width:621px) and (max-width:950px) { .general-selection-dialog { width: min(39rem, calc(100vw - 2rem)); } .general-selection::part(card-area) { grid-template-columns: repeat(4,minmax(0,1fr)); } }

@@ -1,202 +1,355 @@
 :host {
   position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+  transition: translate .14s ease-out;
+}
+:host(.insert-left) { translate: -6px 0; }
+:host(.drag-source) { opacity: .22; }
+.card-block {
+  position: relative;
+  display: inline-block;
+  width: auto;
+  border-radius: 0.45rem;
+  transition: transform 0.14s, filter 0.14s;
+}
+.card-widget {
+  display: inline-block;
+  width: 2rem;
+  height: 6.4rem;
+  overflow: hidden;
+  border: 1px solid #8c713b;
+  border-radius: 0.45rem;
+  color: #261d13;
+  background: linear-gradient(145deg, #fff8e5, #d7bf88);
+  box-shadow: 0 0.25rem 0.6rem rgba(0, 0, 0, 0.3);
+  -webkit-user-select: none;
+  user-select: none;
 }
 .card-front {
   display: none;
-  background-color: antiquewhite;
+  width: 100%;
   height: 100%;
+  padding: 0.24rem;
+  background: linear-gradient(145deg, #fff8e5, #dfc891);
 }
-
-.card-controls {
-  display: none;
-  position: absolute;
-  background-color: wheat;
-  top: 0;
-  left: 0;
-  padding: 0.1em;
-  z-index: 20;
-  button {
-    display: inline-block;
-    height: 2rem;
-  }
+.card-back {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #f5d88a;
+  background: repeating-linear-gradient(45deg, #743029, #743029 6px, #934138 6px, #934138 12px);
+  font: 800 0.9rem Georgia, serif;
 }
-
+.card-back p { margin: 0; }
+.card-suit { font: 800 0.75rem Georgia, serif; }
 .info-line {
-  font-size: 0.8rem;
-  overflow: visible;
-  white-space: nowrap;
-  .pai-name {
-    writing-mode: vertical-rl;
-  }
-  .pai-desc {
-    font-size: 1rem;
-  }
-}
-
-.card-block {
-  display: inline-block;
-  width: auto;
-  position: relative;
-  background-color: wheat;
-  box-shadow: 1px 1px 1px 0px;
-
-  .card-widget {
-    border: brown solid 1px;
-    padding: 2px;
-    width: 1.2rem;
-    display: inline-block;
-    height: 6.4rem;
-
-    & span {
-      display: block;
-      text-align: center;
-    }
-  }
-}
-
-.card-block.selected {
-  top: -0.2rem;
-  z-index: 40;
-  box-shadow: 1px 1px 6px 1px;
-
-  .card-widget {
-    border-color: red;
-  }
-}
-.card-block.show-front {
-  .card-widget {
-    border-color: blue;
-    background-color: azure;
-  }
-  .card-front {
-    background-color: azure;
-  }
-}
-
-.card-block.show-front li[name="show-btn"] {
-  background-color: white;
-}
-
-span.club::before {
-  content: "\2663";
-  display: block;
-  margin-bottom: -0.3rem;
-}
-
-span.heart::before {
-  content: "\2665";
-  color: red;
-  display: block;
-  margin-bottom: -0.3rem;
-}
-
-span.diamond::before {
-  content: "\2666";
-  color: red;
-  display: block;
-  margin-bottom: -0.3rem;
-}
-
-span.spade::before {
-  content: "\2660";
-  display: block;
-  margin-bottom: -0.3rem;
-}
-
-.card-controls ul {
-  display: flex;
-  background-color: wheat;
-  margin: 0;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.1rem;
-  padding: 0.1rem;
-  width: 2.4rem;
-  box-shadow: 0.1rem 0.1rem 0.1rem black;
-  border: dotted 1px black;
-  flex-direction: row;
-}
-
-.card-controls li {
-  display: block;
-  position: relative;
-}
-
-.card-controls li:hover {
-  background-color: antiquewhite;
-}
-
-:host(.jiang-area-card) .card-block:hover .card-controls {
-  display: unset;
-}
-
-:host(.current-player) .card-widget,
-:host(.discard-area-card) .card-widget,
-:host(.pan-area-card) .card-widget,
-.card-block.show-front .card-widget {
-  width: 1.2rem;
-  display: inline-block;
-
-  .card-back {
-    display: none;
-  }
-
-  .card-front {
-    display: block;
-  }
-}
-
-:host(.zhuang-area-card) .card-block {
-  .card-widget {
-    width: 1rem;
-    .card-back {
-      display: none;
-    }
-
-    .card-front {
-      display: block;
-
-      .card-suit,
-      .info-line {
-        display: inline;
-        .pai-name {
-          margin-left: -1px;
-        }
-      }
-    }
-  }
-}
-
-:host(.pan-area-card) .card-block {
-  display: block;
-  font-size: small;
-  width: 4.8rem;
   overflow: hidden;
-  .card-widget {
-    display: block;
-    height: unset;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.pai-name {
+  display: block;
+  margin-top: 0.35rem;
+  writing-mode: vertical-rl;
+  font-weight: 800;
+}
+.pai-desc { display: none; }
+.card-block.selected {
+  z-index: 40;
+  transform: translateY(-0.45rem);
+  filter: drop-shadow(0 0 0.25rem #e2b84b);
+}
+.card-block.selected .card-widget { border: 2px solid #e2b84b; }
+/* Equipment uses the same lift animation as other selected cards. */
+:host(.zhuang-area-card) .card-block { cursor: pointer; }
+:host(.zhuang-area-card) .card-block.selected .card-widget { border: 2px solid #e2b84b; box-shadow: inset 0 0 0 1px #735415; }
+.card-block.show-front .card-widget {
+  border-color: #5c8cad;
+  background: #eef8f4;
+}
+.card-block.show-front .card-front { background: #eef8f4; }
+span.club::before { content: "♣"; }
+span.heart::before { content: "♥"; color: #bd342d; }
+span.diamond::before { content: "♦"; color: #bd342d; }
+span.spade::before { content: "♠"; }
+:host(.current-player) .card-back,
+:host(.discard-area-card) .card-back,
+:host(.pan-area-card) .card-back,
+.card-block.show-front .card-back { display: none; }
+:host(.current-player) .card-front,
+:host(.discard-area-card) .card-front,
+:host(.pan-area-card) .card-front,
+.card-block.show-front .card-front { display: block; }
+:host(.current-player) .card-widget,
+:host(.discard-area-card) .card-widget {
+  width: 4.5rem;
+  height: 6.6rem;
+}
+:host(.current-player) .pai-name,
+:host(.discard-area-card) .pai-name {
+  margin-top: 1.25rem;
+  text-align: center;
+  writing-mode: horizontal-tb;
+  font-size: 0.95rem;
+}
+:host(.zhuang-area-card) .card-widget {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: 1.65rem;
+}
+:host(.zhuang-area-card) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+:host(.zhuang-area-card) .card-block { display: block; width: 100%; height: 100%; }
+:host(.zhuang-area-card) .card-back { display: none; }
+:host(.zhuang-area-card) .card-front {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.08rem;
+  width: 100%;
+  padding: 0.16rem 0.08rem;
+}
+:host(.zhuang-area-card) .card-suit {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+:host(.zhuang-area-card) .card-suit::after { content: ""; }
+:host(.zhuang-area-card) .pai-name {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  writing-mode: horizontal-tb;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: -0.03rem;
+  white-space: nowrap;
+  text-align: center;
+}
+:host(.zhuang-area-card) .pai-desc { display: none; }
+:host(.pan-area-card) .card-block {
+  width: 100%;
+  overflow: hidden;
+}
+:host(.pan-area-card) { display: block; width: 100%; min-width: 0; }
+:host(.pan-area-card) .card-widget {
+  display: block;
+  width: 100%;
+  height: 2.4rem;
+}
+:host(.pan-area-card) .pai-name {
+  display: inline;
+  margin: 0 0 0 0.15rem;
+  writing-mode: horizontal-tb;
+}
+:host(.current-player.other1-area-card),
+:host(.current-player.other2-area-card) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+:host(.current-player.other1-area-card) .card-block,
+:host(.current-player.other2-area-card) .card-block,
+:host(.current-player.other1-area-card) .card-widget,
+:host(.current-player.other2-area-card) .card-widget {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: 2.2rem;
+}
+:host(.current-player.other1-area-card) .card-front,
+:host(.current-player.other2-area-card) .card-front {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.18rem;
+}
+:host(.current-player.other1-area-card) .pai-name,
+:host(.current-player.other2-area-card) .pai-name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  writing-mode: horizontal-tb;
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+/* V4 narrow text cards used by equipment, local hand/custom areas, and judgment. */
+:host(.zhuang-area-card),
+:host(.current-player.hand-area-card),
+:host(.current-player.other1-area-card),
+:host(.current-player.other2-area-card) {
+  display: block;
+  flex: 0 0 2.56rem;
+  width: 2.56rem;
+  min-width: 2.56rem;
+  height: 100%;
+  min-height: 0;
+  scroll-snap-align: start;
+}
+:host(.zhuang-area-card) .card-block,
+:host(.zhuang-area-card) .card-widget,
+:host(.current-player.hand-area-card) .card-block,
+:host(.current-player.hand-area-card) .card-widget,
+:host(.current-player.other1-area-card) .card-block,
+:host(.current-player.other1-area-card) .card-widget,
+:host(.current-player.other2-area-card) .card-block,
+:host(.current-player.other2-area-card) .card-widget {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+:host(.zhuang-area-card) .card-front,
+:host(.current-player.hand-area-card) .card-front,
+:host(.current-player.other1-area-card) .card-front,
+:host(.current-player.other2-area-card) .card-front {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 0.82rem minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.2rem 0.12rem;
+}
+:host(.zhuang-area-card) .card-suit,
+:host(.current-player.hand-area-card) .card-suit,
+:host(.current-player.other1-area-card) .card-suit,
+:host(.current-player.other2-area-card) .card-suit {
+  align-self: start;
+  justify-self: start;
+  font: 800 0.68rem/1 Georgia, serif;
+}
+:host(.zhuang-area-card) .card-suit > span,
+:host(.current-player.hand-area-card) .card-suit > span,
+:host(.current-player.other1-area-card) .card-suit > span,
+:host(.current-player.other2-area-card) .card-suit > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08rem;
+}
+:host(.zhuang-area-card) .info-line,
+:host(.current-player.hand-area-card) .info-line,
+:host(.current-player.other1-area-card) .info-line,
+:host(.current-player.other2-area-card) .info-line {
+  min-width: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+:host(.zhuang-area-card) .pai-name,
+:host(.current-player.hand-area-card) .pai-name,
+:host(.current-player.other1-area-card) .pai-name,
+:host(.current-player.other2-area-card) .pai-name {
+  display: block;
+  width: auto;
+  max-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.03rem;
+  white-space: nowrap;
+  text-align: left;
+}
+
+:host(.pan-area-card) {
+  position: relative;
+  display: block;
+  flex: 0 0 3.2rem;
+  width: 2.65rem;
+  height: 3.2rem;
+  min-width: 0;
+  overflow: visible;
+}
+:host(.pan-area-card)::after {
+  content: attr(data-effect);
+  position: absolute;
+  bottom: -0.2rem;
+  left: -0.2rem;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid #d76859;
+  border-radius: 0.38rem;
+  color: #fff4c7;
+  background: #8d342b;
+  box-shadow: 0 0.15rem 0.3rem rgba(0, 0, 0, 0.35);
+  font: 900 0.72rem/1 Georgia, "STKaiti", serif;
+}
+:host(.pan-area-card) .card-block,
+:host(.pan-area-card) .card-widget { display: block; width: 100%; height: 100%; overflow: hidden; }
+:host(.pan-area-card) .card-front {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 0.82rem minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.2rem 0.12rem;
+}
+:host(.pan-area-card) .card-suit { align-self: start; justify-self: start; font: 800 0.68rem/1 Georgia, serif; }
+:host(.pan-area-card) .card-suit > span { display: flex; flex-direction: column; align-items: center; gap: 0.08rem; }
+:host(.pan-area-card) .info-line { min-width: 0; max-height: 100%; overflow: hidden; }
+:host(.pan-area-card) .pai-name { display: block; width: auto; max-height: 100%; margin: 0; overflow: hidden; writing-mode: vertical-rl; text-orientation: upright; font-size: 0.62rem; font-weight: 800; line-height: 1; letter-spacing: 0.03rem; white-space: nowrap; }
+@media (max-width: 620px) {
+  :host(.current-player) .card-widget,
+  :host(.discard-area-card) .card-widget {
+    width: 3.8rem;
+    height: 5.6rem;
+  }
+  :host(.current-player) .pai-name,
+  :host(.discard-area-card) .pai-name {
+    margin-top: 0.85rem;
+    font-size: 0.82rem;
+  }
+  :host(.current-player.zhuang-area-card) .card-widget {
     width: 100%;
-
-    .card-back {
-      display: none;
-    }
-
-    .card-front {
-      display: block;
-      & span {
-        display: inline;
-        writing-mode: unset;
-        &::before {
-          display: inline;
-        }
-      }
-      .card-suit,
-      .info-line {
-        display: inline;
-        .pai-desc {
-          display: none;
-        }
-      }
-    }
+    height: 100%;
+    min-height: 1.55rem;
+  }
+  :host(.current-player.zhuang-area-card) .pai-name {
+    margin: 0;
+    font-size: 0.66rem;
   }
 }
+
+/* Compact public cards; draw-pile faces follow their reveal state. */
+:host(.discard-area-card), :host(.pai-area-card) { display:block; width:41px; min-width:41px; height:54px; min-height:0; }
+:host(.discard-area-card) .card-block, :host(.pai-area-card) .card-block,
+:host(.discard-area-card) .card-widget, :host(.pai-area-card) .card-widget { display:block; width:100%; height:100%; min-height:0; }
+:host(.discard-area-card) .card-front, :host(.pai-area-card) .card-front { display:grid; grid-template-columns:12px minmax(0,1fr); align-items:center; justify-items:center; width:100%; height:100%; padding:3px 2px; }
+:host(.discard-area-card) .card-suit, :host(.pai-area-card) .card-suit { align-self:start; justify-self:start; font:800 11px/1 Georgia,serif; }
+:host(.discard-area-card) .card-suit > span, :host(.pai-area-card) .card-suit > span { display:flex; flex-direction:column; align-items:center; gap:1px; }
+:host(.discard-area-card) .pai-name, :host(.pai-area-card) .pai-name { display:block; margin:0; writing-mode:vertical-rl; text-orientation:upright; white-space:nowrap; font:800 10px/1 'Microsoft YaHei',sans-serif; letter-spacing:.2px; }
+:host(.discard-area-card) .info-line:has(.pai-desc), :host(.pai-area-card) .info-line:has(.pai-desc) { display:none; }
+:host(.pai-area-card) .card-front { display:none; }
+:host(.pai-area-card) .card-back { display:grid; }
+:host(.pai-area-card) .card-block.show-front .card-front { display:grid; }
+:host(.pai-area-card) .card-block.show-front .card-back { display:none; }

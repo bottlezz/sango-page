@@ -13,29 +13,12 @@ import {
 
 import "./sgCard.js";
 import { SgArea } from "./sgArea.js";
-import paiAreaCss from "./css/SgPaiArea.css";
+import paiAreaCss from "./css/sgPaiArea.css";
 
 class SgPaiArea extends SgArea {
   constructor() {
     super();
 
-    this.paiBoard = document.createElement("div");
-    this.paiBoard.classList.add("pai-board");
-    this.infoPane = document.createElement("div");
-
-    this.paiTop = document.createElement("div");
-    this.paiTop.innerHTML = "牌堆顶";
-    this.paiTop.classList.add("pai-top");
-    this.paiBottom = document.createElement("div");
-    this.paiBottom.innerHTML = "牌堆底";
-
-    this.paiBottom.classList.add("pai-bottom");
-
-    this.paiBoard.appendChild(this.paiTop);
-    this.paiBoard.appendChild(this.infoPane);
-    this.paiBoard.appendChild(this.paiBottom);
-
-    this.shadowRoot.appendChild(this.paiBoard);
     this.style.append(paiAreaCss);
   }
   init(deckRef, gameController) {
@@ -48,7 +31,9 @@ class SgPaiArea extends SgArea {
       const value = snapshot.val();
       const cardWc = document.createElement("sg-card");
       cardWc.className = this.areaType + "-card";
-      this.cards[key] = cardWc;
+      this.bottomCards ??= {};
+      this.bottomCards[key] = cardWc;
+      cardWc.style.order = 1000000 + Object.keys(this.bottomCards).length;
       cardWc.init(
         ref(this.gameController.db, `${paiBottomCardsPath}/${key}`),
         value,
@@ -56,32 +41,18 @@ class SgPaiArea extends SgArea {
       );
       cardWc.setAttribute("exportparts", "card-widget");
       this.cardArea.appendChild(cardWc);
+      this.dispatchEvent(new CustomEvent('cards-updated', {bubbles:true, composed:true}));
     });
 
     onChildRemoved(paiBottomCardsRef, (snapshot) => {
       const key = snapshot.key;
       const value = snapshot.val();
-      const cardWc = this.cards[key];
-      this.cardArea.removeChild(cardWc);
+      const cardWc = this.bottomCards?.[key];
+      cardWc?.remove();
+      if (this.bottomCards) delete this.bottomCards[key];
+      this.dispatchEvent(new CustomEvent('cards-updated', {bubbles:true, composed:true}));
     });
 
-    this.paiTop.addEventListener("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const fromPath = e.dataTransfer.getData("text");
-      this.gameController.moveCardFromPathToRef(
-        fromPath,
-        child(this.deckRef, "/cards"),
-        false
-      );
-    });
-
-    this.paiBottom.addEventListener("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const fromPath = e.dataTransfer.getData("text");
-      this.gameController.moveCardFromPathToRef(fromPath, paiBottomCardsRef);
-    });
   }
 }
 

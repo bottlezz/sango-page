@@ -15,6 +15,8 @@ import { SgArea } from "./sgArea.js";
 import "./sgJiang.js";
 
 class SgJiangArea extends SgArea {
+  selectedGenerals = [];
+  selectionLocked = false;
   constructor() {
     super();
   }
@@ -45,9 +47,17 @@ class SgJiangArea extends SgArea {
       if (this.classList.contains("current-player")) {
         cardWc.classList.add("current-player");
       }
+      if (this.areaType == "jiang-area" && !this.isTableArea()) {
+        cardWc.classList.add("selection-card");
+        cardWc.addEventListener("select-general", () => {
+          this.selectGeneral(cardWc);
+        });
+      }
       this.cards[key] = cardWc;
       cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
+      cardWc.setGeneralLocked(this.selectionLocked);
       this.cardArea.prepend(cardWc);
+      this.updateSelectionAvailability();
 
       this.lockJiangArea();
     });
@@ -57,12 +67,19 @@ class SgJiangArea extends SgArea {
       // console.log(`on child removed: ${key}`);
       // console.log(value);
       const cardWc = this.cards[key];
+      const selectedIndex = this.selectedGenerals.indexOf(cardWc);
+      if (selectedIndex >= 0) {
+        this.selectedGenerals.splice(selectedIndex, 1);
+        this.dispatchSelectionChange();
+      }
       this.cardArea.removeChild(cardWc);
+      delete this.cards[key];
       this.lockJiangArea();
     });
 
     this.addEventListener("drop", (e) => {
       e.preventDefault();
+      if (this.selectionLocked) return;
       console.log("areaDrop");
       const fromPath = e.dataTransfer.getData("text");
       if (!fromPath.includes("/jiang")) {
@@ -86,6 +103,83 @@ class SgJiangArea extends SgArea {
     } else {
       this.classList.remove("locked");
     }
+  }
+
+  selectGeneral(cardWc) {
+    if (this.selectionLocked) return;
+    const index = this.selectedGenerals.indexOf(cardWc);
+    if (index >= 0) {
+      this.selectedGenerals.splice(index, 1);
+      cardWc.setSelectedForLockIn(false);
+    } else if (this.selectedGenerals.length < 2) {
+      this.selectedGenerals.push(cardWc);
+    }
+    this.selectedGenerals.forEach((card, selectedIndex) =>
+      card.setSelectedForLockIn(true, selectedIndex === 0 ? "主将" : "副将")
+    );
+    this.dispatchSelectionChange();
+  }
+
+  dispatchSelectionChange() {
+    this.updateSelectionAvailability();
+    this.dispatchEvent(
+      new CustomEvent("general-selection-change", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          count: this.selectedGenerals.length,
+          locked: this.selectionLocked,
+        },
+      })
+    );
+  }
+
+  updateSelectionAvailability() {
+    const selectionFull = this.selectedGenerals.length === 2;
+    Object.values(this.cards).forEach((card) => {
+      card.classList.toggle(
+        "selection-unavailable",
+        selectionFull && !this.selectedGenerals.includes(card)
+      );
+    });
+  }
+
+  async lockInSelected() {
+    const playerKey = this.gameController.currentPlayer;
+    if (!playerKey || this.selectionLocked || this.selectedGenerals.length != 2) {
+      return false;
+    }
+
+    const snapshots = await Promise.all(
+      this.selectedGenerals.map((card) => get(card.cardRef))
+    );
+    if (snapshots.some((snapshot) => !snapshot.exists())) return false;
+
+    const rootRef = ref(this.gameController.db);
+    const rootUrl = rootRef.toString();
+    const updates = {};
+    this.selectedGenerals.forEach((card, index) => {
+      const snapshot = snapshots[index];
+      const sourcePath = card.cardRef.toString().replace(rootUrl, "");
+      updates[sourcePath] = null;
+      updates[
+        `game/${this.gameController.gameId}/${playerKey}/jiang${index + 1}/cards/${snapshot.key}`
+      ] = snapshot.val();
+    });
+    updates[`game/${this.gameController.gameId}/${playerKey}/jiangLocked`] = true;
+    await this.gameController.writePatch(updates, "确认选将");
+    return true;
+  }
+
+  setLocked(locked) {
+    this.selectionLocked = locked;
+    if (!locked) {
+      this.selectedGenerals.forEach((card) => card.setSelectedForLockIn(false));
+      this.selectedGenerals = [];
+    }
+    Object.values(this.cards).forEach((card) => card.setGeneralLocked(locked));
+    this.classList.toggle("selection-locked", locked);
+    this.dispatchSelectionChange();
   }
 }
 

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sango UI V3 · 无边框阵营标识</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:#071815; --table:#103a32; --table-2:#0b2b26; --panel:#102824;
+      --paper:#f0e4c6; --paper-2:#d5bd87; --ink:#282015; --text:#f3ead7;
+      --muted:#9eb0a8; --line:rgba(238,229,205,.18); --gold:#e2b84b;
+      --red:#c94e43; --cyan:#61a9b3; --green:#4e9870;
+      --shadow:0 10px 24px rgba(0,0,0,.3);
+    }
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg)}
+    body{color:var(--text);font-family:Inter,"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:radial-gradient(circle at 50% 25%,#16443b 0,transparent 40%),linear-gradient(150deg,#061310,#0b2520)}
+    button{font:inherit}.app{min-height:100vh;display:grid;grid-template-rows:54px 1fr}
+    .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(5,18,16,.94);backdrop-filter:blur(12px)}
+    .seal{display:grid;place-items:center;width:32px;height:32px;background:#8f302a;border:1px solid #d76859;font:700 18px Georgia,serif}
+    .brand{font:700 16px Georgia,"STKaiti",serif;letter-spacing:.12em}.room{color:var(--muted);font-size:12px}
+    .mode{margin-left:auto;display:flex;align-items:center;gap:8px;color:#d8e0db;font-size:12px}.live-dot{width:7px;height:7px;border-radius:50%;background:#71c18f;box-shadow:0 0 0 4px rgba(113,193,143,.12)}
+    .top-btn{border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:var(--text);background:rgba(255,255,255,.06);cursor:pointer}
+
+    .table-shell{width:min(1380px,100%);margin:auto;padding:9px 10px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:160px minmax(238px,1fr) 210px;gap:8px 9px;height:calc(100vh - 54px);min-height:620px}
+    .opponent-rail{display:contents}
+    .player{position:relative;min-width:0;border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,rgba(18,54,47,.98),rgba(8,29,25,.98));box-shadow:var(--shadow);overflow:hidden}
+    .player.current{border-color:var(--gold);box-shadow:0 0 0 2px rgba(226,184,75,.16),var(--shadow)}
+    .player.current:before{content:"你";position:absolute;right:8px;top:8px;z-index:5;padding:2px 7px;border-radius:20px;color:#261900;background:var(--gold);font-size:11px;font-weight:800}
+    .remote{display:grid;grid-template-columns:128px 1fr}.p2{grid-area:1/1}.p3{grid-area:1/2}.p4{grid-area:1/3}.p5{grid-area:1/4}.p6{grid-area:2/4}
+    .general-pair{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px;background:#081c18}
+    .general{position:relative;min-width:0;border-radius:7px;background-size:cover;background-position:center 20%;overflow:hidden;border:1px solid rgba(255,255,255,.14)}
+    .general:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.9))}
+    .general span{position:absolute;z-index:1;bottom:5px;left:5px;right:4px;font:700 12px Georgia,"STKaiti",serif;text-shadow:0 2px 4px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .player-info{min-width:0;display:flex;flex-direction:column;padding:9px}.idline{display:flex;align-items:center;gap:6px}.seat{font-size:11px;color:var(--muted)}.name{font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.role{margin-left:auto;padding:2px 7px;border:1px solid var(--line);border-radius:20px;color:#ced8d2;font-size:10px}.role.lord{border-color:#c98b39;color:#ffe0a0;background:rgba(181,76,31,.22)}.role.private{border-color:rgba(226,184,75,.55);color:#ffe8a7}
+    .hp{margin-top:8px;color:#ed6258;letter-spacing:1px;font-size:14px}.hp b{margin-left:4px;color:var(--text);font-size:11px;letter-spacing:0}
+    .counts{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}.count{border:1px solid var(--line);border-radius:5px;padding:4px;text-align:center;color:var(--muted);font-size:10px}.count b{display:block;color:var(--text);font-size:13px}
+    .equipment{margin-top:auto;color:#d9c88e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-row{display:flex;gap:5px;margin-top:5px}.status-btn{border:1px solid var(--line);border-radius:6px;padding:3px 6px;color:var(--muted);background:rgba(255,255,255,.04);font-size:10px;cursor:pointer}.status-btn.on{color:#9fe0e4;border-color:#559aa3;background:rgba(85,154,163,.18)}
+
+    .public-table{grid-area:2/1/3/4;min-width:0;display:grid;grid-template-columns:92px minmax(0,1fr) 232px;gap:9px;padding:10px;border:1px solid rgba(226,184,75,.2);border-radius:16px;background:radial-gradient(circle at center,#174c41,#0e342d 72%);box-shadow:inset 0 0 36px rgba(0,0,0,.22),var(--shadow)}
+    .table-tools{display:flex;flex-direction:column;gap:7px;padding:7px;border:1px solid var(--line);border-radius:10px;background:rgba(3,18,15,.35)}
+    .tool-title,.area-title{color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .manual-btn{border:1px solid var(--line);border-radius:7px;padding:8px 4px;color:var(--text);background:rgba(255,255,255,.06);cursor:pointer}.manual-btn:hover{border-color:rgba(226,184,75,.55)}.manual-btn.danger{margin-top:auto;color:#eaa59d;border-color:rgba(201,78,67,.35)}
+    .discard{min-width:0;padding:8px;border:1px solid var(--line);border-radius:10px;background:rgba(4,22,19,.3);overflow:hidden}.discard-head{display:flex;justify-content:space-between;align-items:center}.discard-head span:last-child{font-size:11px;color:var(--muted)}
+    .played-cards{height:calc(100% - 25px);display:flex;align-items:center;justify-content:center;padding:8px 20px;overflow:hidden}
+    .mini-card{width:74px;height:112px;flex:0 0 74px;margin-left:-15px;padding:7px;border:1px solid #8c713b;border-radius:8px;color:var(--ink);background:linear-gradient(145deg,#fff8e5,#d7bf88);box-shadow:0 5px 12px rgba(0,0,0,.28);cursor:pointer;text-align:left;transition:.14s}.mini-card:first-child{margin-left:0}.mini-card:hover,.mini-card.selected{transform:translateY(-9px);z-index:3}.mini-card.selected{box-shadow:0 0 0 3px var(--gold),0 8px 16px rgba(0,0,0,.38)}.mini-card .suit{font:800 15px Georgia,serif}.mini-card.red .suit{color:#bd342d}.mini-card .card-name{display:block;margin-top:17px;text-align:center;font:800 17px Georgia,"STKaiti",serif}.mini-card .where{display:block;margin-top:16px;color:#735f39;font-size:9px;text-align:center}
+    .deck-area{min-width:0;display:grid;grid-template-rows:auto 1fr auto;gap:7px}.deck-stack{display:grid;grid-template-columns:1fr 1fr;gap:7px}.dropzone{display:grid;place-items:center;text-align:center;border:1px dashed rgba(238,229,205,.34);border-radius:9px;color:#c8d4ce;background:rgba(0,0,0,.13);font-size:11px}.dropzone strong{display:block;color:#fff0bd;font-size:15px}.draw-pile{position:relative;display:grid;place-items:center;border:1px solid #c97859;border-radius:9px;background:repeating-linear-gradient(45deg,#743029,#743029 6px,#934138 6px,#934138 12px);box-shadow:0 7px 14px rgba(0,0,0,.25)}.draw-pile b{font-size:26px}.draw-pile span{font-size:10px}.draw-pile:before,.draw-pile:after{content:"";position:absolute;inset:4px -4px -4px 4px;border:1px solid rgba(201,120,89,.55);border-radius:9px;z-index:-1}.deck-actions{display:flex;gap:6px}.deck-actions button{flex:1;border:1px solid var(--line);border-radius:7px;padding:6px;color:var(--text);background:rgba(255,255,255,.06);cursor:pointer;font-size:11px}
+
+    .local{grid-area:3/1/4/5;display:grid;grid-template-columns:210px 170px minmax(0,1fr);gap:10px;padding:10px;background:linear-gradient(145deg,rgba(18,63,53,.98),rgba(7,28,24,.98))}.local .general-pair{border-radius:9px;min-height:0}.self-meta{display:flex;flex-direction:column;padding:4px}.self-meta h3{margin:0;font:700 16px Georgia,"STKaiti",serif}.health-control{display:flex;align-items:center;gap:5px;margin-top:8px}.circle-btn{width:27px;height:27px;border:1px solid var(--line);border-radius:50%;color:var(--text);background:rgba(255,255,255,.06);cursor:pointer}.zone-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:9px}.zone-tabs button{border:1px solid var(--line);border-radius:7px;padding:6px;color:#cbd7d1;background:rgba(255,255,255,.05);font-size:11px;cursor:pointer}.zone-tabs button.active{color:#241800;background:var(--gold);border-color:var(--gold)}
+    .hand-area{min-width:0;display:grid;grid-template-rows:1fr 48px;gap:6px}.hand{min-width:0;display:flex;align-items:flex-end;justify-content:center;padding:8px 24px 0;overflow:hidden}.hand .mini-card{width:78px;height:122px;flex-basis:78px;margin-left:-13px}.actionbar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-top:1px solid var(--line);padding-top:7px}.selection{min-width:0;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.selection strong{color:#ffe7a5}.action-buttons{display:flex;gap:5px}.action-buttons button{border:1px solid var(--line);border-radius:7px;padding:7px 9px;color:var(--text);background:rgba(255,255,255,.06);cursor:pointer;font-size:11px}.action-buttons button.primary{color:#251900;border-color:#f4ce75;background:linear-gradient(#edc55f,#c88a2d)}.action-buttons button:disabled{opacity:.32;cursor:default}
+    .toast{position:fixed;top:65px;left:50%;z-index:60;transform:translate(-50%,-15px);opacity:0;padding:9px 14px;border-radius:8px;color:#231700;background:var(--gold);font-weight:750;transition:.18s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+    @media(max-width:900px){
+      body{overflow:auto}.app{display:block}.table-shell{display:flex;flex-direction:column;min-height:0;padding:8px}.opponent-rail{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 1px 7px}.remote{flex:0 0 250px;height:154px;scroll-snap-align:center}.p6{order:unset}.public-table{order:2;width:100%;height:300px;grid-template-columns:72px minmax(0,1fr) 170px}.local{order:3;width:100%;min-height:330px;grid-template-columns:160px 1fr}.local>.general-pair{grid-column:1}.self-meta{grid-column:1}.hand-area{grid-column:2;grid-row:1/3}.played-cards{justify-content:flex-start;overflow-x:auto}.topbar{height:54px}.room{display:none}
+    }
+    @media(max-width:620px){
+      .topbar{padding:0 10px}.brand{font-size:13px}.mode span:last-child{display:none}.table-shell{gap:8px}
+      .opponent-rail{gap:6px}.remote{flex-basis:210px;width:210px;height:138px;grid-template-columns:76px minmax(0,1fr);align-self:center}.remote .general-pair{padding:3px}.remote .general span{bottom:3px;left:3px;font-size:9px}.remote .player-info{padding:7px}.remote .hp{margin-top:5px;letter-spacing:0}.remote .hp:before{content:"HP ";color:#eaa55e;font-size:11px;font-weight:800}.remote .hp-hearts{display:none}.remote .hp b{margin-left:0;font-size:14px}.remote .counts{gap:3px;margin-top:5px}.remote .count{padding:3px}.remote .equipment{font-size:10px}.remote .status-row{margin-top:3px}
+      .public-table{height:auto;min-height:390px;grid-template-columns:1fr 1fr;grid-template-rows:auto 210px}.table-tools{grid-column:1/3;display:grid;grid-template-columns:repeat(5,1fr)}.tool-title{display:none}.manual-btn.danger{margin:0}.discard{grid-column:1/3}.deck-area{grid-column:1/3;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto}.area-title{display:none}.deck-actions{flex-direction:column}
+      .local{position:sticky;bottom:0;z-index:20;display:grid;grid-template-columns:76px minmax(0,1fr);grid-template-rows:88px auto;padding:7px;gap:6px;min-height:258px}.local>.general-pair{display:grid;grid-column:1;grid-row:1;padding:3px;border-radius:7px}.local .general span{bottom:3px;left:3px;font-size:9px}.self-meta{display:flex;grid-column:2;grid-row:1;padding:1px 3px}.self-meta h3{font-size:13px}.self-meta .health-control{margin-top:3px}.self-meta .circle-btn{width:24px;height:24px}.self-meta .status-row{margin-top:2px}.self-meta .zone-tabs{display:flex;gap:3px;margin-top:3px;overflow-x:auto}.self-meta .zone-tabs button{flex:0 0 auto;padding:3px 5px;font-size:9px}
+      .hand-area{grid-column:1/3;grid-row:2;grid-template-rows:106px 58px}.hand{justify-content:flex-start;overflow-x:auto;padding:3px 16px 0}.hand .mini-card{height:100px}.actionbar{grid-template-columns:1fr}.action-buttons{overflow-x:auto}.action-buttons button{padding:6px 9px;white-space:nowrap}.mini-card{margin-left:-10px}.mode{font-size:11px}}
+    /* V3: faction appears only on revealed portraits. */
+    .app{grid-template-rows:54px auto 1fr}.design-controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 18px;background:#081e19;border-bottom:1px solid var(--line);font-size:13px}.design-controls strong{color:#efd18b}.design-controls button{padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--text);cursor:pointer}.design-controls button[aria-pressed=true]{background:#e2b84b;color:#281e0d}.design-controls small{color:var(--muted)}.table-shell{height:calc(100vh - 108px)}
+    .general{border:0;box-shadow:none;cursor:pointer}.general:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}.general .faction{position:absolute;top:6px;left:6px;z-index:3;display:grid;place-items:center;width:23px;height:27px;border-radius:3px 3px 7px 3px;background:var(--faction);color:#fff9ed;font:800 15px Georgia,"STKaiti",serif;font-style:normal;box-shadow:0 2px 5px #0007;text-shadow:0 1px 2px #0008}.general[data-faction=wei]{--faction:#316da7}.general[data-faction=shu]{--faction:#ac3933}.general[data-faction=wu]{--faction:#267c4b}.general[data-faction=qun]{--faction:#68616f}
+    .general:not(.public){background-image:none!important;background:linear-gradient(145deg,#ddc598,#9c7b50)}.general:not(.public):after{content:"将";inset:0;display:grid;place-items:center;color:#493922;background:none;font:800 26px Georgia,"STKaiti",serif}.general:not(.public) span,.general:not(.public) .faction{display:none}
+    body[data-marker=name] .general.public span{padding-left:21px;min-height:19px;line-height:19px}body[data-marker=name] .general .faction{top:auto;bottom:5px;left:5px;width:18px;height:19px;border-radius:3px;font-size:12px}
+    @media(max-width:620px){.design-controls{padding:8px 10px;gap:6px}.design-controls small{flex-basis:100%}.general .faction{top:4px;left:3px;width:19px;height:23px;font-size:13px}body[data-marker=name] .general.public span{padding-left:17px}body[data-marker=name] .general .faction{left:2px;bottom:3px;width:16px;font-size:11px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar"><span class="seal">杀</span><span class="brand">SANGO · 六人身份局</span><span class="room">房间 006</span><span class="mode"><i class="live-dot"></i><span>手动桌面 · 技能与结算由玩家执行</span></span><button class="top-btn" id="helpBtn">操作说明</button></header>
+<div class="design-controls"><strong>V3 · 无边框武将</strong><button data-marker="corner" aria-pressed="true">角标字章 · 推荐</button><button data-marker="name" aria-pressed="false">姓名旁标签</button><button id="resetGenerals">还原示例</button><small>点击头像切换亮将 / 暗置 · 未亮将不显示阵营</small></div>
+    <main class="table-shell">
+      <section class="opponent-rail" aria-label="其他玩家，按座次排列">
+      <article class="player remote p2"><div class="general-pair"><div class="general" style="background-image:url('../imgs/j2.jpg')"><span>界刘备</span></div><div class="general" style="background-image:url('../imgs/j10.jpg')"><span>张昭张纮</span></div></div><div class="player-info"><div class="idline"><span class="seat">p2</span><span class="name">tt</span><span class="role">匿</span></div><div class="hp"><span class="hp-hearts">♥♥♥♥ </span><b>4/4</b></div><div class="counts"><span class="count"><b>3</b>手牌</span><span class="count"><b>0</b>区1</span><span class="count"><b>0</b>区2</span></div><span class="equipment">装备：绝影 +1</span><div class="status-row"><button class="status-btn">翻面</button><button class="status-btn">横置</button></div></div></article>
+      <article class="player remote p3"><div class="general-pair"><div class="general" style="background-image:url('../imgs/j3.jpg')"><span>界曹操</span></div><div class="general" style="background-image:url('../imgs/j101.jpg')"><span>副将</span></div></div><div class="player-info"><div class="idline"><span class="seat">p3</span><span class="name">sora</span><span class="role">匿</span></div><div class="hp"><span class="hp-hearts">♥♥♥ </span><b>3/4</b></div><div class="counts"><span class="count"><b>5</b>手牌</span><span class="count"><b>1</b>区1</span><span class="count"><b>0</b>区2</span></div><span class="equipment">装备：无</span><div class="status-row"><button class="status-btn">翻面</button><button class="status-btn on">横置</button></div></div></article>
+      <article class="player remote p4"><div class="general-pair"><div class="general" style="background-image:url('../imgs/j4.jpg')"><span>界孙权</span></div><div class="general" style="background-image:url('../imgs/j104.jpg')"><span>副将</span></div></div><div class="player-info"><div class="idline"><span class="seat">p4</span><span class="name">lin</span><span class="role">匿</span></div><div class="hp"><span class="hp-hearts">♥♥♥♥ </span><b>4/4</b></div><div class="counts"><span class="count"><b>2</b>手牌</span><span class="count"><b>0</b>区1</span><span class="count"><b>0</b>区2</span></div><span class="equipment">判定：乐不思蜀</span><div class="status-row"><button class="status-btn">翻面</button><button class="status-btn">横置</button></div></div></article>
+      <article class="player remote p5"><div class="general-pair"><div class="general" style="background-image:url('../imgs/j1.jpg')"><span>刘备</span></div><div class="general" style="background-image:url('../imgs/j105.jpg')"><span>副将</span></div></div><div class="player-info"><div class="idline"><span class="seat">p5</span><span class="name">north</span><span class="role lord">主</span></div><div class="hp"><span class="hp-hearts">♥♥♥♥♥ </span><b>5/5</b></div><div class="counts"><span class="count"><b>6</b>手牌</span><span class="count"><b>0</b>区1</span><span class="count"><b>0</b>区2</span></div><span class="equipment">装备：仁王盾</span><div class="status-row"><button class="status-btn">翻面</button><button class="status-btn">横置</button></div></div></article>
+      <article class="player remote p6"><div class="general-pair"><div class="general" style="background-image:url('../imgs/j341.jpg')"><span>界孙鲁班</span></div><div class="general" style="background-image:url('../imgs/j106.jpg')"><span>副将</span></div></div><div class="player-info"><div class="idline"><span class="seat">p6</span><span class="name">mei</span><span class="role">匿</span></div><div class="hp"><span class="hp-hearts">♥♥ </span><b>2/3</b></div><div class="counts"><span class="count"><b>4</b>手牌</span><span class="count"><b>0</b>区1</span><span class="count"><b>1</b>区2</span></div><span class="equipment">装备：无</span><div class="status-row"><button class="status-btn">翻面</button><button class="status-btn">横置</button></div></div></article>
+      </section>
+
+      <section class="public-table">
+        <aside class="table-tools"><span class="tool-title">牌桌工具</span><button class="manual-btn" data-msg="身份已随机分配；每位玩家只看到自己的身份">身份</button><button class="manual-btn" data-msg="已向六个座位发放武将候选">发将</button><button class="manual-btn" data-msg="弃牌堆已回收并洗牌">洗牌</button><button class="manual-btn" data-msg="已进入手动修正模式">修正</button><button class="manual-btn danger" data-msg="清台需要房主再次确认">清台</button></aside>
+        <section class="discard"><div class="discard-head"><span class="area-title">公共区 · 弃牌与结算</span><span>点击选牌，拖到任意区域</span></div><div class="played-cards">
+          <button class="mini-card red table-card" data-card="闪电"><span class="suit">♥ Q</span><span class="card-name">闪电</span><span class="where">公共区</span></button>
+          <button class="mini-card table-card" data-card="过河拆桥"><span class="suit">♣ 4</span><span class="card-name" style="font-size:14px">过河拆桥</span><span class="where">弃牌</span></button>
+          <button class="mini-card table-card" data-card="乐不思蜀"><span class="suit">♣ 6</span><span class="card-name" style="font-size:14px">乐不思蜀</span><span class="where">弃牌</span></button>
+          <button class="mini-card table-card" data-card="杀"><span class="suit">♣ 4</span><span class="card-name">杀</span><span class="where">弃牌</span></button>
+          <button class="mini-card table-card" data-card="无懈可击"><span class="suit">♣ Q</span><span class="card-name" style="font-size:14px">无懈可击</span><span class="where">弃牌</span></button>
+          <button class="mini-card table-card" data-card="酒"><span class="suit">♠ 9</span><span class="card-name">酒</span><span class="where">弃牌</span></button>
+        </div></section>
+        <aside class="deck-area"><span class="area-title">牌堆</span><div class="deck-stack"><div class="dropzone"><span><strong>牌堆顶</strong>拖牌到这里</span></div><div class="draw-pile"><div><b>84</b><span>剩余牌</span></div></div><div class="dropzone"><span><strong>牌堆底</strong>拖牌到这里</span></div><div class="dropzone"><span><strong>武将堆</strong>剩余 323</span></div></div><div class="deck-actions"><button data-msg="已将顶牌摸入你的手牌">摸一张</button><button data-msg="已展示牌堆顶">亮顶牌</button></div></aside>
+      </section>
+
+      <section class="player local current">
+        <div class="general-pair"><div class="general" style="background-image:url('../imgs/j82.jpg')"><span>界黄盖</span></div><div class="general" style="background-image:url('../imgs/j341.jpg')"><span>界孙鲁班</span></div></div>
+        <aside class="self-meta"><div class="idline"><span class="seat">p1 · 你</span><span class="name">greg</span><span class="role private">忠 · 私密</span></div><div class="health-control"><button class="circle-btn" id="hpDown">−</button><span class="hp" id="selfHp">♥♥♥ <b>3/4</b></span><button class="circle-btn" id="hpUp">＋</button></div><div class="status-row"><button class="status-btn">翻面</button><button class="status-btn">横置</button></div><div class="zone-tabs"><button class="active">手牌 6</button><button>装备 1</button><button>判定 0</button><button>区1 0</button><button>区2 0</button><button data-msg="点击武将卡上的技能查看说明">武将技能</button></div></aside>
+        <div class="hand-area"><div class="hand">
+          <button class="mini-card hand-card red" data-card="闪"><span class="suit">♦ 9</span><span class="card-name">闪</span><span class="where">基本牌</span></button>
+          <button class="mini-card hand-card red" data-card="杀"><span class="suit">♥ 8</span><span class="card-name">杀</span><span class="where">基本牌</span></button>
+          <button class="mini-card hand-card" data-card="无中生有"><span class="suit">♣ J</span><span class="card-name" style="font-size:14px">无中生有</span><span class="where">锦囊</span></button>
+          <button class="mini-card hand-card" data-card="铁索连环"><span class="suit">♠ Q</span><span class="card-name" style="font-size:14px">铁索连环</span><span class="where">锦囊</span></button>
+          <button class="mini-card hand-card red" data-card="桃"><span class="suit">♥ Q</span><span class="card-name">桃</span><span class="where">基本牌</span></button>
+          <button class="mini-card hand-card" data-card="仁王盾"><span class="suit">♣ 2</span><span class="card-name" style="font-size:15px">仁王盾</span><span class="where">防具</span></button>
+        </div><div class="actionbar"><div class="selection" id="selection">选择一张或多张牌，然后执行手动操作。</div><div class="action-buttons"><button id="cancelBtn" disabled>取消</button><button class="card-action" disabled data-action="摸入手牌">摸</button><button class="card-action" disabled data-action="移到弃牌堆">弃</button><button class="card-action" disabled data-action="切换展示状态">亮</button><button class="card-action primary" disabled data-action="放到公共结算区">出</button><button class="card-action" disabled data-action="选择移动区域">移动到…</button></div></div></div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    const toast=document.getElementById('toast');
+    const selected=new Set();
+    const cards=[...document.querySelectorAll('.mini-card')];
+    const actions=[...document.querySelectorAll('.card-action')];
+    const cancel=document.getElementById('cancelBtn');
+    const selection=document.getElementById('selection');
+    function say(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1700)}
+    function render(){const names=[...selected].map(c=>`【${c.dataset.card}】`);selection.innerHTML=names.length?`已选择 <strong>${names.join('、')}</strong> · 请选择操作`:'选择一张或多张牌，然后执行手动操作。';actions.forEach(b=>b.disabled=!names.length);cancel.disabled=!names.length}
+    cards.forEach(card=>card.addEventListener('click',()=>{card.classList.toggle('selected');card.classList.contains('selected')?selected.add(card):selected.delete(card);render()}));
+    function clear(){selected.forEach(c=>c.classList.remove('selected'));selected.clear();render()}
+    cancel.addEventListener('click',clear);
+    actions.forEach(btn=>btn.addEventListener('click',()=>{say(`${[...selected].length} 张牌：${btn.dataset.action}`);clear()}));
+    document.querySelectorAll('[data-msg]').forEach(btn=>btn.addEventListener('click',()=>say(btn.dataset.msg)));
+    document.querySelectorAll('.status-btn').forEach(btn=>btn.addEventListener('click',()=>{btn.classList.toggle('on');say(`${btn.textContent}状态已手动切换`)}));
+    let hp=3;function drawHp(){document.getElementById('selfHp').innerHTML=`${'♥'.repeat(hp)}<span style="opacity:.22">${'♥'.repeat(4-hp)}</span> <b>${hp}/4</b>`}document.getElementById('hpDown').addEventListener('click',()=>{hp=Math.max(0,hp-1);drawHp()});document.getElementById('hpUp').addEventListener('click',()=>{hp=Math.min(4,hp+1);drawHp()});
+    document.getElementById('helpBtn').addEventListener('click',()=>say('所有操作由玩家确认；卡牌与技能效果不自动结算'));
+  </script>
+  <script>
+    const factionLabels={wei:'魏',shu:'蜀',wu:'吴',qun:'群'};
+    const samples=[['shu',true],['wu',false],['wei',true],['wu',false],['wu',false],['qun',false],['shu',true],['shu',false],['wu',true],['qun',true],['wu',true],['wu',false]];
+    const portraits=[...document.querySelectorAll('.general')];
+    function updatePortrait(g,revealed){g.classList.toggle('public',revealed);g.setAttribute('aria-pressed',String(revealed));g.setAttribute('aria-label',revealed?g.querySelector('span').textContent+' · '+factionLabels[g.dataset.faction]+' · 点击暗置':'未亮将 · 点击亮将');g.title=revealed?'点击暗置':'点击亮将'}
+    portraits.forEach((g,i)=>{g.dataset.faction=samples[i][0];g.tabIndex=0;g.setAttribute('role','button');const badge=document.createElement('i');badge.className='faction';badge.textContent=factionLabels[samples[i][0]];badge.setAttribute('aria-hidden','true');g.append(badge);updatePortrait(g,samples[i][1]);g.addEventListener('click',()=>updatePortrait(g,!g.classList.contains('public')));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();g.click()}})});
+    document.querySelectorAll('button[data-marker]').forEach(b=>b.addEventListener('click',()=>{document.body.dataset.marker=b.dataset.marker;document.querySelectorAll('button[data-marker]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))}));
+    document.querySelector('#resetGenerals').addEventListener('click',()=>portraits.forEach((g,i)=>updatePortrait(g,samples[i][1])));
+  </script>
+</body>
+</html>

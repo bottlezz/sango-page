@@ -4,7 +4,10 @@ module.exports = {
   mode: "development",
   devtool: "eval-source-map",
   devServer: {
-    static: false,
+    static: {
+      directory: path.resolve(__dirname),
+      publicPath: "/",
+    },
     hot: true,
   },
   module: {

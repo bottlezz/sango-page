@@ -13,6 +13,8 @@ import {
 import "./sgHpbar.js";
 import commonCss from "./css/common.css";
 import sgPlayerCss from "./css/sgPlayer.css";
+import paiKu from "../data/pai.json";
+import { judgmentEffects } from "../cardOrder.mjs";
 
 const template = document.createElement("template");
 template.innerHTML = `
@@ -24,17 +26,17 @@ ${sgPlayerCss}
   <div name="player-game-area">
     <div class="open-info">
       <div class="player-info">
-        <span class="player-key"> </span><span>: </span>
-        [<span class="player-role">-</span><span class="player-role-marker">匿</span>]
+        <span class="player-key"> </span>
         <span class="player-name"></span>
+        <span class="player-role">-</span><span class="player-role-marker">匿</span>
       </div> 
       <div class="hp-holder"><span class="hp"></span></div>
       <div name="deck-area" class="decks">
         <div class="hand-count"><span>2</span></div>
-        <div class="area1-count"><span>2<span></div>
-        <div class="area2-count"><span>2<span></div>
+        <div class="area1-count"><span>2</span></div>
+        <div class="area2-count"><span>2</span></div>
         <div class="jiang-pick"><span class="material-symbols-outlined">
-        group
+        武将
         </span></div>
       </div>
     </div>
@@ -44,13 +46,19 @@ ${sgPlayerCss}
   </div>
   <div name="addtional-area">
     <div class="debuff-area">
-      <span class="debuff debuff-0 "><span class="material-symbols-outlined">
-      flip_camera_android
-      </span></span>
-      <span class="debuff debuff-1"><span class="material-symbols-outlined">
-      link
-      </span></span>
+      <span class="debuff debuff-0">翻面</span>
+      <span class="debuff debuff-1">连环</span>
     </div>
+  </div>
+  <div class="player-toolbar" aria-label="本地玩家工具栏">
+    <div class="hp-controls" aria-label="调整体力">
+      <button type="button" data-action="hp-minus" aria-label="扣血" title="扣血"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"/></svg></button>
+      <button type="button" data-action="hp-plus" aria-label="加血" title="加血"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10"/></svg></button>
+    </div>
+    <button type="button" data-debuff="0">翻面</button>
+    <button type="button" data-debuff="1">连环</button>
+    <button type="button" data-action="select-general">选将</button>
+    <button type="button" data-action="hp-limit">血量上限</button>
   </div>
   <div name="drag-on-view">
     <div class="hand-drop">手牌</div>
@@ -95,12 +103,62 @@ class SgPlayer extends HTMLElement {
 
     const paiInfo = this.shadowRoot.querySelector(`.pai-info`);
     const openInfo = this.shadowRoot.querySelector(`.open-info`);
+    const generalSlots = document.createElement("div");
+    generalSlots.className = "general-slots";
+    generalSlots.setAttribute("aria-label", "主将与副将");
     this.handArea = document.createElement("sg-area");
 
     this.handArea.classList.add("hide");
 
     this.jiangArea = document.createElement("sg-jiangarea");
-    this.jiangArea.classList.add("hide");
+    this.jiangArea.classList.add("general-selection");
+    this.jiangArea.setAttribute("aria-label", "武将候选");
+    this.generalSelectionDialog = document.createElement("div");
+    this.generalSelectionDialog.className = "general-selection-dialog hide";
+    const selectionHeader = document.createElement("header");
+    selectionHeader.innerHTML =
+      "<strong>选择武将</strong><span>七选二 · 双将3v3</span>";
+    const selectionClose = document.createElement("button");
+    selectionClose.type = "button";
+    selectionClose.textContent = "关闭";
+    selectionClose.addEventListener("click", () => {
+      this.generalSelectionDialog.classList.add("hide");
+      this.classList.remove("general-selection-open");
+    });
+    this.selectionLockButton = document.createElement("button");
+    this.selectionLockButton.type = "button";
+    this.selectionLockButton.className = "selection-lock";
+    this.selectionLockButton.textContent = "锁定武将 0/2";
+    this.selectionLockButton.disabled = true;
+    this.selectionLockButton.addEventListener("click", async () => {
+      this.selectionLockButton.disabled = true;
+      const locked = await this.jiangArea.lockInSelected();
+      if (locked) {
+        this.generalSelectionDialog.classList.add("hide");
+        this.classList.remove("general-selection-open");
+      } else {
+        this.selectionLockButton.disabled = false;
+      }
+    });
+    this.jiangArea.addEventListener("general-selection-change", (event) => {
+      const { count, locked } = event.detail;
+      const generals = this.jiangArea.selectedGenerals.map(card =>
+        card.shadowRoot.querySelector(".jiang-name")?.textContent || "未选择"
+      );
+      this.selectionStatus.textContent = `主将：${generals[0] || "未选择"}　/　副将：${generals[1] || "未选择"}`;
+      this.selectionLockButton.textContent = locked
+        ? "武将已锁定"
+        : `锁定武将 ${count}/2`;
+      this.selectionLockButton.disabled = locked || count != 2;
+      this.generalSelectionDialog.classList.toggle("selection-locked", locked);
+    });
+    selectionHeader.append(selectionClose);
+    const selectionFooter = document.createElement("footer");
+    this.selectionStatus = document.createElement("span");
+    this.selectionStatus.className = "selection-status";
+    this.selectionStatus.textContent = "主将：未选择　/　副将：未选择";
+    selectionFooter.append(this.selectionStatus, this.selectionLockButton);
+    this.generalSelectionDialog.append(selectionHeader, this.jiangArea, selectionFooter);
 
     this.jiang1Area = document.createElement("sg-jiangarea");
     this.jiang1Area.classList.add("jiang-block");
@@ -109,36 +167,127 @@ class SgPlayer extends HTMLElement {
     this.jiang2Area.classList.add("jiang-block");
 
     this.zhuangArea = document.createElement("sg-area");
+    this.zhuangArea.setAttribute("aria-label", "装备区，最多四张");
 
     this.panArea = document.createElement("sg-area");
+    this.judgmentArea = document.createElement("div");
+    this.judgmentArea.className = "judgment-area";
+    this.judgmentArea.setAttribute("aria-label", "判定区：乐不思蜀、兵粮寸断、闪电");
+    this.judgmentArea.append(this.panArea);
 
     this.other1Area = document.createElement("sg-area");
     this.other2Area = document.createElement("sg-area");
+    this.other1Area.setAttribute("aria-label", "区域一");
+    this.other2Area.setAttribute("aria-label", "区域二");
+    this.handArea.setAttribute("aria-label", "手牌区");
     this.other1Area.classList.add("hide");
     this.other2Area.classList.add("hide");
 
     playerDeckAreaWdight.append(this.zhuangArea);
-    this.addtionalArea.append(this.panArea);
+    this.addtionalArea.append(this.judgmentArea);
 
     paiInfo.append(this.handArea);
     paiInfo.append(this.other1Area);
     paiInfo.append(this.other2Area);
-    openInfo.append(this.jiang1Area);
-    openInfo.append(this.jiang2Area);
-
-    this.widget.append(this.jiangArea);
-    this.addEventListener("dragenter", (e) => {
-      e.preventDefault();
-      this.dragOnView.classList.add("drag-over");
+    const areaHeading = document.createElement("header");
+    areaHeading.className = "area-panel-heading";
+    areaHeading.innerHTML = '<strong></strong><button type="button">关闭</button>';
+    areaHeading.querySelector("button").addEventListener("click", () => paiInfo.hidePopover());
+    paiInfo.prepend(areaHeading);
+    const areaActions = document.createElement("footer");
+    areaActions.className = "area-panel-actions";
+    for (const [label, action] of [["拿取所选", "drawPai"], ["弃置所选", "discardPai"], ["亮出/暗置", "showPai"], ["取消选择", "unselectCard"]]) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = label;
+      button.addEventListener("click", async () => {
+        const cards = Object.values(this.inspectedArea?.cards || {});
+        const selected = cards.filter(card => this.gameController.selectedCards.includes(card));
+        try {
+          if (action === 'drawPai') await this.gameController.drawSelectedCards(selected);
+          else if (action === 'discardPai') await this.gameController.discardSelectedCards(selected);
+          else selected.forEach(card => card[action]());
+        } catch (error) { window.alert(error.message || '移动失败，请重试'); }
+      });
+      areaActions.append(button);
+    }
+    paiInfo.append(areaActions);
+    paiInfo.addEventListener("dragstart", () => {
+      if (paiInfo.matches(":popover-open")) paiInfo.hidePopover();
     });
+    generalSlots.append(this.jiang1Area);
+    generalSlots.append(this.jiang2Area);
+    openInfo.append(generalSlots);
 
-    this.addEventListener("dragleave", (e) => {
-      this.dragOnView.classList.remove("drag-over");
+    this.widget.append(this.generalSelectionDialog);
+    this.dropPicker = document.createElement("dialog");
+    this.dropPicker.className = "drop-picker";
+    this.dropPicker.setAttribute("aria-label", "选择卡牌放入区域");
+    this.dropPicker.innerHTML = `<h3>选择放入区域</h3><p class="drop-summary"></p>
+      <div class="drop-options">
+        <button type="button" data-area="handArea">手牌</button>
+        <button type="button" data-area="zhuangArea">装备</button>
+        <button type="button" data-area="other1Area">区1</button>
+        <button type="button" data-area="other2Area">区2</button>
+      </div><div class="judgment-options">
+        <p class="judgment-label">判定区：</p>
+        <p class="judgment-summary"></p>
+        <div class="drop-options">
+          <button type="button" data-effect="乐不思蜀">乐不思蜀</button>
+          <button type="button" data-effect="兵粮寸断">兵粮寸断</button>
+          <button type="button" data-effect="闪电">闪电</button>
+        </div>
+      </div><p class="drop-error" role="status"></p>
+      <button type="button" class="drop-cancel">取消</button>`;
+    this.shadowRoot.append(this.dropPicker);
+    this.dropPicker.querySelector(".drop-cancel").addEventListener("click", () => this.dropPicker.close());
+    this.dropPicker.addEventListener("close", () => { this.pendingDrop = null; const done = this.dropComplete; this.dropComplete = null; done?.(Boolean(this.dropCommitted)); });
+    this.dropPicker.addEventListener("cancel", (event) => {
+      if (this.dropBusy) event.preventDefault();
     });
+    this.dropPicker.querySelectorAll("[data-area]").forEach(button => {
+      button.addEventListener("click", () => this.confirmPlayerDrop(button.dataset.area));
+    });
+    this.dropPicker.querySelectorAll('[data-effect]').forEach(button => {
+      button.addEventListener('click', () => {
+        const path = this.judgmentPaths[Object.keys(this.pendingEffects).length];
+        this.pendingEffects[path] = button.dataset.effect;
+        if (Object.keys(this.pendingEffects).length === this.judgmentPaths.length) {
+          this.confirmPlayerDrop('panArea', this.pendingEffects);
+        } else this.renderJudgmentChoices();
+      });
+    });
+    // Capture before nested area handlers can move a card immediately.
+    this.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    });
+    this.addEventListener("drop", (event) => {
+      const path = event.dataTransfer.getData("text");
+      if (path.includes("/jiang")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.openDropPicker(path);
+    }, true);
 
-    this.addEventListener("drop", (e) => {
-      this.dragOnView.classList.remove("drag-over");
-    });
+    this.shadowRoot
+      .querySelector('[data-action="select-general"]')
+      .addEventListener("click", () => this.openGeneralSelection());
+    this.shadowRoot
+      .querySelector('[data-action="hp-limit"]')
+      .addEventListener("click", () => this.openMaxHpPicker());
+    this.shadowRoot
+      .querySelector('[data-action="hp-plus"]')
+      .addEventListener("click", () => {
+        if (!this.classList.contains("current-player") || !this.hpWc) return;
+        this.hpWc.updateCurHp(Math.min(Number(this.hpWc.max), Number(this.hpWc.cur) + 1));
+      });
+    this.shadowRoot
+      .querySelector('[data-action="hp-minus"]')
+      .addEventListener("click", () => {
+        if (!this.classList.contains("current-player") || !this.hpWc) return;
+        this.hpWc.updateCurHp(Number(this.hpWc.cur) - 1);
+      });
 
     // this.addEventListener("pointerenter", (e) => {
     //   console.log("touchoverpalyer");
@@ -153,20 +302,50 @@ class SgPlayer extends HTMLElement {
     this.handArea.classList.add("current-player");
     this.other1Area.classList.add("current-player");
     this.other2Area.classList.add("current-player");
+    this.zhuangArea.classList.add("current-player");
     this.jiangArea.classList.add("current-player");
     this.jiang1Area.classList.add("current-player");
     this.jiang2Area.classList.add("current-player");
     this.hpWc.classList.add("current-player");
 
+    // General cards may have rendered before the player claimed their seat.
+    // Propagate the local visibility state to those existing cards as well.
+    [this.jiangArea, this.jiang1Area, this.jiang2Area].forEach((area) => {
+      area.shadowRoot
+        .querySelectorAll("sg-jiang")
+        .forEach((card) => card.classList.add("current-player"));
+    });
+    [this.handArea, this.other1Area, this.other2Area, this.zhuangArea].forEach(
+      (area) => {
+        area.shadowRoot
+          .querySelectorAll("sg-card")
+          .forEach((card) => card.classList.add("current-player"));
+      }
+    );
+
     this.handArea.classList.remove("hide");
     this.other1Area.classList.remove("hide");
     this.other2Area.classList.remove("hide");
 
+    [this.handArea, this.other1Area, this.other2Area].forEach(area => area.enableOverflowControls());
+
     this.gameController.lockPlayerSelection();
+    this.playerGameArea.appendChild(this.zhuangArea);
     this.widget.appendChild(this.playerGameArea);
   }
 
   renderJiang() {}
+
+  openGeneralSelection() {
+    if (!this.classList.contains("current-player")) return;
+    this.generalSelectionDialog.classList.remove("hide");
+    this.classList.add("general-selection-open");
+  }
+
+  openMaxHpPicker() {
+    if (!this.classList.contains("current-player")) return;
+    this.hpWc.openMaxPicker();
+  }
 
   init(playerRef, gameController) {
     this.playerRef = playerRef;
@@ -187,7 +366,8 @@ class SgPlayer extends HTMLElement {
     onValue(child(playerRef, "/name"), (snapshot) => {
       if (snapshot.exists()) {
         const playerName = snapshot.val();
-        playerNameItem.innerHTML = playerName;
+        playerNameItem.textContent = playerName;
+        playerNameItem.title = playerName;
         if (this.gameController.userName == playerName) {
           this.assginAsCurrentPlayer();
         }
@@ -228,6 +408,9 @@ class SgPlayer extends HTMLElement {
             }
             this.debuff = this.debuff.replaceAt(i, "1");
           }
+          this.shadowRoot
+            .querySelector(`[data-debuff="${i}"]`)
+            .classList.toggle("active", debuff[i] != "0");
         }
         console.log(this.debuff);
       }
@@ -235,66 +418,29 @@ class SgPlayer extends HTMLElement {
 
     for (let i = 0; i < 2; i++) {
       this.shadowRoot
-        .querySelector(`.debuff-${i}`)
+        .querySelector(`[data-debuff="${i}"]`)
         .addEventListener("click", () => {
-          if (this.debuff[i] == "0") {
-            this.debuff = this.debuff.replaceAt(i, "1");
-          } else {
-            this.debuff = this.debuff.replaceAt(i, "0");
-          }
-          console.log("debuff click");
-          set(child(playerRef, "/debuff"), this.debuff);
+          if (!this.classList.contains("current-player")) return;
+          this.debuff = this.debuff.replaceAt(i, this.debuff[i] == "0" ? "1" : "0");
+          this.gameController.setValue(child(playerRef, "/debuff"), this.debuff);
         });
     }
 
     this.shadowRoot
-      .querySelector(".jiang-pick")
-      .addEventListener("click", () => {
-        this.jiangArea.classList.toggle("hide");
-      });
-
-    this.shadowRoot
       .querySelector(".hand-count")
       .addEventListener("click", () => {
-        this.handArea.classList.toggle("hide");
-        this.other1Area.classList.add("hide");
-        this.other2Area.classList.add("hide");
+        this.openAreaPanel(this.handArea, "手牌");
       });
     this.shadowRoot
       .querySelector(".area1-count")
       .addEventListener("click", () => {
-        this.handArea.classList.add("hide");
-        this.other1Area.classList.toggle("hide");
-        this.other2Area.classList.add("hide");
+        this.openAreaPanel(this.other1Area, "区1");
       });
     this.shadowRoot
       .querySelector(".area2-count")
       .addEventListener("click", () => {
-        this.handArea.classList.add("hide");
-        this.other1Area.classList.add("hide");
-        this.other2Area.classList.toggle("hide");
+        this.openAreaPanel(this.other2Area, "区2");
       });
-
-    this.addDragAndDrop(
-      this.shadowRoot.querySelector(".hand-count"),
-      "handArea"
-    );
-    this.addDragAndDrop(
-      this.shadowRoot.querySelector(".area1-count"),
-      "other1Area"
-    );
-    this.addDragAndDrop(
-      this.shadowRoot.querySelector(".area2-count"),
-      "other2Area"
-    );
-
-    const areas = ["hand", "area1", "area2", "pan", "zhuang"];
-    areas.forEach((element) => {
-      this.addDragAndDrop(
-        this.shadowRoot.querySelector(`.${element}-drop`),
-        `${element}Area`
-      );
-    });
 
     // <div class="hand-count"><span>2</span></div>
     // <div class="area1-count"><span>2<span></div>
@@ -303,16 +449,28 @@ class SgPlayer extends HTMLElement {
     this.area1CountSpan = this.shadowRoot.querySelector(`.area1-count > span`);
     this.area2CountSpan = this.shadowRoot.querySelector(`.area2-count > span`);
 
-    onValue(child(playerRef, `/hand`), () => {
-      this.handCountSpan.innerHTML = this.handArea.cardCount;
+    onValue(child(playerRef, `/hand`), (snapshot) => {
+      const count = snapshot.exists() && snapshot.val().cards
+        ? Object.keys(snapshot.val().cards).length
+        : 0;
+      this.handCountSpan.textContent = count;
+      this.handArea.dataset.count = count;
     });
 
-    onValue(child(playerRef, `/other1`), () => {
-      this.area1CountSpan.innerHTML = this.other1Area.cardCount;
+    onValue(child(playerRef, `/other1`), (snapshot) => {
+      const count = snapshot.exists() && snapshot.val().cards
+        ? Object.keys(snapshot.val().cards).length
+        : 0;
+      this.area1CountSpan.textContent = count;
+      this.other1Area.dataset.count = count;
     });
 
-    onValue(child(playerRef, `/other2`), () => {
-      this.area2CountSpan.innerHTML = this.other2Area.cardCount;
+    onValue(child(playerRef, `/other2`), (snapshot) => {
+      const count = snapshot.exists() && snapshot.val().cards
+        ? Object.keys(snapshot.val().cards).length
+        : 0;
+      this.area2CountSpan.textContent = count;
+      this.other2Area.dataset.count = count;
     });
 
     this.handArea.init(child(playerRef, `/hand`), this.gameController);
@@ -323,49 +481,97 @@ class SgPlayer extends HTMLElement {
     this.other1Area.init(child(playerRef, `/other1`), this.gameController);
     this.other2Area.init(child(playerRef, `/other2`), this.gameController);
     this.jiang2Area.init(child(playerRef, `/jiang2`), this.gameController);
-  }
 
-  addDragAndDrop(item, name) {
-    item.addEventListener("drop", (e) => {
-      e.preventDefault();
-      console.log("areaDrop");
-      const fromPath = e.dataTransfer.getData("text");
-
-      // is in selected wc
-      let isSelected = false;
-      for (let i = 0; i < this.gameController.selectedCards.length; i++) {
-        const wc = this.gameController.selectedCards[i];
-        if (wc.cardRef.toString().includes(fromPath)) {
-          isSelected = true;
-          break;
-        }
-      }
-      let deckRef = null;
-      if (name == "handArea") {
-        deckRef = this.handArea.deckRef;
-      } else if (name == "other1Area") {
-        deckRef = this.other1Area.deckRef;
-      } else if (name == "other2Area") {
-        deckRef = this.other2Area.deckRef;
-      } else if (name == "zhuangArea") {
-        deckRef = this.zhuangArea.deckRef;
-      } else if (name == "panArea") {
-        deckRef = this.panArea.deckRef;
-      }
-
-      if (!isSelected) {
-        this.gameController.moveCardFromPathToRef(
-          fromPath,
-          child(deckRef, "/cards")
-        );
-      } else {
-        this.gameController.dropSeletedCards(child(deckRef, "/cards"));
-      }
-    });
-    item.addEventListener("dragover", (e) => {
-      e.preventDefault();
+    onValue(child(playerRef, `/jiangLocked`), (snapshot) => {
+      const locked = snapshot.exists() && snapshot.val() === true;
+      this.jiangArea.setLocked(locked);
+      this.jiang1Area.setLocked(locked);
+      this.jiang2Area.setLocked(locked);
     });
   }
+
+  openAreaPanel(area, label) {
+    if (this.classList.contains("current-player")) return;
+    this.inspectedArea = area;
+    const panel = this.shadowRoot.querySelector(".pai-info");
+    panel.setAttribute("popover", "auto");
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", `${label}区域操作`);
+    const name = this.shadowRoot.querySelector(".player-name").textContent || this.playerRef.key;
+    panel.querySelector("strong").textContent = `${name} · ${label}`;
+    [this.handArea, this.other1Area, this.other2Area].forEach(item => item.classList.toggle("hide", item !== area));
+    panel.showPopover();
+  }
+
+  openDropPicker(path, paths = null, done = null) {
+    const prefix = `game/${this.gameController.gameId}/`;
+    if (!path.startsWith(prefix) || !/\/cards\/[^/]+$/.test(path) || this.dropPicker.open) return;
+    const baseUrl = ref(this.gameController.db).toString();
+    const selectedPaths = this.gameController.selectedCards.map(card =>
+      card.cardRef.toString().replace(baseUrl, "")
+    );
+    this.pendingDrop = [...new Set(paths || (selectedPaths.includes(path) ? selectedPaths : [path]))];
+    this.dropComplete = done; this.dropCommitted = false;
+    const name = this.shadowRoot.querySelector(".player-name").textContent || this.playerRef.key;
+    this.dropPicker.querySelector(".drop-summary").textContent = `将 ${this.pendingDrop.length} 张牌放入 ${name} 的哪个区域？`;
+    this.dropPicker.querySelector(".drop-error").textContent = "";
+    const judgmentPath = child(this.panArea.deckRef, '/cards').toString().replace(baseUrl, '');
+    this.judgmentPaths = this.pendingDrop.filter(path => !path.startsWith(`${judgmentPath}/`));
+    this.pendingEffects = {};
+    this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = false; });
+    this.renderJudgmentChoices();
+    this.dropPicker.showModal();
+  }
+
+  renderJudgmentChoices() {
+    const index = Object.keys(this.pendingEffects).length;
+    this.dropPicker.querySelector('.judgment-summary').textContent = this.judgmentPaths.length > 1
+      ? `第 ${index + 1} / ${this.judgmentPaths.length} 张牌（按拖入顺序选择）` : '';
+    const occupied = [...this.panArea.cardArea.children].map(card => card.cardData?.judgmentEffect || paiKu[card.cardData?.id]?.name);
+    this.dropPicker.querySelectorAll('[data-effect]').forEach(button => {
+      button.disabled = !this.judgmentPaths.length || occupied.length + this.judgmentPaths.length > judgmentEffects.length
+        || occupied.includes(button.dataset.effect) || Object.values(this.pendingEffects).includes(button.dataset.effect);
+    });
+  }
+
+  async confirmPlayerDrop(areaName, effects = null) {
+    if (!this.pendingDrop || this.dropBusy) return;
+    const target = child(this[areaName].deckRef, "/cards");
+    const baseUrl = ref(this.gameController.db).toString();
+    const targetPath = target.toString().replace(baseUrl, "");
+    const paths = this.pendingDrop.filter(path => !path.startsWith(`${targetPath}/`));
+    if (areaName === 'panArea' && paths.length && !effects) {
+      const count = this.panArea.cardArea.children.length;
+      if (count + paths.length > judgmentEffects.length) {
+        this.dropPicker.querySelector('.drop-error').textContent = '判定区每种效果最多一张，总共最多三张，请减少选牌。';
+        return;
+      }
+      this.judgmentPaths = paths;
+      this.pendingEffects = {};
+      this.renderJudgmentChoices();
+      return;
+    }
+    this.dropBusy = true;
+    this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = true; });
+    try {
+      if (!(await this.gameController.targetHasCapacity(target, paths.length))) {
+        this.dropPicker.querySelector(".drop-error").textContent = "装备区最多放四张牌，请选择其他区域或取消。";
+        return;
+      }
+      if (paths.length) await this.gameController.moveOrderedCards(paths, target, null, effects || {});
+      this.dropCommitted = true;
+      this.dropPicker.close();
+    } catch (error) {
+      console.error("Unable to move dropped cards", error);
+      this.dropPicker.querySelector(".drop-error").textContent = error.message || "移动失败，请重试或取消。";
+      this.pendingEffects = {};
+    } finally {
+      this.dropBusy = false;
+      this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = false; });
+      if (this.dropPicker.open) this.renderJudgmentChoices();
+    }
+  }
+
 }
 
 export { SgPlayer };

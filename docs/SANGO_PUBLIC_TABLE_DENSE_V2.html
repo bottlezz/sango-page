@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SANGO · 百张卡牌桌面对比</title>
+<style>
+:root{color-scheme:dark;--line:#e8cf8b40;--gold:#e2b84b;--text:#f4ead2}*{box-sizing:border-box}body{margin:0;color:var(--text);background:radial-gradient(ellipse at top,#195443,#061c18);min-height:100vh;font:14px "Microsoft YaHei",sans-serif}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.topbar{height:54px;display:flex;align-items:center;gap:14px;padding:0 20px;background:#051210ee;border-bottom:1px solid var(--line)}.seal{padding:4px 8px;background:#8f302a;border:1px solid #d76859;font-size:18px}.brand{font:700 16px Georgia,serif}.meta{color:#aebeb6;font-size:12px}.tools{margin-left:auto;position:relative;z-index:10}.tools summary{cursor:pointer;padding:7px 12px;border:1px solid var(--line);border-radius:7px}.tools nav{position:absolute;right:0;top:40px;width:145px;padding:8px;display:grid;gap:5px;background:#0b3027;border:1px solid var(--line);border-radius:8px}main{width:1060px;max-width:calc(100% - 24px);margin:12px auto;padding:20px 0}h1{font-size:20px;color:#f0cc73;margin:0 0 8px}.subtitle{color:#aebeb6;font-size:12px;margin:0 0 20px}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.controls button,.tools button,.actions button{padding:7px 12px;color:var(--text);background:#ffffff09;border:1px solid var(--line);border-radius:6px}.controls button.active{color:#211a12;background:var(--gold);border-color:var(--gold)}.controls label{margin-left:auto;color:#aebeb6;font-size:12px}.controls input{width:62px;padding:6px;border:1px solid var(--line);border-radius:5px;background:#082b25;color:var(--text)}
+/* Fixed desktop footprint shared by both designs. */
+.table{--w:41px;--h:54px;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:9px;width:1020px;max-width:100%;height:250px;padding:9px;border:1px solid var(--line);border-radius:13px;background:#041d18b3;box-shadow:0 12px 28px #0004}.panel{position:relative;display:grid;grid-template-rows:30px minmax(0,1fr);min-width:0;min-height:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#051f19aa}.panel header{display:flex;align-items:center;gap:8px;padding:0 9px;border-bottom:1px solid var(--line);font-size:11px}.panel header small{margin-left:auto;color:#9fb6aa}.viewport{overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#557a64 #07261e;scroll-padding-top:10px}.cards{display:grid;grid-template-columns:repeat(auto-fill,var(--w));grid-auto-rows:var(--h);align-content:start;justify-content:start;gap:9px 4px;padding:10px 7px 8px;min-height:100%}.card{position:relative;display:grid;grid-template-columns:12px minmax(0,1fr);align-items:center;justify-items:center;width:var(--w);height:var(--h);padding:3px 2px;color:#291f13;border:1px solid #8c713b;border-radius:5px;background:linear-gradient(#fff5d8,#d8bd80);transition:transform .14s,filter .14s}.index{align-self:start;justify-self:start;display:flex;flex-direction:column;align-items:center;font:800 11px/1 Georgia,serif;gap:1px}.index i{font-style:normal}.red .index{color:#b6322a}.name{writing-mode:vertical-rl;text-orientation:upright;white-space:nowrap;font:800 10px/1 "Microsoft YaHei",sans-serif;letter-spacing:.2px}.card.selected{transform:translateY(-6px);border:2px solid var(--gold);filter:drop-shadow(0 0 2px var(--gold));z-index:2}.card.back{background:repeating-linear-gradient(45deg,#743029,#743029 5px,#934138 5px,#934138 10px);color:#efd18b;display:grid;place-items:center}.card.back span{font:800 13px Georgia,serif}.actions{position:absolute;top:0;left:0;right:0;height:30px;z-index:4;display:flex;align-items:center;gap:4px;padding:2px 5px;background:#154a39;border:1px solid #d9b45c;overflow:auto;white-space:nowrap}.actions[hidden]{display:none}.actions span{margin-right:auto;font-size:11px;color:#f0cc73}.actions button{font-size:11px;padding:2px 6px;flex:none}.panel:has(.actions:not([hidden])) header{visibility:hidden}
+/* B: rank, suit and name share one vertical column. */
+.table.strip{--w:23px;--h:82px}.strip .card{display:flex;flex-direction:column;gap:3px;padding:3px 1px}.strip .index{align-self:center;justify-self:center;font-size:10px;gap:0}.strip .name{font-size:11px;letter-spacing:0;line-height:1}.notes{margin-top:16px;color:#aebeb6;font-size:12px;line-height:1.8}.notes strong{color:#f0cc73}.feedback{color:#f0cc73;min-height:22px;font-size:12px}.legend{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;font-size:12px;color:#aebeb6}@media(max-width:700px){.topbar{flex-wrap:wrap;height:auto;min-height:54px;padding:8px;gap:8px}.table{height:500px;grid-template-columns:1fr;grid-template-rows:1fr 1fr}.controls label{margin-left:0}}
+.strip .viewport{overflow-x:auto;overflow-y:hidden;touch-action:pan-x;scroll-snap-type:x proximity}.strip .cards{display:flex;flex-wrap:nowrap;align-items:center;gap:4px;width:max-content;min-width:100%;height:100%;padding:10px 7px 14px}.strip .card{flex:0 0 var(--w);scroll-snap-align:start}
+</style>
+<style>
+.card{user-select:none;-webkit-user-select:none;cursor:grab}.card.drag-source{opacity:.22;filter:none}.panel.drop-target{outline:2px solid #e2b84b;outline-offset:-2px;background:#194f3c}.drag-ghost{position:fixed;left:0;top:0;z-index:1000;pointer-events:none;will-change:transform;filter:drop-shadow(0 10px 9px #0008)}.drag-ghost .card{margin:0;transform:rotate(-5deg) scale(1.12);box-shadow:0 0 0 1px #e2b84b;opacity:1}.drag-ghost.stacked:before,.drag-ghost.stacked:after{content:"";position:absolute;inset:0;border:1px solid #bd9a52;border-radius:5px;background:#d8bd80;transform:translate(5px,4px) rotate(5deg);z-index:-1}.drag-ghost.stacked:after{transform:translate(9px,8px) rotate(10deg);z-index:-2}.drag-count{position:absolute;top:-12px;right:-17px;min-width:24px;padding:3px 6px;border-radius:12px;color:#241800;background:#e2b84b;font-size:12px;font-weight:800}.drop-confirm{width:min(340px,calc(100vw - 24px));border:1px solid #d9b45c;border-radius:12px;padding:20px;color:#f4ead2;background:#0b3027;box-shadow:0 20px 60px #0008}.drop-confirm::backdrop{background:#001a1466}.drop-confirm h3{margin:0 0 10px;color:#f0cc73}.drop-confirm p{font-size:13px;line-height:1.6}.drop-confirm footer{display:flex;gap:8px;justify-content:flex-end}.drop-confirm button{padding:8px 15px;border:1px solid var(--line);border-radius:7px;color:#f4ead2;background:#ffffff0c}.drop-confirm .confirm{background:#e2b84b;color:#241800}.drag-tip{margin:12px 0;color:#d3c596;font-size:12px}
+</style>
+<style>.cards > .card{transition:transform .14s,filter .14s,translate .14s ease-out}.cards > .card.insert-left{translate:-6px 0}</style>
+</head>
+<body>
+<header class="topbar"><span class="seal">杀</span><span class="brand">SANGO · 双将3v3</span><span class="meta">房间 006</span><span class="meta">座次 p1</span><details class="tools"><summary>公共工具</summary><nav><button>身份</button><button>发将</button><button>洗牌</button><button>清台</button></nav></details></header>
+<main><h1>公共桌面 · 百张卡牌对比</h1><p class="subtitle">桌面方案采用小牌块，继续以此设计台面。保留移动端直牌参考：单行横向滚动。</p>
+<div class="controls"><button class="active" data-version="tile">桌面 · 小牌块（采用）</button><button data-version="strip">移动端参考 · 直牌</button><label>每区 <input id="amount" type="number" min="0" max="100" value="100"> 张</label><button id="faces" aria-pressed="true">牌堆：正面预览</button><button id="reset">取消选择</button></div>
+<div class="table">
+<section class="panel" data-zone="公共区"><header><strong>公共区 · 弃牌与结算</strong><small></small></header><div class="actions" hidden><span></span><button>摸</button><button>弃</button><button>出</button><button>亮</button><button>取消</button></div><div class="viewport"><div class="cards"></div></div></section>
+<section class="panel" data-zone="牌堆"><header><strong>牌堆</strong><small></small></header><div class="actions" hidden><span></span><button>摸</button><button>亮</button><button>取消</button></div><div class="viewport"><div class="cards"></div></div></section>
+</div>
+<div class="notes"><strong id="design-note">桌面采用 · 41 × 54 px：左侧花色与点数，右侧竖排名称，沿用装备牌块。</strong><br>桌面小牌块按行排列；移动端直牌保持单行，仅横向滚动。上浮选中留有空间。牌堆正面用于比较文字效果，可切换到背面。所有操作仅影响本页示例。</div><p class="feedback" role="status"></p>
+</main>
+<dialog class="drop-confirm" aria-labelledby="drop-title"><h3 id="drop-title">放入目标区域</h3><p></p><footer><button class="cancel" type="button">取消</button><button class="confirm" type="button">确认放入</button></footer></dialog>
+<script>
+const samples=[['♣','2','仁王盾'],['♦','K','骅骝'],['♠','Q','丈八蛇矛'],['♥','Q','闪电'],['♣','6','乐不思蜀'],['♠','10','兵粮寸断'],['♥','3','桃'],['♦','7','杀'],['♣','J','铁索连环'],['♥','8','无中生有'],['♠','K','无懈可击'],['♣','4','过河拆桥'],['♠','5','青龙偃月刀']];
+let faceUp=true;
+const panels=[...document.querySelectorAll('.panel')],feedback=document.querySelector('.feedback');
+function update(panel){const n=panel.querySelectorAll('.selected').length;panel.querySelector('.actions').hidden=!n;panel.querySelector('.actions span').textContent=`已选 ${n} 张`}
+function render(){const input=document.querySelector('#amount');const count=Math.max(0,Math.min(100,Number(input.value)||0));input.value=count;panels.forEach((panel,zone)=>{panel.querySelector('small').textContent=count+' 张';const root=panel.querySelector('.cards');root.replaceChildren();for(let i=0;i<count;i++){const [suit,rank,name]=samples[(i+zone*3)%samples.length];const hidden=zone===1&&!faceUp;const card=document.createElement('button');card.className='card'+('♥♦'.includes(suit)?' red':'')+(hidden?' back':'');card.title=hidden?`第 ${i+1} 张 · 牌背`:`第 ${i+1} 张 · ${suit}${rank} ${name}`;card.setAttribute('aria-label',card.title);card.setAttribute('aria-pressed','false');card.innerHTML=hidden?'<span>牌</span>':`<span class="index"><i>${suit}</i><i>${rank}</i></span><span class="name">${name}</span>`;card.onclick=()=>{card.classList.toggle('selected');card.setAttribute('aria-pressed',String(card.classList.contains('selected')));update(panel)};root.append(card)}panel.querySelector('.viewport').scrollTop=0;update(panel)})}
+function clear(panel){panel.querySelectorAll('.selected').forEach(card=>{card.classList.remove('selected');card.setAttribute('aria-pressed','false')});update(panel)}
+document.querySelectorAll('[data-version]').forEach(button=>button.onclick=()=>{document.querySelector('.table').classList.toggle('strip',button.dataset.version==='strip');document.querySelectorAll('[data-version]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button))});document.querySelector('#design-note').textContent=button.dataset.version==='strip'?'移动端参考 · 23 × 82 px：花色、点数与名称同列竖排，左右滑动查看全部卡牌。':'桌面采用 · 41 × 54 px：左侧花色与点数，右侧竖排名称，沿用装备牌块。'});
+document.querySelector('#amount').onchange=render;document.querySelector('#faces').onclick=event=>{faceUp=!faceUp;event.target.textContent=faceUp?'牌堆：正面预览':'牌堆：背面';event.target.setAttribute('aria-pressed',String(faceUp));render()};document.querySelector('#reset').onclick=()=>panels.forEach(clear);
+panels.forEach(panel=>panel.querySelectorAll('.actions button').forEach(button=>button.onclick=()=>{feedback.textContent=`${panel.dataset.zone} · ${button.textContent} · ${panel.querySelectorAll('.selected').length} 张（预览）`;clear(panel)}));
+document.querySelectorAll('.tools button').forEach(button=>button.onclick=()=>{feedback.textContent=button.textContent+'（预览）';document.querySelector('.tools').open=false});document.addEventListener('keydown',e=>{if(e.key==='Escape'){panels.forEach(clear);document.querySelector('.tools').open=false}});render();
+</script>
+<script>
+// Pointer-driven visual preview only; no game/database writes.
+const table=document.querySelector('.table'),dropDialog=document.querySelector('.drop-confirm');
+const tip=document.createElement('p');tip.className='drag-tip';tip.textContent='区域内拖动排序：金线表示插入位置，松开立即生效。靠近边缘自动滚动。支持整组选牌；跨区域移动需确认，Esc 取消。';table.after(tip);
+let drag=null,suppressClickUntil=0;
+function syncPanels(){panels.forEach(panel=>{panel.querySelector('small').textContent=panel.querySelectorAll('.cards > .card').length+' 张';update(panel)})}
+function targetAt(x,y){return document.elementFromPoint(x,y)?.closest('.panel')||null}
+function highlight(target){panels.forEach(panel=>panel.classList.toggle('drop-target',panel===target))}
+const insertionMark=document.createElement('div');
+insertionMark.setAttribute('aria-hidden','true');
+insertionMark.style.cssText='position:fixed;z-index:999;pointer-events:none;width:3px;border-radius:3px;background:#ffe59a;box-shadow:0 0 7px #e2b84b;display:none';
+document.body.append(insertionMark);
+let shiftedCard=null,highlightedPanel=null,markerKey='',frameId=0;
+function unshiftCards(){setShift(null)}
+function setShift(card){if(card===shiftedCard)return;shiftedCard?.classList.remove('insert-left');card?.classList.add('insert-left');shiftedCard=card}
+function cacheLayout(){
+ const moving=new Set(drag.cards);
+ drag.layout=panels.map(panel=>{const view=panel.querySelector('.viewport'),r=view.getBoundingClientRect();
+  return {panel,view,left:r.left+scrollX,top:r.top+scrollY,width:r.width,height:r.height,maxX:view.scrollWidth-view.clientWidth,maxY:view.scrollHeight-view.clientHeight,
+   cards:[...panel.querySelectorAll('.cards > .card')].filter(card=>!moving.has(card)).map(card=>{
+    const rect=card.getBoundingClientRect(),style=getComputedStyle(card);const dx=parseFloat(style.translate)||0;
+    const dy=style.transform==='none'?0:new DOMMatrixReadOnly(style.transform).m42;
+    return {card,left:rect.left-r.left+view.scrollLeft-dx,top:rect.top-r.top+view.scrollTop-dy,width:rect.width,height:rect.height};
+   })};
+ });drag.invalid=false;
+}
+function placeMarker(x,top,bottom,visible){const key=[x,top,bottom,visible].join(',');if(key===markerKey)return;markerKey=key;insertionMark.style.display=visible?'block':'none';if(visible){insertionMark.style.left=x+'px';insertionMark.style.top=top+'px';insertionMark.style.height=(bottom-top)+'px'}}
+function renderDragFrame(){
+ frameId=0;if(!drag?.active||dropDialog.open)return;
+ if(!drag.layout||drag.invalid)cacheLayout();
+ const d=drag;const target=targetAt(d.x,d.y);d.target=target;
+ if(target!==highlightedPanel){highlightedPanel?.classList.remove('drop-target');target?.classList.add('drop-target');highlightedPanel=target}
+ const entry=d.layout.find(item=>item.panel===target);let keepScrolling=false;
+ if(entry){
+  const {view}=entry,left=entry.left-scrollX,top=entry.top-scrollY;
+  const strip=table.classList.contains('strip'),p=strip?d.x:d.y,lo=strip?left:top,hi=lo+(strip?entry.width:entry.height);
+  const speed=d.released?0:p<lo+26?-Math.min(9,(lo+26-p)/3):p>hi-26?Math.min(9,(p-hi+26)/3):0;
+  const old=strip?view.scrollLeft:view.scrollTop,max=strip?entry.maxX:entry.maxY,next=Math.max(0,Math.min(max,old+speed));
+  if(next!==old){if(strip)view.scrollLeft=next;else view.scrollTop=next;keepScrolling=true}
+  const sx=view.scrollLeft,sy=view.scrollTop,x=d.x-left+sx,y=d.y-top+sy;
+  const index=entry.cards.findIndex(r=>y<r.top||(y<=r.top+r.height&&x<r.left+r.width/2));
+  const before=index<0?null:entry.cards[index],previous=index<0?entry.cards.at(-1):entry.cards[index-1],r=before||previous;
+  d.before=before?.card||null;
+  setShift(previous&&r&&Math.abs(previous.top-r.top)<8?previous.card:null);
+  const mx=r?left+r.left-sx+(before?-3:r.width+1):left+7;
+  const mt=Math.max(top+2,r?top+r.top-sy:top+10),mb=Math.min(top+entry.height-2,r?top+r.top+r.height-sy:mt+54);
+  placeMarker(mx,mt,mb,mb>mt&&mx>=left&&mx<=left+entry.width);
+ }else{d.before=null;setShift(null);placeMarker(0,0,0,false)}
+ d.ghost.style.transform=`translate3d(${d.x-d.dx}px,${d.y-d.dy}px,0)`;
+ if(d.released){if(!d.target){finish();return}if(d.cards.every(card=>card.closest('.panel')===d.target)){finish(true);return}dropDialog.querySelector('p').textContent=`将 ${d.cards.length} 张牌放入「${d.target.dataset.zone}」的标记位置？`;dropDialog.showModal();return}
+ if(keepScrolling)scheduleDragFrame();
+}
+function scheduleDragFrame(){if(!frameId)frameId=requestAnimationFrame(renderDragFrame)}
+// Scrolling only adjusts cached coordinates; resizing rebuilds the cache once.
+document.addEventListener('scroll',()=>{if(drag?.active&&!dropDialog.open)scheduleDragFrame()},{capture:true,passive:true});
+window.addEventListener('resize',()=>{if(drag?.active){drag.invalid=true;scheduleDragFrame()}});
+function startVisual(){const d=drag;d.active=true;const rect=d.card.getBoundingClientRect();d.origin={x:rect.left,y:rect.top};d.dx=d.startX-rect.left;d.dy=d.startY-rect.top;
+ d.cards=d.card.classList.contains('selected')?[...table.querySelectorAll('.card.selected')]:[d.card];
+ d.ghost=document.createElement('div');d.ghost.className='drag-ghost'+(table.classList.contains('strip')?' strip':'')+(d.cards.length>1?' stacked':'');d.ghost.style.setProperty('--w',rect.width+'px');d.ghost.style.setProperty('--h',rect.height+'px');const clone=d.card.cloneNode(true);clone.classList.remove('selected');clone.removeAttribute('title');clone.removeAttribute('aria-label');clone.tabIndex=-1;d.ghost.setAttribute('aria-hidden','true');d.ghost.append(clone);if(d.cards.length>1){const badge=document.createElement('span');badge.className='drag-count';badge.textContent=d.cards.length;d.ghost.append(badge)}document.body.append(d.ghost);d.cards.forEach(card=>card.classList.add('drag-source'));}
+function follow(x,y){drag.x=x;drag.y=y;scheduleDragFrame()}
+async function finish(accept=false){const d=drag;if(!d)return;drag=null;cancelAnimationFrame(frameId);frameId=0;highlight(null);highlightedPanel=null;unshiftCards();markerKey='';insertionMark.style.display='none';if(dropDialog.open)dropDialog.close();
+ if(d.active){if(accept&&d.target){const root=d.target.querySelector('.cards');d.cards.forEach(card=>{root.insertBefore(card,d.before||null);card.classList.remove('selected');card.setAttribute('aria-pressed','false')});const position=[...root.children].indexOf(d.cards[0])+1;feedback.textContent=`已将 ${d.cards.length} 张牌放到${d.target.dataset.zone}第 ${position} 位（预览）`;await d.ghost.animate([{opacity:1},{opacity:0,transform:d.ghost.style.transform+' scale(.8)'}],{duration:160,fill:'forwards'}).finished;}else{await d.ghost.animate([{transform:d.ghost.style.transform},{transform:`translate3d(${d.origin.x}px,${d.origin.y}px,0)`}],{duration:220,easing:'ease-out',fill:'forwards'}).finished;feedback.textContent='已取消移动，卡牌保留原位。'}d.cards.forEach(card=>card.classList.remove('drag-source'));d.ghost.remove();syncPanels();}}
+table.addEventListener('pointerdown',event=>{const card=event.target.closest('.card');if(!card||event.button!==0||drag)return;drag={card,id:event.pointerId,startX:event.clientX,startY:event.clientY,active:false};});
+document.addEventListener('pointermove',event=>{if(!drag||dropDialog.open||event.pointerId!==drag.id)return;if(!drag.active&&Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)>6)startVisual();if(drag.active){event.preventDefault();follow(event.clientX,event.clientY)}},{passive:false});
+document.addEventListener('pointerup',event=>{if(!drag||event.pointerId!==drag.id||dropDialog.open)return;if(!drag.active){drag=null;return}suppressClickUntil=Date.now()+350;drag.released=true;follow(event.clientX,event.clientY)});
+document.addEventListener('pointercancel',()=>{if(drag&&!dropDialog.open)finish()});
+table.addEventListener('dragstart',event=>event.preventDefault());
+table.addEventListener('click',event=>{if(Date.now()<suppressClickUntil){event.preventDefault();event.stopImmediatePropagation()}else if(event.target.closest('.card'))queueMicrotask(syncPanels)},{capture:true});
+dropDialog.querySelector('.confirm').onclick=()=>finish(true);dropDialog.querySelector('.cancel').onclick=()=>finish();dropDialog.addEventListener('cancel',event=>{event.preventDefault();finish()});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&drag){event.preventDefault();finish()}});window.addEventListener('blur',()=>{if(drag&&!dropDialog.open)finish()});
+</script>
+</body>
+</html>

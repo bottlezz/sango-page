@@ -20,16 +20,22 @@ template.innerHTML = `
 ${hpbarCss}
 ${commonCss}
 </style>
-<span class="max-hp-control">
-  <span class="add-max-btn material-symbols-outlined">heart_plus</span>
-  <span class="reduce-max-btn material-symbols-outlined">heart_minus</span>
-</span>
+<dialog class="max-hp-picker" aria-label="选择体力上限">
+  <div class="picker-heading">
+    <strong>选择体力上限</strong>
+    <button class="picker-close" title="关闭" aria-label="关闭">×</button>
+  </div>
+  <div class="picker-grid"></div>
+</dialog>
+<button class="cur-hp-btn reduce-hp-btn" title="失去一点体力" aria-label="失去一点体力">−</button>
 <span class="hp-bar">
   <span>[心]</span>
   <span>[心]</span>
   <span>[ ]</span>
   <span>[ ]</span>
 </span>
+<span class="numeric-hp" aria-live="polite">HP 0/0</span>
+<button class="cur-hp-btn add-hp-btn" title="回复一点体力" aria-label="回复一点体力">＋</button>
 
 `;
 
@@ -44,21 +50,39 @@ class sgHpBar extends HTMLElement {
     this.shadowRoot = this.attachShadow({ mode: "open" });
     let clone = template.content.cloneNode(true);
     this.shadowRoot.append(clone);
+
+    const pickerGrid = this.shadowRoot.querySelector(".picker-grid");
+    for (let hp = 1; hp <= 15; hp++) {
+      const option = document.createElement("button");
+      option.className = "max-hp-option";
+      option.type = "button";
+      option.textContent = hp;
+      option.dataset.maxHp = hp;
+      option.addEventListener("click", () => {
+        this.setMax(hp);
+        this.closeMaxPicker();
+      });
+      pickerGrid.appendChild(option);
+    }
   }
 
   init(hpRef, gameController) {
     this.gameController = gameController;
     this.hpRef = hpRef;
-    // allow update max HP
     this.shadowRoot
-      .querySelector(".reduce-max-btn")
+      .querySelector(".picker-close")
       .addEventListener("click", () => {
-        this.reduceMax();
+        this.closeMaxPicker();
       });
     this.shadowRoot
-      .querySelector(".add-max-btn")
+      .querySelector(".reduce-hp-btn")
       .addEventListener("click", () => {
-        this.addMax();
+        this.updateCurHp(Number(this.cur) - 1);
+      });
+    this.shadowRoot
+      .querySelector(".add-hp-btn")
+      .addEventListener("click", () => {
+        this.updateCurHp(Math.min(Number(this.max), Number(this.cur) + 1));
       });
 
     // add HP change listener.
@@ -66,8 +90,8 @@ class sgHpBar extends HTMLElement {
       if (snapshot.exists()) {
         const hpVal = snapshot.val();
         const splits = hpVal.split("/");
-        this.cur = splits[0];
-        this.max = splits[1];
+        this.cur = Number(splits[0]);
+        this.max = Number(splits[1]);
         this.renderHp();
       }
     });
@@ -75,44 +99,52 @@ class sgHpBar extends HTMLElement {
 
   renderHp() {
     const hpBarSpan = this.shadowRoot.querySelector(".hp-bar");
+
+    this.shadowRoot.querySelectorAll(".max-hp-option").forEach((option) => {
+      const selected = Number(option.dataset.maxHp) === this.max;
+      option.classList.toggle("selected", selected);
+      option.setAttribute("aria-current", selected ? "true" : "false");
+    });
+    this.shadowRoot.querySelector(
+      ".numeric-hp"
+    ).textContent = `HP ${this.cur}/${this.max}`;
+    hpBarSpan.classList.add("compact");
+    hpBarSpan.setAttribute("aria-label", `当前体力 ${this.cur}，上限 ${this.max}`);
     hpBarSpan.innerHTML = "";
-    for (let i = 1; i <= this.max; i++) {
-      const xinSpan = document.createElement("span");
-      xinSpan.dataset.hpVal = i;
-      xinSpan.className = "material-icons";
-      if (i <= this.cur) {
-        xinSpan.innerHTML = "favorite";
-      } else {
-        xinSpan.innerHTML = "favorite_border";
-      }
-      xinSpan.addEventListener("click", () => {
-        if (this.cur >= i) {
-          this.updateCurHp(i - 1);
-        } else {
-          this.updateCurHp(i);
-        }
-      });
-      hpBarSpan.appendChild(xinSpan);
-    }
+
+    const heart = document.createElement("span");
+    heart.className = "large-heart";
+    heart.textContent = "♥";
+    const count = document.createElement("span");
+    count.className = "heart-count";
+    count.textContent = `${this.cur} / ${this.max}`;
+    hpBarSpan.append(heart, count);
   }
 
   updateCurHp(i) {
     if (i < 0) {
       i = 0;
     }
-    set(this.hpRef, `${i}/${this.max}`);
+    this.gameController.setValue(this.hpRef, `${i}/${this.max}`);
   }
-  addMax() {
-    set(this.hpRef, `${this.cur}/${Number(this.max) + 1}`);
+
+  openMaxPicker() {
+    const picker = this.shadowRoot.querySelector(".max-hp-picker");
+    if (!this.classList.contains("current-player") || picker.open) return;
+    picker.showModal();
+    const selected = picker.querySelector(`[data-max-hp="${this.max}"]`);
+    selected?.focus();
   }
-  reduceMax() {
-    if (this.max > 0) {
-      const newMax = this.max - 1;
-      if (this.cur > newMax) {
-        this.cur = newMax;
-      }
-      set(this.hpRef, `${this.cur}/${newMax}`);
-    }
+
+  closeMaxPicker() {
+    const picker = this.shadowRoot.querySelector(".max-hp-picker");
+    if (picker.open) picker.close();
+  }
+
+  setMax(value) {
+    const newMax = Math.max(1, Math.min(15, Number(value)));
+    const newCur = Math.min(this.cur, newMax);
+    this.gameController.setValue(this.hpRef, `${newCur}/${newMax}`);
   }
 }
 

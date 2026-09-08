@@ -1,17 +1,184 @@
-.max-hp-control {
-  display: none;
-  font-family: "Material Symbols Outlined";
-  font-size: large;
+:host {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  position: relative;
 }
 
-:host(.current-player) .max-hp-control {
-  display: block;
+.cur-hp-btn {
+  display: none;
+}
+
+:host(.current-player) .cur-hp-btn {
+  display: none;
+  place-items: center;
+}
+
+:host(.current-player) {
+  display: flex;
+  grid-template-columns: auto 1.5rem;
+  grid-template-rows: repeat(2, 1rem);
+  column-gap: 0.28rem;
+  row-gap: 0.12rem;
+}
+
+:host(.current-player) .hp-bar,
+:host(.current-player) .numeric-hp {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+:host(.current-player) .add-hp-btn { grid-column: 2; grid-row: 1; }
+:host(.current-player) .reduce-hp-btn { grid-column: 2; grid-row: 2; }
+
+button {
+  min-height: 1.75rem;
+  border: 1px solid rgba(232, 207, 139, 0.32);
+  border-radius: 999px;
+  color: #f4ead2;
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+}
+
+.max-hp-picker {
+  box-sizing: border-box;
+  width: min(18rem, calc(100vw - 2rem));
+  padding: 0.65rem;
+  border: 1px solid rgba(232, 207, 139, 0.4);
+  border-radius: 0.7rem;
+  color: #f4ead2;
+  background: rgba(26, 22, 19, 0.98);
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.48);
+}
+
+.max-hp-picker:not([open]) {
+  display: none;
+}
+
+.max-hp-picker::backdrop {
+  background: rgba(0, 12, 10, 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  color: #f4ead2;
+  font-size: 0.78rem;
+}
+
+.picker-close {
+  width: 1.65rem;
+  min-height: 1.65rem;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.3rem;
+}
+
+.max-hp-option {
+  min-height: 1.8rem;
+  padding: 0;
+  border-radius: 0.35rem;
+  font-weight: 700;
+}
+
+.max-hp-option:hover,
+.max-hp-option:focus-visible,
+.max-hp-option.selected {
+  border-color: #e7c878;
+  color: #211a12;
+  background: #e7c878;
+  outline: none;
+}
+
+.cur-hp-btn {
+  width: 1.5rem;
+  min-height: 1rem;
+  height: 1rem;
+  padding: 0;
+  border-radius: 0.28rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.hp-bar {
+  display: inline-flex;
+  white-space: nowrap;
 }
 
 .hp-bar span {
-  font-family: "Material Icons";
   display: inline-block;
-  font-size: large;
+  color: #ef6259;
+  font-family: "Material Icons";
+  font-size: 1.2rem;
+  cursor: default;
+}
+
+.hp-bar.compact {
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 3rem;
+}
+
+.hp-bar.compact .large-heart {
+  font-family: inherit;
+  font-size: 1.125rem;
+  line-height: 1;
+  filter: drop-shadow(0 0.12rem 0.12rem rgba(0, 0, 0, 0.35));
+}
+
+.hp-bar.compact .heart-count {
+  color: #ff6961;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+:host(.current-player) .hp-bar span {
   cursor: pointer;
-  color: red;
+}
+
+.numeric-hp {
+  display: none;
+  color: #f3d28c;
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .hp-bar {
+    display: none;
+  }
+
+  .numeric-hp {
+    display: inline;
+  }
+
+  :host(.current-player) .hp-bar {
+    display: inline-flex;
+  }
+
+  :host(.current-player) .numeric-hp {
+    display: none;
+  }
+
+}
+
+/* Keep the same numeric presentation at every HP value and viewport size. */
+.hp-bar, :host(.current-player) .hp-bar { display: inline-flex; align-items: center; }
+.numeric-hp, :host(.current-player) .numeric-hp { display: none; }
+@media (max-width: 900px) {
+  :host(.current-player) .cur-hp-btn { display: inline-grid; }
 }

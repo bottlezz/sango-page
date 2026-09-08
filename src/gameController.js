@@ -8,10 +8,15 @@ import {
   remove,
   set,
   onValue,
+  runTransaction,
+  serverTimestamp,
 } from "firebase/database";
 
 import jiangKu from "./data/jiang.json";
 import paiKu from "./data/pai.json";
+import { orderedMovePatch, dealOpeningHands } from "./cardOrder.mjs";
+import {appendActionLog, applyRoomPatch} from "./actionLog.mjs";
+import { runLoadedTransaction } from "./roomTransaction.mjs";
 class gameController {
   db;
   gameId;
@@ -31,106 +36,123 @@ class gameController {
     this.rootComponent.lockPlayerSelection();
   }
 
+  async commitRoom(transform, action = '') {
+    const roomRef = ref(this.db, `game/${this.gameId}`);
+    const key = push(child(roomRef, 'actionLogs')).key;
+    const actor = `${this.currentPlayer || '未入座'}${this.userName ? ' ' + this.userName : ''}`;
+    return runLoadedTransaction(roomRef, room => {
+      const next = transform(room);
+      return next === undefined ? undefined : appendActionLog(room, next, key, actor, serverTimestamp(), action);
+    }, {onValue, runTransaction});
+  }
+
+  writePatch(patch, action = '') {
+    return this.commitRoom(room => applyRoomPatch(room, patch, `game/${this.gameId}/`), action);
+  }
+
+  setValue(target, value) {
+    return this.writePatch({[target.toString().replace(ref(this.db).toString(), '')]: value});
+  }
+
   getDiscardDeckPath() {
     return `game/${this.gameId}/tableDecks/discard`;
   }
 
   showCard(cardRef) {
-    set(child(cardRef, "/show"), "1");
+    return this.setValue(child(cardRef, "/show"), "1");
   }
 
   resetCard(cardRef) {
-    set(child(cardRef, "/show"), "0");
+    return this.setValue(child(cardRef, "/show"), "0");
   }
 
-  recycle(cardsRef) {
-    const paiCardsPath = `game/${this.gameId}/tableDecks/pai/cards`;
-    get(cardsRef).then((snapshot) => {
-      if (!snapshot.exists()) return;
-      const cardsData = snapshot.val();
-
-      const updates = {};
-      const keys = Object.keys(cardsData);
-      keys.forEach((key) => {
-        updates[paiCardsPath + "/" + key] = cardsData[key];
-      });
-      const dbRef = ref(this.db);
-      update(dbRef, updates);
-      set(cardsRef, {});
-    });
+  async recycle(cardsRef) {
+    const snapshot = await get(cardsRef);
+    if (!snapshot.exists()) return;
+    const source = cardsRef.toString().replace(ref(this.db).toString(), '');
+    return this.moveOrderedCards(Object.keys(snapshot.val()).map(key=>`${source}/${key}`), ref(this.db, `game/${this.gameId}/tableDecks/pai/cards`));
   }
 
   moveCardToTableDeck(cardRef, deck) {
-    get(cardRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        // get value
-        const value = snapshot.val();
-        if (value.show) {
-          value.show = "0";
-        }
-        // remove from db
-        remove(cardRef);
-        // add to discard pile
-        const targetPath = `game/${this.gameId}/tableDecks/${deck}/cards`;
-        this.addItem(targetPath, snapshot.key, value);
-      }
-    });
+    return this.moveOrderedCards([cardRef.toString().replace(ref(this.db).toString(), '')], ref(this.db, `game/${this.gameId}/tableDecks/${deck}/cards`));
   }
 
-  moveCardToPlayerArea(cardRef, player, area) {
-    get(cardRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        // get value
-        const value = snapshot.val();
-        // remove from db
-        remove(cardRef);
-        // move to target area
-        const targetPath = `game/${this.gameId}/${player}/${area}/cards`;
-        this.addItem(targetPath, snapshot.key, value);
-      }
-    });
+  async moveCardToPlayerArea(cardRef, player, area) {
+    if (area === 'pan') {
+      const playerDom = this.rootComponent.playerDoms.find(item => item.dataset.key === player);
+      const path = cardRef.toString().replace(ref(this.db).toString(), '');
+      playerDom.openDropPicker(path, [path]);
+      await playerDom.confirmPlayerDrop('panArea');
+      return;
+    }
+    const targetPath = `game/${this.gameId}/${player}/${area}/cards`;
+    const targetRef = ref(this.db, targetPath);
+    return this.moveOrderedCards([cardRef.toString().replace(ref(this.db).toString(), '')], targetRef);
   }
 
-  moveCardFromPathToRef(fromPath, targetRef, resetShow = true) {
-    const cardRef = ref(db, fromPath);
-    get(cardRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        // get value
-        const value = snapshot.val();
-        if (value && value.show && resetShow) {
-          value.show = "0";
-        }
-        // move to target area
-        const targetPath = targetRef
-          .toString()
-          .replace(ref(this.db).toString(), "");
-        if (fromPath.includes(targetPath)) {
-          return;
-        }
-        // remove from db
-        remove(cardRef);
-        this.addItem(targetPath, snapshot.key, value);
+  async dealCards() {
+    const roomRef = ref(this.db, `game/${this.gameId}`);
+    let reason = '发牌未完成，请重试';
+    const result = await this.commitRoom(room => {
+      try {
+        return dealOpeningHands(room, Number(this.playerCount));
+      } catch (error) {
+        reason = error.message;
+        return undefined;
       }
     });
+    if (!result.committed) throw Error(reason);
   }
 
-  moveCardRefToTargetRef(cardRef, targetRef) {
-    get(cardRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        // get value
-        const value = snapshot.val();
-        if (value && value.show) {
-          value.show = "0";
-        }
-        // move to target area
-        const targetPath = targetRef
-          .toString()
-          .replace(ref(this.db).toString(), "");
-        // remove from db
-        remove(cardRef);
-        this.addItem(targetPath, snapshot.key, value);
-      }
-    });
+  async moveOrderedCards(paths, targetRef, beforeKey = null, effects = {}) {
+    const base = ref(this.db).toString();
+    const targetPath = targetRef.toString().replace(base, '');
+    const prefix = `game/${this.gameId}/`;
+    if (!targetPath.startsWith(prefix) || !targetPath.endsWith('/cards')) throw Error('无效的目标区域');
+    const unique = [...new Set(paths)];
+    if (!unique.length || unique.some(path => !path.startsWith(prefix) || !/\/cards\/[^/]+$/.test(path))) throw Error('无效的卡牌');
+    {
+      let reason = '卡牌移动失败';
+      const result = await this.commitRoom(room => {
+        try {
+          const read = path => path.slice(prefix.length).split('/').reduce((value, key) => value?.[key], room);
+          const sources = unique.map(path => ({path, value: read(path)}));
+          if (sources.some(source => !source.value)) throw Error('卡牌已移动，请重新选择');
+          const patch = orderedMovePatch(targetPath, read(targetPath) || {}, sources, beforeKey,
+            () => push(targetRef).key, effects, card => paiKu[card.id]?.name);
+          const next = structuredClone(room);
+          for (const [path, value] of Object.entries(patch)) {
+            const keys = path.slice(prefix.length).split('/');
+            let parent = next;
+            for (const key of keys.slice(0, -1)) parent = parent[key] ??= {};
+            if (value === null) delete parent[keys.at(-1)];
+            else parent[keys.at(-1)] = value;
+          }
+          return next;
+        } catch (error) { reason = error.message; return undefined; }
+      });
+      if (!result.committed) throw Error(reason);
+      return true;
+    }
+  }
+
+  async moveCardFromPathToRef(fromPath, targetRef) {
+    const seat = targetRef.toString().match(/\/(p\d+)\/pan\/cards$/)?.[1];
+    if (seat) return this.moveCardToPlayerArea(ref(this.db, fromPath), seat, 'pan');
+    return this.moveOrderedCards([fromPath], targetRef);
+  }
+  async moveCardRefToTargetRef(cardRef, targetRef) {
+    return this.moveCardFromPathToRef(cardRef.toString().replace(ref(this.db).toString(), ''), targetRef);
+  }
+
+  async targetHasCapacity(targetRef, incomingCount = 1) {
+    const targetPath = targetRef.toString();
+    if (!targetPath.includes("/zhuang/cards")) return true;
+    const snapshot = await get(targetRef);
+    const currentCount = snapshot.exists()
+      ? Object.keys(snapshot.val()).length
+      : 0;
+    return currentCount + incomingCount <= 4;
   }
 
   addItem(toPath, key, value) {
@@ -138,7 +160,7 @@ class gameController {
     const dbRef = ref(this.db);
     const updates = {};
     updates[toPath + "/" + key] = value;
-    update(dbRef, updates);
+    return this.writePatch(updates);
   }
 
   getPlayerPath(playerKey) {
@@ -158,7 +180,7 @@ class gameController {
       const role = roles[idx];
       roles.splice(idx, 1);
       const dbPath = `game/${this.gameId}/p${i + 1}/role`;
-      set(ref(this.db, dbPath), role);
+      this.setValue(ref(this.db, dbPath), role);
     }
   }
 
@@ -172,7 +194,7 @@ class gameController {
     get(cardsRef).then((snapshot) => {
       if (!snapshot.exists()) return;
       const cardsData = this.shuffleData(snapshot.val());
-      set(cardsRef, cardsData);
+      this.setValue(cardsRef, cardsData);
     });
   }
 
@@ -186,45 +208,21 @@ class gameController {
       cardsData[keys[from]] = cardsData[keys[to]];
       cardsData[keys[to]] = fromVal;
     }
+    keys.forEach((key, index) => { cardsData[key].order = index * 1024; });
     return cardsData;
   }
 
-  resetPai() {
-    const discardCardsRef = ref(
-      db,
-      `game/${this.gameId}/tableDecks/discard/cards`
-    );
-    const paiCardsRef = ref(db, `game/${this.gameId}/tableDecks/pai/cards`);
-    const paiBottomCardsRef = ref(db, this.paiBottomCardsPath);
-    get(discardCardsRef).then((snapshot) => {
-      let discardCardsData = {};
-      if (snapshot.exists()) {
-        discardCardsData = snapshot.val();
-      }
-
-      get(paiBottomCardsRef).then((paiBottomSnap) => {
-        let paiBottomCardsData = {};
-        if (paiBottomSnap.exists()) {
-          paiBottomCardsData = paiBottomSnap.val();
-        }
-        get(paiCardsRef).then((paiSnap) => {
-          let paiCardsData = {};
-          if (paiSnap.exists()) {
-            paiCardsData = paiSnap.val();
-          }
-          const newCardsData = {
-            ...discardCardsData,
-            ...paiCardsData,
-            ...paiBottomCardsData,
-          };
-          this.shuffleData(newCardsData);
-
-          set(paiCardsRef, newCardsData);
-        });
-        remove(paiBottomCardsRef);
-      });
-      remove(discardCardsRef);
-    });
+  async resetPai() {
+    return this.commitRoom(room => {
+      const next = structuredClone(room);
+      const decks = next.tableDecks ??= {};
+      const cards = ['pai','paiBottom','discard'].flatMap(area => Object.values(decks[area]?.cards || {}));
+      cards.forEach(card => {card.show = '0'; delete card.judgmentEffect; delete card.panOrder;});
+      decks.pai = {cards: this.shuffleData(cards)};
+      decks.paiBottom = {};
+      decks.discard = {};
+      return next;
+    }, '洗牌');
   }
 
   resetTable() {
@@ -234,6 +232,9 @@ class gameController {
     for (let i = 0; i < this.playerCount; i++) {
       const playerPath = `game/${this.gameId}/p${i + 1}`;
       updates[`${playerPath}/jiang/cards`] = {};
+      updates[`${playerPath}/jiang1`] = {};
+      updates[`${playerPath}/jiang2`] = {};
+      updates[`${playerPath}/jiangLocked`] = false;
       updates[`${playerPath}/hand/cards`] = {};
       updates[`${playerPath}/pan/cards`] = {};
       updates[`${playerPath}/zhuang/cards`] = {};
@@ -247,7 +248,7 @@ class gameController {
     updates[`${tableDeckPath}/jiang`] = {};
     updates[`${tableDeckPath}/pai`] = { cards: this.getShuffledPai() };
     const dbRef = ref(this.db);
-    update(dbRef, updates);
+    return this.writePatch(updates);
   }
 
   getShuffledJiang() {
@@ -278,15 +279,16 @@ class gameController {
     const updates = {};
 
     for (let i = 0; i < 6; i++) {
-      const jiangs = jiangCards.splice(i * 7, 7);
+      const jiangs = jiangCards.splice(0, 7);
       updates[`game/${this.gameId}/p${i + 1}/jiang/cards`] = jiangs;
       updates[`game/${this.gameId}/p${i + 1}/jiang1`] = {};
       updates[`game/${this.gameId}/p${i + 1}/jiang2`] = {};
+      updates[`game/${this.gameId}/p${i + 1}/jiangLocked`] = false;
     }
     console.log(updates);
 
     const dbRef = ref(this.db);
-    update(dbRef, updates);
+    return this.writePatch(updates);
   }
 
   addSelectedCard(sgCard) {
@@ -303,19 +305,32 @@ class gameController {
     console.log("selcted count : " + this.selectedCards.length);
     if (this.selectedCards.length == 0) {
       this.rootComponent.hideCardMenu();
+    } else {
+      this.rootComponent.showCardMenu();
     }
   }
 
-  drawSelectedCards() {
-    this.selectedCards.forEach((wc) => {
-      wc.drawPai();
-    });
+  async drawSelectedCards(cards = [...this.selectedCards]) {
+    if (!this.currentPlayer) return;
+    return this.moveSelectedCards(cards, `game/${this.gameId}/${this.currentPlayer}/hand/cards`);
   }
 
-  discardSelectedCards() {
-    this.selectedCards.forEach((wc) => {
-      wc.discardPai();
-    });
+  async discardSelectedCards(cards = [...this.selectedCards]) {
+    return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`);
+  }
+
+  async moveSelectedCards(cards, targetPath) {
+    if (this.selectionMoveBusy) return;
+    const base = ref(this.db).toString();
+    const paths = [...new Set(cards.map(card => card.cardRef.toString().replace(base, '')))]
+      .filter(path => !path.startsWith(`${targetPath}/`));
+    if (!paths.length) return;
+    this.selectionMoveBusy = true;
+    try {
+      return await this.moveOrderedCards(paths, ref(this.db, targetPath));
+    } finally {
+      this.selectionMoveBusy = false;
+    }
   }
 
   showSelectedCards() {
@@ -326,11 +341,18 @@ class gameController {
     }
   }
 
-  dropSeletedCards(targetCardsRef) {
-    this.selectedCards;
-    this.selectedCards.forEach((wc) => {
-      this.moveCardRefToTargetRef(wc.cardRef, targetCardsRef);
-    });
+  async dropSeletedCards(targetCardsRef) {
+    let cardsToMove = [...this.selectedCards];
+    if (targetCardsRef.toString().includes("/zhuang/cards")) {
+      const snapshot = await get(targetCardsRef);
+      const currentCount = snapshot.exists()
+        ? Object.keys(snapshot.val()).length
+        : 0;
+      cardsToMove = cardsToMove.slice(0, Math.max(0, 4 - currentCount));
+    }
+    for (const wc of cardsToMove) {
+      await this.moveCardRefToTargetRef(wc.cardRef, targetCardsRef);
+    }
   }
 }
 

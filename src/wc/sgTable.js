@@ -163,7 +163,7 @@ class SgTable extends HTMLElement {
     const showButton = document.createElement("button");
     showButton.innerHTML = "亮";
     showButton.addEventListener("click", () => {
-      this.gameController.showSelectedCards();
+      this.gameController.showSelectedCards().catch(error => window.alert(error.message || '更新失败，请重试'));
     });
 
     const cancelButton = document.createElement("button");

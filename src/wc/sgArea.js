@@ -136,8 +136,10 @@ class SgArea extends HTMLElement {
       this.cardArea.setAttribute('part', 'card-area');
       this.expandButton.setAttribute('aria-expanded', 'false');
       this.cardArea.scrollTop = 0;
-      this.cardArea.scrollLeft = this.savedScrollLeft;
-      this.updateOverflow();
+      requestAnimationFrame(() => {
+        this.cardArea.scrollLeft = this.savedScrollLeft;
+        this.updateOverflow();
+      });
       this.expandButton.focus({preventScroll: true});
     });
     this.overflowObserver = new ResizeObserver(this.updateOverflow);
@@ -166,9 +168,15 @@ class SgArea extends HTMLElement {
 
   disconnectedCallback() {
     this.overflowObserver?.disconnect();
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.unSub?.();
+        this.unSub = null;
+      }
+    });
   }
 
-  init(deckRef, gameController) {
+  init(deckRef, gameController, options = {}) {
     this.deckRef = deckRef;
     this.dbPathStr = deckRef.toString();
     this.cardsRef = child(deckRef, "/cards");
@@ -182,7 +190,9 @@ class SgArea extends HTMLElement {
       this.classList.add("table-area");
     }
 
-    onValue(this.cardsRef, snapshot => {
+    this.subscribeCards = () => {
+      if (this.unSub) return;
+      this.unSub = onValue(this.cardsRef, snapshot => {
       const entries = orderedEntries(snapshot.val() || {}, this.areaType === 'pan-area');
       const keys = new Set(entries.map(item => item.key));
       Object.entries(this.cards).forEach(([key, card]) => {
@@ -194,16 +204,20 @@ class SgArea extends HTMLElement {
           card = document.createElement('sg-card');
           card.className = this.areaType + '-card';
           if (this.classList.contains('current-player')) card.classList.add('current-player');
-          card.init(child(this.cardsRef, key), value, this.gameController);
+          card.init(child(this.cardsRef, key), value, this.gameController, {subscribe:false});
           this.cards[key] = card;
           this.cardArea.append(card);
         }
+        card.cardData = value;
+        card.renderCard();
         card.style.order = index;
       });
       this.cardCount = entries.length;
       this.classList.toggle('has-cards', this.cardCount > 0);
       this.dispatchEvent(new CustomEvent('cards-updated', {bubbles: true, composed: true}));
-    });
+      });
+    };
+    if (options.subscribe !== false) this.subscribeCards();
     this.addEventListener("drop", (e) => {
       e.preventDefault();
       console.log("areaDrop");
@@ -234,6 +248,13 @@ class SgArea extends HTMLElement {
     this.addEventListener("dragover", (e) => {
       e.preventDefault();
     });
+  }
+
+  stopCardsSubscription() {
+    this.unSub?.();
+    this.unSub = null;
+    Object.values(this.cards).forEach(card => card.remove());
+    this.cards = {};
   }
 
   visibilityCheck() {

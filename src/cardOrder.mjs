@@ -68,7 +68,7 @@ export function orderedMovePatch(targetPath, targetCards, sources, beforeKey, ne
       if (!judgment) delete item.value.judgmentEffect;
       if (targetPath.includes('/pan/')) item.value.panOrder = Date.now() + index;
       patch[path] = {...item.value, order};
-    } else patch[`${path}/order`] = order;
+    } else if (item.value.order !== order) patch[`${path}/order`] = order;
   });
   return patch;
 }

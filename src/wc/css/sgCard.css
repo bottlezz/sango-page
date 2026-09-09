@@ -32,6 +32,7 @@
 }
 .card-front {
   display: none;
+  position: relative;
   width: 100%;
   height: 100%;
   padding: 0.24rem;
@@ -60,6 +61,23 @@
   font-weight: 800;
 }
 .pai-desc { display: none; }
+:host(.has-desc) .desc-line {
+  position: absolute;
+  bottom: 0.2rem;
+  left: 0.24rem;
+  display: block;
+  width: auto;
+  min-width: 0;
+  max-height: none;
+  overflow: visible;
+  font: 800 0.75rem/1 Georgia, "STKaiti", serif;
+}
+:host(.has-desc) .pai-desc {
+  display: block;
+  color: #8d342b;
+  font: inherit;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+}
 .card-block.selected {
   z-index: 40;
   transform: translateY(-0.45rem);
@@ -142,7 +160,6 @@ span.spade::before { content: "♠"; }
   white-space: nowrap;
   text-align: center;
 }
-:host(.zhuang-area-card) .pai-desc { display: none; }
 :host(.pan-area-card) .card-block {
   width: 100%;
   overflow: hidden;
@@ -275,6 +292,27 @@ span.spade::before { content: "♠"; }
   white-space: nowrap;
   text-align: left;
 }
+:host(.zhuang-area-card.has-desc) .desc-line,
+:host(.current-player.hand-area-card.has-desc) .desc-line,
+:host(.current-player.other1-area-card.has-desc) .desc-line,
+:host(.current-player.other2-area-card.has-desc) .desc-line,
+:host(.pan-area-card.has-desc) .desc-line {
+  position: absolute;
+  bottom: 0.12rem;
+  left: 0.14rem;
+  display: block;
+  width: auto;
+  min-width: 0;
+  max-height: none;
+  overflow: visible;
+}
+:host(.zhuang-area-card.has-desc) .desc-line,
+:host(.current-player.hand-area-card.has-desc) .desc-line,
+:host(.current-player.other1-area-card.has-desc) .desc-line,
+:host(.current-player.other2-area-card.has-desc) .desc-line,
+:host(.pan-area-card.has-desc) .desc-line {
+  font: 900 0.68rem/1 Georgia, "STKaiti", serif;
+}
 
 :host(.pan-area-card) {
   position: relative;
@@ -348,8 +386,126 @@ span.spade::before { content: "♠"; }
 :host(.discard-area-card) .card-suit, :host(.pai-area-card) .card-suit { align-self:start; justify-self:start; font:800 11px/1 Georgia,serif; }
 :host(.discard-area-card) .card-suit > span, :host(.pai-area-card) .card-suit > span { display:flex; flex-direction:column; align-items:center; gap:1px; }
 :host(.discard-area-card) .pai-name, :host(.pai-area-card) .pai-name { display:block; margin:0; writing-mode:vertical-rl; text-orientation:upright; white-space:nowrap; font:800 10px/1 'Microsoft YaHei',sans-serif; letter-spacing:.2px; }
-:host(.discard-area-card) .info-line:has(.pai-desc), :host(.pai-area-card) .info-line:has(.pai-desc) { display:none; }
+:host(.discard-area-card.has-desc) .desc-line, :host(.pai-area-card.has-desc) .desc-line { bottom:3px; left:2px; font:800 11px/1 Georgia,serif; }
 :host(.pai-area-card) .card-front { display:none; }
 :host(.pai-area-card) .card-back { display:grid; }
 :host(.pai-area-card) .card-block.show-front .card-front { display:grid; }
 :host(.pai-area-card) .card-block.show-front .card-back { display:none; }
+
+/* Ordinary game cards keep one tile size; containers only control layout and scrolling. */
+:host(:not(.zhuang-area-card)) .card-widget {
+  width: 41px;
+  height: 54px;
+}
+:host(.hand-area-card),
+:host(.other1-area-card),
+:host(.other2-area-card),
+:host(.current-player.other1-area-card),
+:host(.current-player.other2-area-card),
+:host(.pan-area-card) {
+  display: block;
+  flex: 0 0 41px;
+  width: 41px;
+  min-width: 41px;
+  height: 54px;
+  min-height: 54px;
+}
+:host(.hand-area-card) .card-block,
+:host(.hand-area-card) .card-widget,
+:host(.other1-area-card) .card-block,
+:host(.other1-area-card) .card-widget,
+:host(.other2-area-card) .card-block,
+:host(.other2-area-card) .card-widget,
+:host(.pan-area-card) .card-block,
+:host(.pan-area-card) .card-widget {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+:host(.hand-area-card) .card-front,
+:host(.other1-area-card) .card-front,
+:host(.other2-area-card) .card-front,
+:host(.pan-area-card) .card-front {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 0.82rem minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.2rem 0.12rem;
+}
+:host(.hand-area-card) .card-suit,
+:host(.other1-area-card) .card-suit,
+:host(.other2-area-card) .card-suit,
+:host(.pan-area-card) .card-suit {
+  align-self: start;
+  justify-self: start;
+  font: 800 0.68rem/1 Georgia, serif;
+}
+:host(.hand-area-card) .card-suit > span,
+:host(.other1-area-card) .card-suit > span,
+:host(.other2-area-card) .card-suit > span,
+:host(.pan-area-card) .card-suit > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08rem;
+}
+:host(.hand-area-card) .info-line,
+:host(.other1-area-card) .info-line,
+:host(.other2-area-card) .info-line,
+:host(.pan-area-card) .info-line {
+  min-width: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+:host(.hand-area-card) .pai-name,
+:host(.other1-area-card) .pai-name,
+:host(.other2-area-card) .pai-name,
+:host(.pan-area-card) .pai-name {
+  display: block;
+  width: auto;
+  max-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.03rem;
+  white-space: nowrap;
+  text-align: left;
+}
+:host(.hand-area-card.has-desc) .desc-line,
+:host(.other1-area-card.has-desc) .desc-line,
+:host(.other2-area-card.has-desc) .desc-line,
+:host(.pan-area-card.has-desc) .desc-line {
+  bottom: 0.12rem;
+  left: 0.14rem;
+  font: 900 0.68rem/1 Georgia, "STKaiti", serif;
+}
+
+/* Opponents' private areas stay face-down unless the card has been revealed. */
+:host(.hand-area-card:not(.current-player)) .card-front,
+:host(.other1-area-card:not(.current-player)) .card-front,
+:host(.other2-area-card:not(.current-player)) .card-front {
+  display: none;
+}
+:host(.hand-area-card:not(.current-player)) .card-back,
+:host(.other1-area-card:not(.current-player)) .card-back,
+:host(.other2-area-card:not(.current-player)) .card-back {
+  display: grid;
+}
+:host(.hand-area-card:not(.current-player)) .card-block.show-front .card-front,
+:host(.other1-area-card:not(.current-player)) .card-block.show-front .card-front,
+:host(.other2-area-card:not(.current-player)) .card-block.show-front .card-front {
+  display: grid;
+}
+:host(.hand-area-card:not(.current-player)) .card-block.show-front .card-back,
+:host(.other1-area-card:not(.current-player)) .card-block.show-front .card-back,
+:host(.other2-area-card:not(.current-player)) .card-block.show-front .card-back {
+  display: none;
+}

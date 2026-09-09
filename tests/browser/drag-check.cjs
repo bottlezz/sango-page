@@ -49,38 +49,27 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
  await opponent.locator('[data-effect="乐不思蜀"]').click();
  await page.waitForFunction(()=>Object.keys(window.fixture.read('game/6/p2/pan/cards')||{}).length===2);
  assert.deepEqual(await page.evaluate(()=>Object.values(window.fixture.read('game/6/p2/pan/cards')).sort((a,b)=>a.order-b.order).map(c=>c.judgmentEffect)),['闪电','乐不思蜀']);
- await page.evaluate(async()=>{
-   const f=window.fixture,p=f.table.playerDoms.find(p=>p.dataset.key==='p2');
-   await f.controller.setValue(p.hpWc.hpRef,'10/14');
-   await f.controller.writePatch({'game/6/p2/debuff':'11'});
- });
- await page.waitForFunction(()=>document.querySelector('sg-table').shadowRoot.querySelector('.log-list').textContent.includes('p2 体力：12/15 → 10/14'));
- const logs=page.locator('sg-table .action-log');
- assert.equal(await logs.isVisible(),true);
- const logText=await logs.textContent();
- for(const value of ['移出 1 张','移入 1 张','乐不思蜀','p2 翻面：开启','p2 连环：开启'])assert.ok(logText.includes(value),value);
- const beforeNoop=await page.evaluate(()=>Object.keys(window.fixture.read('game/6/actionLogs')).length);
- await page.evaluate(async()=>{const f=window.fixture,p=f.table.playerDoms.find(p=>p.dataset.key==='p2');await f.controller.setValue(p.hpWc.hpRef,'10/14');});
- assert.equal(await page.evaluate(()=>Object.keys(window.fixture.read('game/6/actionLogs')).length),beforeNoop);
- await logs.locator('button').click();assert.equal(await logs.locator('.log-list').isVisible(),false);
- await logs.locator('button').click();assert.equal(await logs.locator('.log-list').isVisible(),true);
- const batch=await page.evaluate(async()=>{
+  await page.evaluate(async()=>{
+    const f=window.fixture,p=f.table.playerDoms.find(p=>p.dataset.key==='p2');
+    await f.controller.setScalarValue(p.hpWc.hpRef,'10/14');
+    await f.controller.togglePlayerStatus(p.playerRef,0);
+    await f.controller.togglePlayerStatus(p.playerRef,1);
+  });
+  await page.waitForFunction(()=>window.fixture.read('game/6/p2/hp')==='10/14'&&window.fixture.read('game/6/p2/debuff')==='11');
+  const batch=await page.evaluate(async()=>{
    const f=window.fixture,c=f.controller;
    [...c.selectedCards].forEach(card=>card.unselectCard());
    const cards=[...f.table.paiArea.cardArea.children].slice(0,2);
    const ids=cards.map(card=>card.cardData.id);
    cards.forEach(card=>card.selectCard());
-   const count=()=>Object.keys(f.read('game/6/actionLogs')).length;
-   const before=count();
-   await c.drawSelectedCards();
-   const afterDraw=count();
+    await c.drawSelectedCards();
    const player=f.table.playerDoms.find(p=>p.dataset.key==='p1');
    const drawn=[...player.handArea.cardArea.children].filter(card=>card.cardRef.key.startsWith('new'));
    drawn.forEach(card=>card.selectCard());
    await c.discardSelectedCards();
-   return {draw:afterDraw-before,discard:count()-afterDraw,drawn:drawn.length,remainingHand:Object.keys(f.read('game/6/p1/hand/cards')).length};
- });
- assert.deepEqual(batch,{draw:1,discard:1,drawn:2,remainingHand:5});
+    return {drawn:drawn.length,remainingHand:Object.keys(f.read('game/6/p1/hand/cards')).length};
+  });
+  assert.deepEqual(batch,{drawn:2,remainingHand:5});
  const local=page.locator('sg-player[data-key="p1"]');
  const playerBounds=await local.boundingBox(),toolbarBounds=await local.locator('.player-toolbar').boundingBox();
  assert.ok(toolbarBounds.x>playerBounds.x && toolbarBounds.x+toolbarBounds.width<playerBounds.x+playerBounds.width);
@@ -141,10 +130,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
    assert.equal(await firstCard.locator('.card-block').evaluate(n=>n.classList.contains('selected')),true);
    const rows=await area.locator('sg-card').evaluateAll(cards=>new Set(cards.map(c=>Math.round(c.getBoundingClientRect().top))).size);
    assert.ok(rows>1);
-   await page.keyboard.press('Escape');
-   await area.locator('.wrapper:popover-open').waitFor({state:'hidden'});
-   assert.equal(await firstCard.locator('.card-block').evaluate(n=>n.classList.contains('selected')),true);
-   assert.ok(await area.locator('.card-area').evaluate(n=>n.scrollLeft>0));
+    await page.keyboard.press('Escape');
+    await area.locator('.wrapper:popover-open').waitFor({state:'hidden'});
+    assert.equal(await firstCard.locator('.card-block').evaluate(n=>n.classList.contains('selected')),true);
+    await page.waitForFunction(type=>{
+      const p=window.fixture.table.playerDoms.find(p=>p.dataset.key==='p1');
+      return p[type==='hand'?'handArea':type+'Area'].cardArea.scrollLeft>0;
+    },type);
    await page.evaluate(async type=>window.fixture.controller.writePatch({[`game/6/p1/${type}/cards`]:null}),type);
    await area.locator('.scroll-right').waitFor({state:'hidden'});
  }

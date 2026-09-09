@@ -104,10 +104,25 @@ class SgGameMenu extends HTMLElement {
     return initData;
   }
 
-  onPlayClick() {
+  async lookupRoom(userName) {
+    const roomPath = `game/${this.gameId}`;
+    const countSnapshot = await get(ref(this.db, `${roomPath}/pCount`));
+    if (!countSnapshot.exists()) return null;
+    const playerCount = Number(countSnapshot.val());
+    const names = await Promise.all(Array.from({ length: playerCount }, (_, index) =>
+      get(ref(this.db, `${roomPath}/p${index + 1}/name`))
+    ));
+    const reconnectIndex = names.findIndex(snapshot => snapshot.val() === userName);
+    return {
+      playerCount,
+      reconnectSeat: reconnectIndex < 0 ? null : `p${reconnectIndex + 1}`,
+    };
+  }
+
+  async onPlayClick() {
     const gameId = this.shadowRoot.querySelector("#gameId").value;
     const userName = this.shadowRoot.querySelector("#userName").value;
-    const playerNum = this.shadowRoot.querySelector("#playerCount").value;
+    let playerNum = this.shadowRoot.querySelector("#playerCount").value;
 
     if (!userName || !playerNum || !gameId) return;
     if (playerNum != 6) {
@@ -117,35 +132,25 @@ class SgGameMenu extends HTMLElement {
     this.userName = userName;
     this.gameId = gameId;
 
-    this.gameController = new gameController(db, gameId);
+    this.gameController = new gameController(this.db, gameId);
     this.gameController.userName = userName;
     this.gameController.playerCount = playerNum;
-    this.tableRef = ref(db, `game/${gameId}`);
+    this.tableRef = ref(this.db, `game/${gameId}`);
 
-    get(this.tableRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        console.log("game found");
-        const game = snapshot.val();
-        for (let i = 0; i < game.pCount; i++) {
-          const key = "p" + i;
-          console.log(key);
-          if (game[key] && game[key].name == userName) {
-            // User reconnect, skip seat select.
-            console.log("user connected");
-            this.joinSeat(key);
-            return;
-          } else {
-            this.renderSeatMenu();
-          }
-        }
-      } else {
-        //Create game
-        console.log("No data available, creating game");
-        set(this.tableRef, this.getInitData(playerNum));
-        this.renderSeatMenu();
+    const room = await this.lookupRoom(userName);
+    if (room) {
+      this.playerCount = room.playerCount;
+      this.gameController.playerCount = room.playerCount;
+      if (room.reconnectSeat) {
+        this.joinSeat(room.reconnectSeat);
+        return;
       }
-      this.loginMenu.classList.add("hide");
-    });
+      this.renderSeatMenu();
+    } else {
+      await set(this.tableRef, this.getInitData(playerNum));
+      this.renderSeatMenu();
+    }
+    this.loginMenu.classList.add("hide");
   }
 
   renderSeatMenu() {
@@ -177,10 +182,19 @@ class SgGameMenu extends HTMLElement {
   }
 
   onResetClick() {
-    set(ref(db), {});
+    const password = window.prompt("作者的微信昵称拼音（不含空格）");
+    if (password === null) return;
+    if (password.trim() !== "kesui") {
+      window.alert("密码错误，数据库未重置。");
+      return;
+    }
+    set(ref(this.db), {}).catch(() => {
+      window.alert("数据库重置失败，请稍后重试。");
+    });
   }
 
   joinSeat(key) {
+    this.gameController.currentPlayer = key;
     const playerNameRef = ref(this.db, `game/${this.gameId}/${key}/name`);
     set(playerNameRef, this.userName);
     this.renderTable();

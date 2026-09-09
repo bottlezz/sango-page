@@ -77,6 +77,7 @@ class SgPlayer extends HTMLElement {
   gameController;
   shadowRoot;
   debuff = "00";
+  subs = [];
   constructor() {
     super();
 
@@ -214,6 +215,12 @@ class SgPlayer extends HTMLElement {
     paiInfo.append(areaActions);
     paiInfo.addEventListener("dragstart", () => {
       if (paiInfo.matches(":popover-open")) paiInfo.hidePopover();
+    });
+    paiInfo.addEventListener('toggle', event => {
+      if (event.newState === 'closed' && this.inspectedArea && !this.classList.contains('current-player')) {
+        this.inspectedArea.stopCardsSubscription();
+        this.inspectedArea = null;
+      }
     });
     generalSlots.append(this.jiang1Area);
     generalSlots.append(this.jiang2Area);
@@ -362,8 +369,9 @@ class SgPlayer extends HTMLElement {
     const playerRoleSpan = this.shadowRoot.querySelector(".player-role");
     const playerNameItem = this.shadowRoot.querySelector(".player-name");
     playerKeySpan.innerHTML = this.playerRef.key;
+    const subscribe = (target, callback) => this.subs.push(onValue(target, callback));
 
-    onValue(child(playerRef, "/name"), (snapshot) => {
+    subscribe(child(playerRef, "/name"), (snapshot) => {
       if (snapshot.exists()) {
         const playerName = snapshot.val();
         playerNameItem.textContent = playerName;
@@ -374,7 +382,7 @@ class SgPlayer extends HTMLElement {
       }
     });
 
-    onValue(child(playerRef, "/role"), (snapshot) => {
+    subscribe(child(playerRef, "/role"), (snapshot) => {
       if (snapshot.exists()) {
         const playerRole = snapshot.val();
         if (playerRole == "主" || playerRole == "内") {
@@ -394,7 +402,7 @@ class SgPlayer extends HTMLElement {
       );
     };
 
-    onValue(child(playerRef, "/debuff"), (snapshot) => {
+    subscribe(child(playerRef, "/debuff"), (snapshot) => {
       if (snapshot.exists()) {
         const debuff = snapshot.val();
         for (let i = 0; i < debuff.length; i++) {
@@ -421,8 +429,7 @@ class SgPlayer extends HTMLElement {
         .querySelector(`[data-debuff="${i}"]`)
         .addEventListener("click", () => {
           if (!this.classList.contains("current-player")) return;
-          this.debuff = this.debuff.replaceAt(i, this.debuff[i] == "0" ? "1" : "0");
-          this.gameController.setValue(child(playerRef, "/debuff"), this.debuff);
+          this.gameController.togglePlayerStatus(playerRef, i);
         });
     }
 
@@ -449,40 +456,45 @@ class SgPlayer extends HTMLElement {
     this.area1CountSpan = this.shadowRoot.querySelector(`.area1-count > span`);
     this.area2CountSpan = this.shadowRoot.querySelector(`.area2-count > span`);
 
-    onValue(child(playerRef, `/hand`), (snapshot) => {
-      const count = snapshot.exists() && snapshot.val().cards
-        ? Object.keys(snapshot.val().cards).length
-        : 0;
-      this.handCountSpan.textContent = count;
-      this.handArea.dataset.count = count;
+    const isLocalPlayer = playerRef.key === this.gameController.currentPlayer;
+    const bindAreaCount = (area, span) => area.addEventListener('cards-updated', () => {
+      const count = area.cardCount || 0;
+      span.textContent = count;
+      area.dataset.count = count;
     });
+    if (isLocalPlayer) {
+      bindAreaCount(this.handArea, this.handCountSpan);
+      bindAreaCount(this.other1Area, this.area1CountSpan);
+      bindAreaCount(this.other2Area, this.area2CountSpan);
+    } else {
+      [['hand',this.handArea,this.handCountSpan],['other1',this.other1Area,this.area1CountSpan],['other2',this.other2Area,this.area2CountSpan]]
+        .forEach(([name,area,span]) => {
+          const countRef = child(playerRef, `/areaCounts/${name}`);
+          subscribe(countRef, async snapshot => {
+          let count = Number(snapshot.val() || 0);
+          if (!snapshot.exists()) {
+            const legacySnapshot = await get(child(playerRef, `/${name}/cards`));
+            count = Object.keys(legacySnapshot.val() || {}).length;
+            await set(countRef, count);
+          }
+          span.textContent = count;
+          area.dataset.count = count;
+          });
+        });
+    }
 
-    onValue(child(playerRef, `/other1`), (snapshot) => {
-      const count = snapshot.exists() && snapshot.val().cards
-        ? Object.keys(snapshot.val().cards).length
-        : 0;
-      this.area1CountSpan.textContent = count;
-      this.other1Area.dataset.count = count;
-    });
-
-    onValue(child(playerRef, `/other2`), (snapshot) => {
-      const count = snapshot.exists() && snapshot.val().cards
-        ? Object.keys(snapshot.val().cards).length
-        : 0;
-      this.area2CountSpan.textContent = count;
-      this.other2Area.dataset.count = count;
-    });
-
-    this.handArea.init(child(playerRef, `/hand`), this.gameController);
-    this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);
+    this.handArea.init(child(playerRef, `/hand`), this.gameController, {subscribe:isLocalPlayer});
+    if (isLocalPlayer) {
+      this.jiangArea.init(child(playerRef, `/jiang`), this.gameController);
+    }
     this.jiang1Area.init(child(playerRef, `/jiang1`), this.gameController);
     this.zhuangArea.init(child(playerRef, `/zhuang`), this.gameController);
     this.panArea.init(child(playerRef, `/pan`), this.gameController);
-    this.other1Area.init(child(playerRef, `/other1`), this.gameController);
-    this.other2Area.init(child(playerRef, `/other2`), this.gameController);
+    this.other1Area.init(child(playerRef, `/other1`), this.gameController, {subscribe:isLocalPlayer});
+    this.other2Area.init(child(playerRef, `/other2`), this.gameController, {subscribe:isLocalPlayer});
     this.jiang2Area.init(child(playerRef, `/jiang2`), this.gameController);
 
-    onValue(child(playerRef, `/jiangLocked`), (snapshot) => {
+    subscribe(child(playerRef, `/jiangLocked`), (snapshot) => {
       const locked = snapshot.exists() && snapshot.val() === true;
       this.jiangArea.setLocked(locked);
       this.jiang1Area.setLocked(locked);
@@ -490,8 +502,15 @@ class SgPlayer extends HTMLElement {
     });
   }
 
+  disconnectedCallback() {
+    queueMicrotask(() => {
+      if (!this.isConnected) this.subs.splice(0).forEach(unsubscribe => unsubscribe());
+    });
+  }
+
   openAreaPanel(area, label) {
     if (this.classList.contains("current-player")) return;
+    area.subscribeCards();
     this.inspectedArea = area;
     const panel = this.shadowRoot.querySelector(".pai-info");
     panel.setAttribute("popover", "auto");
@@ -554,10 +573,6 @@ class SgPlayer extends HTMLElement {
     this.dropBusy = true;
     this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = true; });
     try {
-      if (!(await this.gameController.targetHasCapacity(target, paths.length))) {
-        this.dropPicker.querySelector(".drop-error").textContent = "装备区最多放四张牌，请选择其他区域或取消。";
-        return;
-      }
       if (paths.length) await this.gameController.moveOrderedCards(paths, target, null, effects || {});
       this.dropCommitted = true;
       this.dropPicker.close();

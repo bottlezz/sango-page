@@ -1,0 +1,33 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const pw=require(process.env.PLAYWRIGHT_PATH);
+(async()=>{
+ const browser=await pw.chromium.launch({headless:true,channel:'msedge'}),page=await browser.newPage();
+ await page.setContent('<!doctype html><body></body>');
+ await page.addScriptTag({path:path.join(__dirname,'.build/fixture.js')});
+ await page.locator('sg-table sg-card').first().waitFor();
+ const result=await page.evaluate(async()=>{
+   const f=window.fixture,c=f.controller,p=f.table.playerDoms.find(player=>player.dataset.key==='p1');
+   const capture=async action=>{f.resetMetrics();await action();return f.getMetrics();};
+   const hp=await capture(()=>p.hpWc.updateCurHp(3));
+   const status=await capture(async()=>{await c.togglePlayerStatus(p.playerRef,0);await c.togglePlayerStatus(p.playerRef,1);});
+   const cards=[...f.table.paiArea.cardArea.children].slice(0,2);
+   const visibility=await capture(async()=>{await c.showCard(cards[0].cardRef);await c.resetCard(cards[0].cardRef);});
+   cards.forEach(card=>card.selectCard());
+   const batch=await capture(()=>c.showSelectedCards(cards));
+   return {hp,status,visibility,batch,state:{hp:f.read('game/6/p1/hp'),debuff:f.read('game/6/p1/debuff'),shows:cards.map(card=>f.read(`${card.dataset.path}/show`))}};
+ });
+ assert.equal(result.state.hp,'3/15');
+ assert.equal(result.state.debuff,'11');
+ assert.deepEqual(result.state.shows,['1','1']);
+ assert.deepEqual(result.hp.sets.map(item=>item.path),['game/6/p1/hp']);
+ assert.deepEqual(result.hp.transactions,[]);
+ assert.deepEqual(result.status.transactions.map(item=>item.path),['game/6/p1/debuff','game/6/p1/debuff']);
+ assert.ok(result.status.transactions.every(item=>item.writeBytes===4));
+ assert.deepEqual(result.visibility.sets.map(item=>item.path),[`${result.batch.updates[0].paths[0].replace('/show','')}/show`,`${result.batch.updates[0].paths[0].replace('/show','')}/show`]);
+ assert.deepEqual(result.visibility.transactions,[]);
+ assert.equal(result.batch.updates.length,1);
+ assert.equal(result.batch.updates[0].paths.length,2);
+ assert.ok(result.batch.updates[0].paths.every(path=>path.endsWith('/show')));
+ assert.deepEqual(result.batch.transactions,[]);
+ await browser.close();console.log('PASS: W01-W04 use narrow writes and preserve baseline state.');
+})().catch(error=>{console.error(error);process.exit(1)});

@@ -16,6 +16,7 @@ const playerMock = {
   hp: "4/4",
   role: "",
   debuff: "00",
+  areaCounts: { hand: 0, other1: 0, other2: 0 },
   ...playerDecksMock,
 };
 const jiangDeckMock1 = {

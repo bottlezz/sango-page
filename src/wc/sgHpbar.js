@@ -86,13 +86,22 @@ class sgHpBar extends HTMLElement {
       });
 
     // add HP change listener.
-    onValue(hpRef, (snapshot) => {
+    this.unSub = onValue(hpRef, (snapshot) => {
       if (snapshot.exists()) {
         const hpVal = snapshot.val();
         const splits = hpVal.split("/");
         this.cur = Number(splits[0]);
         this.max = Number(splits[1]);
         this.renderHp();
+      }
+    });
+  }
+
+  disconnectedCallback() {
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.unSub?.();
+        this.unSub = null;
       }
     });
   }
@@ -125,7 +134,7 @@ class sgHpBar extends HTMLElement {
     if (i < 0) {
       i = 0;
     }
-    this.gameController.setValue(this.hpRef, `${i}/${this.max}`);
+    return this.gameController.setScalarValue(this.hpRef, `${i}/${this.max}`);
   }
 
   openMaxPicker() {
@@ -144,7 +153,7 @@ class sgHpBar extends HTMLElement {
   setMax(value) {
     const newMax = Math.max(1, Math.min(15, Number(value)));
     const newCur = Math.min(this.cur, newMax);
-    this.gameController.setValue(this.hpRef, `${newCur}/${newMax}`);
+    return this.gameController.setScalarValue(this.hpRef, `${newCur}/${newMax}`);
   }
 }
 

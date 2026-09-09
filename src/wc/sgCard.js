@@ -29,7 +29,7 @@ ${css}
     <div class="card-front" part="card-front">
       <div class="card-suit"><span name="pai-rank"></span></div>
       <div class ="info-line"><span class="pai-name"></span></div>
-      <div class ="info-line"><span class="pai-desc"></span></div>
+      <div class="info-line desc-line"><span class="pai-desc"></span></div>
     </div>
     <div class="card-back" part="card-back">
       <p>牌</p>
@@ -79,17 +79,19 @@ class SgCard extends HTMLElement {
     }
   }
 
-  init(cardRef, cardData, gameController) {
+  init(cardRef, cardData, gameController, options = {}) {
     this.cardRef = cardRef;
     this.cardData = cardData;
     this.gameController = gameController;
 
-    this.unSub = onValue(this.cardRef, (snapshot) => {
-      if (snapshot.exists()) {
-        this.cardData = snapshot.val();
-        this.renderCard();
-      }
-    });
+    if (options.subscribe !== false) {
+      this.unSub = onValue(this.cardRef, (snapshot) => {
+        if (snapshot.exists()) {
+          this.cardData = snapshot.val();
+          this.renderCard();
+        }
+      });
+    }
 
     const cardPathUrl = this.cardRef.toString();
     const dbPathUrl = ref(this.gameController.db).toString();
@@ -115,6 +117,7 @@ class SgCard extends HTMLElement {
     const itemRank = itemData.rank;
     const itemDesc = itemData.desc;
     const itemName = itemData.name;
+    this.classList.toggle("has-desc", Boolean(itemDesc));
     const judgmentEffects = {
       "乐不思蜀": "乐",
       "兵粮寸断": "兵",
@@ -182,10 +185,12 @@ class SgCard extends HTMLElement {
   }
 
   disconnectedCallback() {
-    // CSS ordering keeps live cards mounted; moving an area/popover must not unsubscribe them.
-    if (this.isConnected) return;
-    this.gameController.removeSelectedCard(this);
-    this.unSub();
+    queueMicrotask(() => {
+      if (this.isConnected) return;
+      this.gameController.removeSelectedCard(this);
+      this.unSub?.();
+      this.unSub = null;
+    });
   }
 
   getPlayerAreaLi(playerKey) {

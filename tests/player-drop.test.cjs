@@ -68,7 +68,7 @@ test('judgment requires effect selection before moving any cards', async () => {
 });
 test('full equipment leaves cards untouched and picker open', async () => {
   const { player, moves } = setup();
-  player.gameController.targetHasCapacity = async () => false;
+  player.gameController.moveOrderedCards = async () => { throw Error('装备区最多放四张牌'); };
   player.openDropPicker(card);
   await player.confirmPlayerDrop('zhuangArea');
   assert.deepEqual(moves, []);

@@ -114,17 +114,19 @@ class SgJiang extends HTMLElement {
     }
   }
 
-  init(cardRef, cardData, gameController) {
+  init(cardRef, cardData, gameController, options = {}) {
     this.cardRef = cardRef;
     this.cardData = cardData;
     this.gameController = gameController;
 
-    this.unSub = onValue(this.cardRef, (snapshot) => {
-      if (snapshot.exists()) {
-        this.cardData = snapshot.val();
-        this.renderCard();
-      }
-    });
+    if (options.subscribe !== false) {
+      this.unSub = onValue(this.cardRef, (snapshot) => {
+        if (snapshot.exists()) {
+          this.cardData = snapshot.val();
+          this.renderCard();
+        }
+      });
+    }
 
     const cardPathUrl = this.cardRef.toString();
     const dbPathUrl = ref(this.gameController.db).toString();
@@ -293,7 +295,12 @@ class SgJiang extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.unSub();
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.unSub?.();
+        this.unSub = null;
+      }
+    });
   }
 }
 

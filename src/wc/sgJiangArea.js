@@ -17,6 +17,7 @@ import "./sgJiang.js";
 class SgJiangArea extends SgArea {
   selectedGenerals = [];
   selectionLocked = false;
+  childSubs = [];
   constructor() {
     super();
   }
@@ -37,7 +38,7 @@ class SgJiangArea extends SgArea {
       this.recycleBtn.classList.add("hide");
     }
 
-    onChildAdded(child(deckRef, "/cards"), (snapshot) => {
+    this.childSubs.push(onChildAdded(child(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;
       const value = snapshot.val();
       const cardWc = document.createElement("sg-jiang");
@@ -54,14 +55,15 @@ class SgJiangArea extends SgArea {
         });
       }
       this.cards[key] = cardWc;
-      cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController);
+      cardWc.init(child(deckRef, "/cards/" + key), value, this.gameController, {subscribe:false});
+      cardWc.renderCard();
       cardWc.setGeneralLocked(this.selectionLocked);
       this.cardArea.prepend(cardWc);
       this.updateSelectionAvailability();
 
       this.lockJiangArea();
-    });
-    onChildRemoved(child(deckRef, "/cards"), (snapshot) => {
+    }));
+    this.childSubs.push(onChildRemoved(child(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;
       const value = snapshot.val();
       // console.log(`on child removed: ${key}`);
@@ -75,7 +77,14 @@ class SgJiangArea extends SgArea {
       this.cardArea.removeChild(cardWc);
       delete this.cards[key];
       this.lockJiangArea();
-    });
+    }));
+    this.childSubs.push(onChildChanged(child(deckRef, "/cards"), (snapshot) => {
+      const cardWc = this.cards[snapshot.key];
+      if (cardWc) {
+        cardWc.cardData = snapshot.val();
+        cardWc.renderCard();
+      }
+    }));
 
     this.addEventListener("drop", (e) => {
       e.preventDefault();
@@ -144,31 +153,24 @@ class SgJiangArea extends SgArea {
     });
   }
 
+  connectedCallback() {
+    this.overflowObserver?.observe(this.cardArea);
+  }
+
+  disconnectedCallback() {
+    this.overflowObserver?.disconnect();
+    queueMicrotask(() => {
+      if (!this.isConnected) this.childSubs.splice(0).forEach(unsubscribe => unsubscribe());
+    });
+  }
+
   async lockInSelected() {
     const playerKey = this.gameController.currentPlayer;
     if (!playerKey || this.selectionLocked || this.selectedGenerals.length != 2) {
       return false;
     }
 
-    const snapshots = await Promise.all(
-      this.selectedGenerals.map((card) => get(card.cardRef))
-    );
-    if (snapshots.some((snapshot) => !snapshot.exists())) return false;
-
-    const rootRef = ref(this.gameController.db);
-    const rootUrl = rootRef.toString();
-    const updates = {};
-    this.selectedGenerals.forEach((card, index) => {
-      const snapshot = snapshots[index];
-      const sourcePath = card.cardRef.toString().replace(rootUrl, "");
-      updates[sourcePath] = null;
-      updates[
-        `game/${this.gameController.gameId}/${playerKey}/jiang${index + 1}/cards/${snapshot.key}`
-      ] = snapshot.val();
-    });
-    updates[`game/${this.gameController.gameId}/${playerKey}/jiangLocked`] = true;
-    await this.gameController.writePatch(updates, "确认选将");
-    return true;
+    return this.gameController.lockSelectedGenerals(this.selectedGenerals.map(card=>card.cardRef),playerKey);
   }
 
   setLocked(locked) {

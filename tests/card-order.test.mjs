@@ -27,7 +27,7 @@ test('cross-area insertion is atomic and uses a fresh key for collisions',()=>{
  const source='game/6/p1/hand/cards/a';
  const patch=orderedMovePatch(path,cards,[{path:source,value:{id:'p8',show:'1'}}],'b',()=> 'new');
  assert.equal(patch[source],null);assert.deepEqual(patch[path+'/new'],{id:'p8',show:'0',order:1024});
- assert.equal(patch[path+'/b/order'],2048);assert.equal(patch[path+'/a/order'],0);
+ assert.equal(patch[path+'/b/order'],2048);assert.equal(patch[path+'/a/order'],undefined);
 });
 test('multi-selection preserves incoming order',()=>{
  const patch=orderedMovePatch(path,cards,[{path:path+'/c',value:cards.c},{path:path+'/a',value:cards.a}],'b',()=>assert.fail());

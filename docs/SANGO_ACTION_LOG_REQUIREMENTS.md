@@ -1,5 +1,7 @@
 # 行动日志需求与实现
 
+> 当前文档描述现有用户需求及临时实现。日志架构、数据库流量、subscription 驱动方案与迁移事项，统一记录在 [`SANGO_ACTION_LOG_REDESIGN_HANDOFF.md`](./SANGO_ACTION_LOG_REDESIGN_HANDOFF.md)。后续 session 应先阅读该文档；当前实现不视为最终架构。
+
 设计参考：`SANGO_BOARD_LAYOUT_PLANS_V2_BORDERLESS.html` 方案 D 的右下角「行动日志」。
 
 ## 日志记录范围

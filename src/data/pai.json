@@ -196,13 +196,13 @@
     "suit": "diamond",
     "rank": "K",
     "name": "紫骍",
-    "desc": "-1"
+    "desc": "-"
   },
   "p40": {
     "suit": "diamond",
     "rank": "K",
     "name": "骅骝",
-    "desc": "+1"
+    "desc": "+"
   },
   "p41": {
     "suit": "club",
@@ -283,7 +283,7 @@
     "suit": "club",
     "rank": "5",
     "name": "的卢",
-    "desc": "+1"
+    "desc": "+"
   },
   "p57": {
     "suit": "club",
@@ -480,7 +480,7 @@
     "suit": "heart",
     "rank": "5",
     "name": "赤兔",
-    "desc": "-1"
+    "desc": "-"
   },
   "p96": {
     "suit": "heart",
@@ -601,7 +601,7 @@
     "suit": "heart",
     "rank": "K",
     "name": "爪黄飞电",
-    "desc": "+1"
+    "desc": "+"
   },
   "p120": {
     "suit": "heart",
@@ -691,7 +691,7 @@
     "suit": "spade",
     "rank": "5",
     "name": "绝影",
-    "desc": "+1"
+    "desc": "+"
   },
   "p137": {
     "suit": "spade",
@@ -814,6 +814,6 @@
     "suit": "spade",
     "rank": "K",
     "name": "大宛",
-    "desc": "-1"
+    "desc": "-"
   }
 }

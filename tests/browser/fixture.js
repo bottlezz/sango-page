@@ -1,10 +1,11 @@
-import {seed,read} from './firebase-memory.cjs';
+import {seed,read,resetMetrics,getMetrics} from './firebase-memory.cjs';
 import {gameController} from '../../src/gameController.js';
 import {SgTable} from '../../src/wc/sgTable.js';
+import {SgGameMenu} from '../../src/wc/sgGameMenu.js';
 const make=n=>Object.fromEntries(Array.from({length:n},(_,i)=>['c'+i,{id:'p'+(i%20+1),show:'0',order:i*1024}]));
-const game={tableDecks:{pai:{cards:make(100)},discard:{cards:make(100)}}};
-for(let i=1;i<=6;i++)game['p'+i]={name:i===1?'tester':'player'+i,hp:'12/15',role:'忠',debuff:'00',hand:{cards:make(5)},zhuang:{cards:make(2)},pan:{cards:{}},other1:{cards:{}},other2:{cards:{}}};
+const game={pCount:6,tableDecks:{pai:{cards:make(100)},discard:{cards:make(100)}}};
+for(let i=1;i<=6;i++)game['p'+i]={name:i===1?'tester':'player'+i,hp:'12/15',role:'忠',debuff:'00',areaCounts:{hand:5,other1:0,other2:0},hand:{cards:make(5)},zhuang:{cards:make(2)},pan:{cards:{}},other1:{cards:{}},other2:{cards:{}}};
 seed({game:{6:game}});
 const controller=new gameController({},'6');controller.playerCount=6;controller.currentPlayer='p1';controller.userName='tester';
 const table=new SgTable({},controller);document.body.style.margin='0';document.body.append(table);
-window.fixture={read,controller,table};
+window.fixture={read,resetMetrics,getMetrics,controller,table,SgGameMenu};

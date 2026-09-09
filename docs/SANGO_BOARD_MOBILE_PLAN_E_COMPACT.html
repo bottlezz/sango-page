@@ -36,9 +36,9 @@
 .judgment-effect{position:absolute;bottom:-4px;left:-4px;z-index:2;display:grid;place-items:center;width:22px;height:22px;border:1px solid #d76859;border-radius:6px;color:#fff4c7;background:#8d342b;box-shadow:0 2px 5px rgba(0,0,0,.35);font:900 12px Georgia,"STKaiti",serif;pointer-events:none}.hand-scroll:has(.judgment-effect){padding-bottom:10px;gap:9px;min-height:96px}.hand-scroll .playing-card:has(.judgment-effect){overflow:visible}
 
 /* Judgment palette: muted ochre red, charcoal, and antique bronze. */
-[data-judgment="judgeLe"],.judgment-tabs [data-zone="judgeLe"]{--effect-bg:#8d342b;--effect-edge:#bb7161;--effect-ink:#f3dfb5}
-[data-judgment="judgeBing"],.judgment-tabs [data-zone="judgeBing"]{--effect-bg:#202326;--effect-edge:#777d82;--effect-ink:#eee9df}
-[data-judgment="judgeDian"],.judgment-tabs [data-zone="judgeDian"]{--effect-bg:#655036;--effect-edge:#9b8054;--effect-ink:#ead7a5}
+[data-judgment="judgeLe"],.judgment-tabs [data-zone="judgeLe"]{--effect-bg:#8d342b;--effect-edge:#bb7161;--effect-ink:#f3dfb5;--effect-text:#d48672}
+[data-judgment="judgeBing"],.judgment-tabs [data-zone="judgeBing"]{--effect-bg:#202326;--effect-edge:#777d82;--effect-ink:#eee9df;--effect-text:#c0c2bd}
+[data-judgment="judgeDian"],.judgment-tabs [data-zone="judgeDian"]{--effect-bg:#655036;--effect-edge:#9b8054;--effect-ink:#ead7a5;--effect-text:#d2ad68}
 .judgment-effect[data-judgment]{background:var(--effect-bg);border-color:var(--effect-edge);color:var(--effect-ink)}
 .judge-mark[data-judgment]{display:inline-grid;place-items:center;min-width:16px;height:15px;padding:0 2px;border:1px solid var(--effect-edge);border-radius:3px;background:var(--effect-bg);color:var(--effect-ink);font-size:10px;line-height:1}
 .judgment-tabs button.active{background:var(--effect-bg);color:var(--effect-ink);box-shadow:inset 0 0 0 1px var(--effect-edge)}
@@ -125,6 +125,152 @@
   line-height:13px;
 }
 .info-player .info-equipment>i{margin:0 2px}
+
+/* Phone rendering: horizontal scrollers stay isolated. */
+.table{
+  flex:none;
+  height:auto;
+  min-height:0;
+  overflow:visible;
+}
+.table-stage{
+  height:auto;
+  min-height:0;
+  align-items:start;
+}
+.table-left-column,
+.table-center,
+#side-seat,
+.local,
+.local-top,
+.my-info,
+.hand{
+  min-width:0;
+}
+.hand{overflow:hidden}
+.hand-scroll{
+  width:100%;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.section-line>span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media(max-width:760px){
+  html,body{
+    min-height:100%;
+    overflow-x:hidden;
+    scrollbar-width:none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar{display:none}
+  .workbench{
+    display:block;
+    min-height:calc(100dvh + 48px);
+    overflow:visible hidden;
+  }
+  .phone{
+    width:100%;
+    height:auto;
+    min-height:calc(100dvh + 48px);
+    overflow:visible;
+  }
+  .topbar{
+    height:48px;
+    min-height:48px;
+    padding:6px 10px;
+  }
+  .topbar .seal{width:29px;height:30px;font-size:21px}
+  .topbar .brand{font-size:16px}
+  .topbar .room{font-size:10px}
+  .topbar .icon-btn{width:36px;height:36px;border-radius:9px}
+  .game-viewport{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+  }
+  .game-viewport>.opponents,
+  .game-viewport>.table,
+  .game-viewport>.local,
+  .game-viewport>.actionbar{flex:none}
+  .opponents{padding:4px 6px 3px}
+  .seats{overflow:hidden}
+  .section-line{height:15px;margin-bottom:3px;font-size:10px}
+  .info-player .portraits{height:58px}
+  .info-player .info-name{padding-bottom:3px;margin-bottom:0;line-height:14px}
+  .info-player .info-equipment{height:31px;max-height:31px}
+  .info-player .info-zones{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:2px;
+    padding-top:4px;
+  }
+  .info-player .info-zones>span{
+    display:flex;
+    flex-direction:row;
+    align-items:baseline;
+    justify-content:center;
+    gap:1px;
+    min-width:0;
+    white-space:nowrap;
+  }
+  .info-player .info-zones .zone-text{font-size:9px;line-height:13px;color:#a7b9a5}
+  .info-player .info-zones b{display:inline;min-width:0;font-size:10px;line-height:13px}
+  .table{padding:4px 6px}
+  .table-stage{
+    grid-template-columns:minmax(0,1fr) var(--player-card-width);
+    gap:6px;
+  }
+  .local{padding:5px 8px 4px}
+  .my-general{width:43px;height:64px}
+  .game-viewport>.hand{
+    display:flex;
+    flex:1 1 auto;
+    flex-direction:column;
+    min-height:0;
+  }
+  .hand-tabs{height:28px;padding:0 8px;gap:4px}
+  .hand-tabs button{height:28px;font-size:11px}
+  .zone-caption{min-height:15px;padding:2px 8px 0}
+  .hand-scroll{
+    flex:1 1 auto;
+    min-height:76px;
+    padding:8px 8px 4px;
+  }
+  .hand-scroll .playing-card{width:46px;height:70px}
+  .actionbar{
+    position:static;
+    padding:5px 8px max(7px,env(safe-area-inset-bottom));
+  }
+  .actionbar button{height:37px;padding:0 9px;font-size:12px}
+  .toast{position:fixed;bottom:52px}
+}
+
+/* Summary states use type alone; card-face judgment icons keep their tiles. */
+.info-states .turned,.local-state .turned{color:#c3a5cd}
+.info-states .chained,.local-state .chained{color:#91c3a5}
+.judge-mark[data-judgment]{display:inline;min-width:0;height:auto;padding:0;border:0;border-radius:0;background:none;color:var(--effect-text);font-weight:800;line-height:13px;text-shadow:0 1px 1px #001b14}
+.info-states .judge-mark+.judge-mark,.local-state .judge-mark+.judge-mark{margin-left:3px}
+
+/* Local generals stay identifiable to their owner and can be revealed publicly. */
+.my-general>.my-general-name:last-child{left:auto;right:1px;bottom:2px;width:auto;padding:3px 1px 1px;background:linear-gradient(90deg,transparent,#001a 42%);color:#f2e4c4;font:700 10px/1.05 "STKaiti","Microsoft YaHei",serif;letter-spacing:1px;writing-mode:vertical-rl;text-shadow:0 1px 2px #000}
+.my-general.revealed{box-shadow:inset 0 0 0 1px #d9b45c}
+.my-general.revealed::after{content:"明";position:absolute;left:2px;bottom:2px;padding:0 2px;border-radius:2px;background:#c79c43;color:#18291f;font-size:9px;font-weight:800;line-height:14px}
+.reveal-general{flex:none;min-height:22px;padding:1px 5px;border:1px solid #c9a95e66;border-radius:5px;background:#d0ad5813;color:#e5c978;font-size:10px;white-space:nowrap}
+.reveal-general:disabled{opacity:.75;color:#9fb6a7;border-color:#78918144}
+.reveal-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.reveal-options button{display:flex;align-items:center;gap:10px;text-align:left}
+.reveal-options img{width:42px;height:58px;border-radius:4px;object-fit:cover;object-position:50% 18%}
+.reveal-options span{display:block;color:#efd18a}.reveal-options small{display:block;color:#8fa899;font-size:11px}
 </style>
 </head>
 <body>
@@ -132,24 +278,26 @@
 <aside class="design-note"><div class="eyebrow">SANGO / MOBILE / PLAN E</div><h1>一张卡，<br>一个入口。</h1><p>4 上 + 1 侧。把玩家卡变成紧凑的信息总览，五名对手同时留在牌桌上。</p><ol><li><strong>卡片上只读信息</strong>装备无边框、无独立按钮，手牌与区1、区2只显示数量。</li><li><strong>点玩家，再操作</strong>整张卡是唯一入口。底部展开玩家面板，再进入手牌、区域或装备详情。</li><li><strong>第五席贴近公共桌面</strong>p2–p5 在顶部，p6 靠右；保留中央出牌区与下方自己的手牌。</li></ol><div class="prototype-label">独立方案 E · 示例交互<br>原 Mobile Plan D 保留，可对照比较。</div></aside>
 <section class="phone" aria-label="SANGO 移动端设计预览">
 <header class="topbar"><span class="seal">杀</span><div><div class="brand">SANGO</div><div class="room">双将 3v3 · 房间 006</div></div><button class="icon-btn" id="menu" aria-label="打开牌桌菜单">☰</button></header>
+<div class="game-viewport">
 <section class="opponents" aria-label="对手座次"><div class="section-line"><b>对手</b><span>点玩家展开操作</span></div><div class="seats" id="seats"></div></section>
 <section class="table"><div class="table-stage"><div class="table-left-column"><div class="table-center" role="region" aria-label="公共桌面"><div class="table-title"><h2>公共桌面</h2><span class="deck">牌堆 <b id="deck-count">84</b></span><button id="judge-draw" class="judge-draw" aria-label="翻出牌堆顶第一张并加入弃牌堆">判定</button></div><div class="discard-heading"><span>弃牌 <b id="public-count">3 张</b></span><button id="all-discards">查看全部 ›</button></div><div class="public-cards" id="public-cards" aria-label="最近十二张弃牌"></div><div id="judge-result" class="judge-result" role="status" aria-live="polite"><span class="judge-empty">判定：翻开牌堆顶一张，放入弃牌堆</span></div></div><button class="log-peek" id="log"><span>行动日志</span><span id="last-log">greg 的体力 13 → 12</span><span>›</span></button></div><div id="side-seat" aria-label="右侧对手 p6"></div></div></section>
-<section class="local" aria-label="我的武将与装备"><div class="local-top"><div class="my-generals"><button class="my-general" data-general="j176" aria-label="查看孙亮的名字和性别"><img src="../imgs/j176.jpg" alt="孙亮"><span class="faction wu">吴</span></button><button class="my-general" data-general="j126" aria-label="查看董昭的名字和性别"><img src="../imgs/j126.jpg" alt="董昭"><span class="faction wu">吴</span></button></div><div class="my-info"><div class="my-name"><b title="greg_the_conqueror_2026">greg_the_conqueror_2026</b><span class="role">忠</span></div><div class="health">♥ <span id="hp">12</span> / 15 <small>p1 · 我</small></div><div class="local-state"><span id="self-state">连环</span><span class="judges" id="judgment-summary">判定 ① 电 → ② 乐</span></div><div class="equipment-row equipment-summary" id="my-equipment" aria-label="当前装备信息"></div></div><button id="self" class="more-self" aria-label="管理我的武将与状态">⋯</button></div></section>
+<section class="local" aria-label="我的武将与装备"><div class="local-top"><div class="my-generals"><button class="my-general" data-general="j176" aria-label="查看孙亮的名字和性别"><img src="../imgs/j176.jpg" alt="孙亮"><span class="faction wu">吴</span><span class="my-general-name">孙亮</span></button><button class="my-general" data-general="j126" aria-label="查看董昭的名字和性别"><img src="../imgs/j126.jpg" alt="董昭"><span class="faction wu">吴</span><span class="my-general-name">董昭</span></button></div><div class="my-info"><div class="my-name"><b title="greg_the_conqueror_2026">greg_the_conqueror_2026</b><span class="role">忠</span><button id="general-reveal" class="reveal-general" type="button">亮将</button></div><div class="health">♥ <span id="hp">12</span> / 15 <small>p1 · 我</small></div><div class="local-state"><span id="self-state">连环</span><span class="judges" id="judgment-summary">判定 ① 电 → ② 乐</span></div><div class="equipment-row equipment-summary" id="my-equipment" aria-label="当前装备信息"></div></div><button id="self" class="more-self" aria-label="管理我的武将与状态">⋯</button></div></section>
 <section class="hand" aria-label="我的卡牌"><nav class="hand-tabs" aria-label="切换卡牌区域"><button class="active" data-zone="hand" aria-pressed="true">手牌 <span id="hand-count">24</span></button><button data-zone="zone1" aria-pressed="false">区1 · 2</button><button data-zone="zone2" aria-pressed="false">区2 · 0</button><button data-zone="equipment" aria-pressed="false">装备 · 3</button><button id="judgment-tab" data-zone="judgment" aria-pressed="false">判定 · 2</button></nav><div class="zone-caption"><span id="zone-description">横滑查看 · 点选卡牌</span><span id="selection" role="status"></span></div><div class="hand-scroll" id="hand-cards"></div></section>
 <footer class="actionbar"><button id="cancel" disabled>取消</button><button id="move" disabled>移动</button><button class="primary" id="play" disabled>出牌</button><button class="draw" id="draw">摸牌 +1</button></footer><div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
 </section>
 </main>
 <dialog id="sheet" aria-labelledby="sheet-title"><div class="sheet-head"><h2 id="sheet-title"></h2><button class="close" aria-label="关闭详情">×</button></div><div class="sheet-content" id="sheet-content"></div><p class="sheet-foot">移动端设计预览 · 操作仅影响本页示例</p></dialog>
 <script>
 const players=[
-{seat:2,name:'tt',hp:15,hand:12,role:'忠',states:['连环'],judges:['闪电','乐不思蜀'],faction:'蜀',cls:'',img:'j2.jpg',general:'界刘备',second:null,zones:[1,0]},
+{seat:2,name:'tt',hp:15,hand:12,role:'忠',states:['翻面','连环'],judges:['乐不思蜀','兵粮寸断','闪电'],faction:'蜀',cls:'',img:'j2.jpg',general:'界刘备',second:null,zones:[1,0]},
 {seat:3,name:'sora',hp:11,hand:5,role:'匿',states:['翻面'],judges:['兵粮寸断'],faction:'魏',cls:'wei',img:'j3.jpg',general:'界曹操',second:null,zones:[0,1]},
 {seat:4,name:'lin',hp:15,hand:2,role:'匿',states:[],judges:[],img:null,second:null,zones:[0,0]},
 {seat:5,name:'north_player',hp:13,hand:6,role:'主',states:['连环'],judges:['乐不思蜀'],faction:'蜀',cls:'',img:'j1.jpg',general:'刘备',second:'j105.jpg',zones:[0,0]},
 {seat:6,name:'mei',hp:8,hand:4,role:'匿',states:['翻面','连环'],judges:[],faction:'吴',cls:'wu',img:'j341.jpg',general:'界孙鲁班',second:null,zones:[0,1]}];
 const faces=[['♣','J','铁索连环'],['♦','9','闪'],['♥','8','无中生有'],['♠','K','无懈可击'],['♥','Q','过河拆桥'],['♣','4','兵粮寸断'],['♦','7','杀'],['♥','3','桃'],['♠','10','顺手牵羊'],['♦','A','决斗'],['♣','6','杀'],['♥','K','桃园结义'],['♠','5','青龙偃月刀'],['♦','Q','火攻'],['♣','8','酒'],['♥','6','万箭齐发'],['♠','2','八卦阵'],['♦','5','闪'],['♣','K','借刀杀人'],['♥','9','杀'],['♠','8','杀'],['♦','3','五谷丰登'],['♣','10','知己知彼'],['♥','A','远交近攻']];
 let nextId=24,deck=84,hp=12,activeZone='hand',selected=new Set(),chained=true,turned=false;
-const zones={hand:faces.map((f,id)=>({f,id})),zone1:[{f:['♠','7','南蛮入侵'],id:1000},{f:['♥','2','桃'],id:1001}],zone2:[],equipment:[{f:['♠','Q','丈八蛇矛'],id:1100},{f:['♣','2','仁王盾'],id:1101},{f:['♦','K','骅骝'],id:1102}],judgment:[{f:['♥','Q','闪电'],id:1200,effect:'judgeDian'},{f:['♣','J','乐不思蜀'],id:1201,effect:'judgeLe'}]};
+const zones={hand:faces.map((f,id)=>({f,id})),zone1:[{f:['♠','7','南蛮入侵'],id:1000},{f:['♥','2','桃'],id:1001}],zone2:[],equipment:[{f:['♠','Q','丈八蛇矛'],id:1100},{f:['♣','2','八卦盾'],id:1101},{f:['♦','K','爪黄飞电'],id:1102},{f:['♥','5','赤兔'],id:1103}],judgment:[{f:['♥','Q','闪电'],id:1200,effect:'judgeDian'},{f:['♣','J','乐不思蜀'],id:1201,effect:'judgeLe'}]};
 const localLabels={hand:'手牌',zone1:'区1',zone2:'区2',equipment:'装备',judgment:'判定'};
 const judgeKeys=['judgeLe','judgeBing','judgeDian'];const judgeNames={judgeLe:'乐不思蜀',judgeBing:'兵粮寸断',judgeDian:'闪电'};
 const effectLabels={judgeLe:'乐',judgeBing:'兵',judgeDian:'电'};
@@ -163,10 +311,9 @@ const $=s=>document.querySelector(s);
 const generalInfo={"j2":{"name":"界刘备","gender":"M"},"j3":{"name":"界曹操","gender":"M"},"j1":{"name":"刘备","gender":"M"},"j105":{"name":"蔡夫人","gender":"F"},"j126":{"name":"董昭","gender":"M"},"j176":{"name":"孙亮","gender":"M"},"j341":{"name":"界孙鲁班","gender":"F"}};
 function portraits(p,interactive=false){const tag=interactive?'button':'span';return '<div class="portraits">'+[p.img,p.second].map((img,i)=>{const id=img?img.replace('.jpg',''):'hidden',g=generalInfo[id];return `<${tag} class="portrait-target" data-general="${id}" ${interactive?'aria-label="查看'+(g?g.name:'未亮武将')+'资料"':''}>${img?`<img src="../imgs/${img}" alt="${g?g.name:'武将'}">${i===0?`<span class="faction ${p.cls}">${p.faction}</span>`:''}`:'<span class="hidden-general">将</span>'}${img&&g?`<span class="portrait-name">${g.name}</span>`:''}</${tag}>`}).join('')+'</div>'}
 
-const equipment=[['♠Q','丈八蛇矛'],['♣2','丈八蛇矛'],['♦K','丈八蛇矛'],['♥5','丈八蛇矛']];
+const equipment=[['♠Q','丈八蛇矛'],['♣2','八卦盾'],['♦K','爪黄飞电'],['♥5','赤兔']];
 players.forEach(p=>{p.areas={hand:Array.from({length:p.hand},(_,i)=>({id:'r'+p.seat+'h'+i,f:faces[(p.seat*3+i)%faces.length]})),zone1:Array.from({length:p.zones[0]},(_,i)=>({id:'r'+p.seat+'a'+i,f:['♠','7','南蛮入侵']})),zone2:Array.from({length:p.zones[1]},(_,i)=>({id:'r'+p.seat+'b'+i,f:['♥','2','桃']}))}});
-function areaIcon(index){return index===0?'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="8" y="3" width="8" height="13" rx="1.4" transform="rotate(12 12 10)"/><path d="M6 4 3 5a1 1 0 0 0-.7 1.2l2.3 10a1 1 0 0 0 1.2.8l3-.7"/></svg>':'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2.5" y="3.5" width="15" height="13" rx="2"/><path d="M3 7h14"/><text x="10" y="14.2" fill="currentColor" stroke="none" text-anchor="middle" font-size="8" font-family="Arial,sans-serif" font-weight="600">'+index+'</text></svg>'}
-function compactPlayer(p){return `<button class="info-player" data-seat="${p.seat}" aria-label="打开 p${p.seat} ${p.name} 玩家面板"><span class="info-name"><span>${p.name}</span><i>${p.role}</i></span>${portraits(p)}<span class="info-health">♥ ${p.hp}<small> / 15</small></span><span class="info-equipment" aria-label="四个装备位">${equipment.filter(Boolean).map(c=>`<span>${c[1]}</span>`).join('<i aria-hidden="true">·</i>')}</span><span class="info-zones">${['hand','zone1','zone2'].map((z,i)=>`<span title="${['手牌','区1','区2'][i]}：${p.areas[z].length}张" aria-label="${['手牌','区1','区2'][i]} ${p.areas[z].length}张"><span class="zone-icon" aria-hidden="true">${areaIcon(i)}</span><b>${p.areas[z].length}</b></span>`).join('')}</span><span class="info-states">${p.states.map(st=>`<span class="${st==='翻面'?'turned':''}">${st==='翻面'?'翻':'链'}</span>`).join('')}${judgeMarks(p.judges)}</span></button>`}
+function compactPlayer(p){return `<button class="info-player" data-seat="${p.seat}" aria-label="打开 p${p.seat} ${p.name} 玩家面板"><span class="info-name"><span>${p.name}</span><i>${p.role}</i></span>${portraits(p)}<span class="info-health">♥ ${p.hp}<small> / 15</small></span><span class="info-equipment" aria-label="四个装备位">${equipment.filter(Boolean).map(c=>`<span>${c[1]}</span>`).join('<i aria-hidden="true">·</i>')}</span><span class="info-zones">${['hand','zone1','zone2'].map((z,i)=>`<span title="${['手牌','区1','区2'][i]}：${p.areas[z].length}张" aria-label="${['手牌','区1','区2'][i]} ${p.areas[z].length}张"><span class="zone-text" aria-hidden="true">${['手','区1','区2'][i]}</span><b>${p.areas[z].length}</b></span>`).join('')}</span><span class="info-states">${p.states.map(st=>`<span class="${st==='翻面'?'turned':'chained'}">${st==='翻面'?'翻':'链'}</span>`).join('')}${judgeMarks(p.judges)}</span></button>`}
 function renderOpponents(){$('#seats').innerHTML=players.slice(0,4).map(compactPlayer).join('');$('#side-seat').innerHTML=compactPlayer(players[4]);}
 renderOpponents();
 function face(f){return `<span class="index"><span>${f[0]}</span><span>${f[1]}</span></span><span class="card-name">${f[2]}</span>`}
@@ -176,7 +323,7 @@ function takeDeckTop(){if(!drawPile.length){notify('牌堆已空');return null}c
 
 function renderHand(){$('#hand-cards').innerHTML=zones[activeZone].length?zones[activeZone].map((c,i)=>`<button data-card="${c.id}" class="${cardClass(c.f)}${selected.has(c.id)?' selected':''}" aria-label="${c.f.join(' ')}" aria-pressed="${selected.has(c.id)}">${face(c.f)}${activeZone==='judgment'?`<span class="judgment-effect" data-judgment="${c.effect}" title="${judgeNames[c.effect]}" aria-label="${judgeNames[c.effect]}判定">${effectLabels[c.effect]}</span>`:''}</button>`).join(''):'<p class="empty-zone">此区域暂无卡牌</p>';syncLocalInfo();updateActions()}
 function updateActions(){$('#selection').textContent=selected.size?`已选 ${selected.size} 张`:'';$('#play').disabled=!selected.size;$('#cancel').disabled=!selected.size;$('#move').disabled=!selected.size;$('#play').textContent=(activeZone==='hand'?'出牌':'移到公共区')+(selected.size?' · '+selected.size:'')}
-function syncLocalInfo(){document.querySelectorAll('[data-zone]').forEach(b=>{b.innerHTML=b.dataset.zone==='hand'?'手牌 <span id="hand-count">'+zones.hand.length+'</span>':localLabels[b.dataset.zone]+' · '+zones[b.dataset.zone].length});$('#my-equipment').innerHTML='<strong>装备</strong>'+ (zones.equipment.length?zones.equipment.map(c=>'<span>'+c.f[2]+'</span>').join('<i>·</i>'):'<span class="no-equipment">暂无装备</span>');$('#judgment-summary').innerHTML=[...new Set(zones.judgment.map(c=>c.effect))].map(k=>'<span class="judge-mark" data-judgment="'+k+'" title="'+judgeNames[k]+'">'+effectLabels[k]+'</span>').join('');$('#self-state').innerHTML=(turned?'<span class="turned">翻</span> ':'')+(chained?'<span>链</span>':'');$('#judgment-tab').textContent='判定 · '+judgmentCards().length;$('#judgment-tab').classList.toggle('active',activeZone.startsWith('judge'));$('#judgment-tab').setAttribute('aria-pressed',String(activeZone.startsWith('judge')));$('#zone-description').textContent=activeZone==='judgment'?'从左到右依次判定 · 新牌加入末尾':'横滑查看 · 点选卡牌'}
+function syncLocalInfo(){document.querySelectorAll('[data-zone]').forEach(b=>{b.innerHTML=b.dataset.zone==='hand'?'手牌 <span id="hand-count">'+zones.hand.length+'</span>':localLabels[b.dataset.zone]+' · '+zones[b.dataset.zone].length});$('#my-equipment').innerHTML='<strong>装备</strong>'+ (zones.equipment.length?zones.equipment.map(c=>'<span>'+c.f[2]+'</span>').join('<i>·</i>'):'<span class="no-equipment">暂无装备</span>');$('#judgment-summary').innerHTML=[...new Set(zones.judgment.map(c=>c.effect))].map(k=>'<span class="judge-mark" data-judgment="'+k+'" title="'+judgeNames[k]+'">'+effectLabels[k]+'</span>').join('');$('#self-state').innerHTML=(turned?'<span class="turned">翻</span> ':'')+(chained?'<span class="chained">链</span>':'');$('#judgment-tab').textContent='判定 · '+judgmentCards().length;$('#judgment-tab').classList.toggle('active',activeZone.startsWith('judge'));$('#judgment-tab').setAttribute('aria-pressed',String(activeZone.startsWith('judge')));$('#zone-description').textContent=activeZone==='judgment'?'从左到右依次判定 · 新牌加入末尾':'横滑查看 · 点选卡牌'}
 
 let toastTimer;function notify(text){$('#toast').textContent=text;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').textContent='',2300)}
 function log(text){logs.push(text);$('#last-log').textContent=text}
@@ -238,12 +385,18 @@ function showGeneral(id){const g=generalInfo[id];if(!g){sheet('未亮武将','<p
 $('.my-generals').onclick=e=>{const b=e.target.closest('[data-general]');if(b)showGeneral(b.dataset.general)};
 $('#sheet-content').addEventListener('click',e=>{const b=e.target.closest('[data-general]');if(b)showGeneral(b.dataset.general)});
 
+const localGenerals=[{id:'j176',position:'主将'},{id:'j126',position:'副将'}],localRevealState=[false,false];
+function revealMarkup(){return `<p class="remote-help">自己的武将姓名始终可见。选择亮将后，桌上会标记该武将已公开。</p><div class="reveal-options">${localGenerals.map((item,i)=>{const g=generalInfo[item.id],revealed=localRevealState[i];return `<button data-reveal-index="${i}" ${revealed?'disabled':''}><img src="../imgs/${item.id}.jpg" alt="${g.name}"><span>${item.position} · ${g.name}<small>${revealed?'已亮将':'点击亮将'}</small></span></button>`}).join('')}</div>`}
+function syncRevealState(){const count=localRevealState.filter(Boolean).length;document.querySelectorAll('.my-general').forEach((general,i)=>general.classList.toggle('revealed',localRevealState[i]));const button=$('#general-reveal');button.textContent=count===2?'已亮将':`亮将 ${count}/2`;button.disabled=count===2;button.setAttribute('aria-label',count===2?'主将和副将均已亮将':`选择亮将，当前已亮 ${count} 名`)}
+$('#general-reveal').onclick=()=>sheet('选择亮将',revealMarkup());
+$('#sheet-content').addEventListener('click',e=>{const button=e.target.closest('[data-reveal-index]');if(!button)return;const index=Number(button.dataset.revealIndex);if(localRevealState[index])return;localRevealState[index]=true;syncRevealState();$('#sheet-content').innerHTML=revealMarkup();const g=generalInfo[localGenerals[index].id];log(`greg 亮出${localGenerals[index].position}【${g.name}】`);notify(`${g.name} 已亮将`)});
+
 
 $('#move').onclick=()=>{if(!selected.size)return;sheet('移动 '+selected.size+' 张牌',`<p class="remote-help">从${localLabels[activeZone]}移动到：</p><div class="local-destinations">${Object.keys(localLabels).filter(z=>z!==activeZone).map(z=>`<button data-local-destination="${z}">${localLabels[z]} <span>${zones[z].length} 张 ›</span></button>`).join('')}</div>`)};
 $('#sheet-content').addEventListener('click',e=>{const effectButton=e.target.closest('[data-local-effect]');const b=e.target.closest('[data-local-destination]');if(!b&&!effectButton)return;const dest=effectButton?'judgment':b.dataset.localDestination;if(!zones[dest]||dest===activeZone)return;const cards=zones[activeZone].filter(c=>selected.has(c.id));if(!cards.length)return;if(dest==='judgment'&&!effectButton){$('#sheet-title').textContent='选择判定效果';$('#sheet-content').innerHTML='<p class="remote-help">选择效果后，卡牌按选中牌在原区域中的顺序加入判定队尾。</p><div class="local-destinations">'+judgeKeys.map(k=>'<button data-local-effect="'+k+'"><span class="judge-mark" data-judgment="'+k+'">'+effectLabels[k]+'</span> '+judgeNames[k]+'</button>').join('')+'</div>';return}const source=activeZone;zones[source]=zones[source].filter(c=>!selected.has(c.id));zones[dest].push(...cards.map(c=>{const copy={...c};if(dest==='judgment')copy.effect=effectButton.dataset.localEffect;else delete copy.effect;return copy}));selected.clear();$('#sheet').close();document.querySelector('[data-zone="'+dest+'"]').click();log('greg 将 '+cards.length+' 张牌从'+localLabels[source]+'移到'+localLabels[dest]);notify('已移到'+localLabels[dest]);});
 
 
-renderHand();renderPublic();
+syncRevealState();renderHand();renderPublic();
 </script>
 </body>
 </html>

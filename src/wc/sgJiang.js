@@ -145,7 +145,7 @@ class SgJiang extends HTMLElement {
     const nameSpan = this.shadowRoot.querySelector(".jiang-name");
     const frontDiv = this.shadowRoot.querySelector(".card-front");
     const generalArt = this.shadowRoot.querySelector(".general-art");
-    generalArt.src = `/imgs/${this.cardData.id}.jpg`;
+    generalArt.src = new URL(`imgs/${this.cardData.id}.jpg`, document.baseURI).href;
     generalArt.alt = jiang.name;
     const factionBadge = this.shadowRoot.querySelector(".faction-badge");
     factionBadge.textContent = jiang.force;

@@ -65,7 +65,7 @@
 .info-player .info-equipment i{font-style:normal;font-size:10px;line-height:13px;color:#75917b}
 
 /* More portrait space; quieter identity row and robust two-digit counts. */
-.info-player .info-name{padding-bottom:5px;margin-bottom:2px;border-bottom:1px solid rgba(207,184,124,.2);font-family:"Microsoft YaHei","PingFang SC",sans-serif;font-size:12px;line-height:16px}.info-player .info-name>span{font-weight:500}.info-player .portraits{height:74px}.portrait-name{position:absolute;bottom:3px;right:2px;z-index:2;writing-mode:vertical-rl;font:500 11px/1.25 "Microsoft YaHei","PingFang SC",sans-serif;letter-spacing:1px;color:#f6ecd4;text-shadow:0 1px 3px #000,0 0 5px #000;background:linear-gradient(90deg,transparent,#06181290);padding:3px 1px;pointer-events:none}.info-player .info-zones{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;width:100%}.info-player .info-zones>span{display:grid;grid-template-columns:minmax(0,1fr) minmax(2ch,max-content);align-items:center;column-gap:6px;min-width:0;font-size:11px;line-height:14px}.info-player .info-zones .zone-label{white-space:nowrap}.info-player .info-zones b{display:block;min-width:2ch;text-align:right;font:600 12px/14px "Microsoft YaHei","PingFang SC",sans-serif;font-variant-numeric:tabular-nums}.table-stage{align-items:start}
+.info-player .info-name{padding-bottom:5px;margin-bottom:2px;border-bottom:1px solid rgba(207,184,124,.2);font-family:"Microsoft YaHei","PingFang SC",sans-serif;font-size:12px;line-height:16px}.info-player .info-name>span{font-weight:500}.info-player .portraits{height:74px}.portrait-name{position:absolute;bottom:3px;right:2px;z-index:2;writing-mode:vertical-rl;font:500 11px/1.25 "Microsoft YaHei","PingFang SC",sans-serif;letter-spacing:1px;color:#f6ecd4;text-shadow:0 1px 3px #000,0 0 5px #000;background:linear-gradient(90deg,transparent,#06181290);padding:3px 1px;pointer-events:none}.portrait-name.long-name{font-size:9px;line-height:1.1;letter-spacing:0}.info-player .info-zones{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;width:100%}.info-player .info-zones>span{display:grid;grid-template-columns:minmax(0,1fr) minmax(2ch,max-content);align-items:center;column-gap:6px;min-width:0;font-size:11px;line-height:14px}.info-player .info-zones .zone-label{white-space:nowrap}.info-player .info-zones b{display:block;min-width:2ch;text-align:right;font:600 12px/14px "Microsoft YaHei","PingFang SC",sans-serif;font-variant-numeric:tabular-nums}.table-stage{align-items:start}
 
 /* All three area summaries share one line: label and count stay together. */
 .info-player .info-zones{display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:2px;width:100%}.info-player .info-zones>span{display:inline-flex;flex-direction:row;align-items:baseline;flex:none;gap:0;min-width:0;font-size:9px;line-height:13px;white-space:nowrap;letter-spacing:-.3px}.info-player .info-zones .zone-label::after{content:':'}.info-player .info-zones b{display:inline;min-width:0;text-align:left;font:600 9px/13px "Microsoft YaHei","PingFang SC",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
@@ -84,7 +84,7 @@
 
 /* Fixed player-card geometry based on a 390px portrait canvas.
    Four 88px cards + 9px gaps = 361px; compact outer padding. */
-.phone{--player-card-width:90px;width:390px}
+.phone{--player-card-width:89px;width:390px}
 .opponents{padding-left:10px;padding-right:10px;min-width:0}
 .seats{display:grid;grid-template-columns:repeat(4,var(--player-card-width));gap:5px;justify-content:start;overflow-x:auto;scrollbar-width:thin}
 .info-player{width:var(--player-card-width);min-width:var(--player-card-width);max-width:var(--player-card-width);padding:5px}
@@ -111,20 +111,58 @@
   justify-content:space-between;
 }
 
-/* Equipment summary occupies at most two lines; excess content is clipped. */
+/* Equipment summary occupies two stable rows; CSS rules avoid font-dependent separators. */
 .info-player .info-equipment{
-  display:block;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:repeat(2,13px);
+  column-gap:5px;
+  row-gap:0;
+  position:relative;
   height:31px;
   max-height:31px;
   overflow:hidden;
   line-height:13px;
 }
-.info-player .info-equipment>span,
-.info-player .info-equipment>i{
-  display:inline;
+.info-player .info-equipment>span{
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  padding-left:0;
+  font-size:9px;
   line-height:13px;
+  white-space:nowrap;
 }
-.info-player .info-equipment>i{margin:0 2px}
+.info-player .info-equipment>span:nth-child(odd){padding-right:2px}
+.info-player .info-equipment>span:nth-child(even){padding-left:2px}
+.info-player .info-equipment::after{content:"";position:absolute;left:50%;top:5px;width:1px;height:13px;background:rgba(117,145,123,.55);transform:translateX(-.5px)}
+.info-player .info-equipment.equipment-count-0::after,.info-player .info-equipment.equipment-count-1::after{display:none}
+.info-player .info-equipment.equipment-count-1>span{grid-column:1/-1;padding-right:0}
+.info-player .info-equipment.equipment-count-4::after{height:26px}
+
+.my-info .equipment-summary span+span{position:relative;margin-left:4px;padding-left:7px}
+.my-info .equipment-summary span+span::before{content:"";position:absolute;left:0;top:50%;width:1px;height:9px;background:rgba(117,145,123,.55);transform:translateY(-50%)}
+
+/* The framed desktop preview uses the same compact bars and hand geometry as a real phone. */
+.phone>.topbar{height:26px;min-height:26px;gap:6px;padding:2px 6px}
+.phone>.topbar .seal{width:21px;height:22px;font-size:15px;line-height:22px}
+.phone>.topbar>div{display:flex;align-items:baseline;gap:6px;min-width:0;white-space:nowrap}
+.phone>.topbar .brand{font-size:13px;line-height:18px;letter-spacing:1px}
+.phone>.topbar .room{overflow:hidden;margin:0;color:#8fa99b;font-size:9px;line-height:14px;text-overflow:ellipsis}
+.phone>.topbar .icon-btn{width:24px;height:22px;border:0;border-radius:5px;background:transparent;font-size:15px;line-height:22px}
+.phone>.game-viewport{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;overflow:hidden}
+.phone>.game-viewport>.opponents,.phone>.game-viewport>.table,.phone>.game-viewport>.local,.phone>.game-viewport>.actionbar{flex:none}
+.phone>.game-viewport>.hand{display:flex;flex:0 0 98px;flex-direction:column;height:98px;min-height:0}
+.phone .hand-tabs{height:22px;padding:0 6px;gap:3px}
+.phone .hand-tabs button{height:22px;font-size:10px;line-height:20px}
+.phone .zone-caption{min-height:12px;padding:1px 7px 0;font-size:9px;line-height:11px}
+.phone .hand-scroll{flex:1 1 auto;min-height:0;padding:6px 7px 0;gap:4px}
+.phone .hand-scroll .playing-card{width:40px;height:58px;padding:3px;border-radius:4px}
+.phone .hand-scroll .playing-card .index{font-size:10px}
+.phone .hand-scroll .playing-card .card-name{top:5px;right:4px;font-size:10px;line-height:1;letter-spacing:0}
+.phone .hand-scroll .playing-card.selected{transform:translateY(-4px)}
+.phone .actionbar{position:relative;bottom:auto;flex:0 0 auto;min-height:30px;padding:2px 6px max(2px,env(safe-area-inset-bottom));gap:4px}
+.phone .actionbar button{height:26px;min-height:26px;padding:0 7px;border-radius:6px;font-size:11px;line-height:24px}
 
 /* Phone rendering: horizontal scrollers stay isolated. */
 .table{
@@ -172,26 +210,28 @@
   body::-webkit-scrollbar{display:none}
   .workbench{
     display:block;
-    min-height:calc(100vh + 48px);
-    min-height:calc(100lvh + 48px);
+    min-height:calc(100vh + 26px);
+    min-height:calc(100lvh + 26px);
     overflow:visible hidden;
   }
   .phone{
     width:100%;
     height:auto;
-    min-height:calc(100vh + 48px);
-    min-height:calc(100lvh + 48px);
+    min-height:calc(100vh + 26px);
+    min-height:calc(100lvh + 26px);
     overflow:visible;
   }
   .topbar{
-    height:48px;
-    min-height:48px;
-    padding:6px 10px;
+    height:26px;
+    min-height:26px;
+    gap:6px;
+    padding:2px 6px;
   }
-  .topbar .seal{width:29px;height:30px;font-size:21px}
-  .topbar .brand{font-size:16px}
-  .topbar .room{font-size:10px}
-  .topbar .icon-btn{width:36px;height:36px;border-radius:9px}
+  .topbar .seal{width:21px;height:22px;font-size:15px;line-height:22px}
+  .topbar>div{display:flex;align-items:baseline;gap:6px;min-width:0;white-space:nowrap}
+  .topbar .brand{font-size:13px;line-height:18px;letter-spacing:1px}
+  .topbar .room{overflow:hidden;margin:0;color:#8fa99b;font-size:9px;line-height:14px;text-overflow:ellipsis}
+  .topbar .icon-btn{width:24px;height:22px;border:0;border-radius:5px;background:transparent;font-size:15px;line-height:22px}
   .game-viewport{
     display:flex;
     flex-direction:column;
@@ -237,27 +277,34 @@
   .my-general{width:43px;height:64px}
   .game-viewport>.hand{
     display:flex;
-    flex:1 1 auto;
+    flex:0 0 98px;
     flex-direction:column;
+    height:98px;
     min-height:0;
   }
-  .hand-tabs{height:28px;padding:0 8px;gap:4px}
-  .hand-tabs button{height:28px;font-size:11px}
-  .zone-caption{min-height:15px;padding:2px 8px 0}
+  .hand-tabs{height:22px;padding:0 6px;gap:3px}
+  .hand-tabs button{height:22px;font-size:10px;line-height:20px}
+  .zone-caption{min-height:12px;padding:1px 7px 0;font-size:9px;line-height:11px}
   .hand-scroll{
     flex:1 1 auto;
-    min-height:76px;
-    padding:8px 8px 4px;
+    min-height:0;
+    padding:6px 7px 0;
+    gap:4px;
   }
-  .hand-scroll .playing-card{width:46px;height:70px}
+  .hand-scroll .playing-card{width:40px;height:58px;padding:3px;border-radius:4px}
+  .hand-scroll .playing-card .index{font-size:10px}
+  .hand-scroll .playing-card .card-name{top:5px;right:4px;font-size:10px;line-height:1;letter-spacing:0}
+  .hand-scroll .playing-card.selected{transform:translateY(-4px)}
   .actionbar{
     position:relative;
     bottom:auto;
     flex:0 0 auto;
-    padding:5px 8px max(7px,env(safe-area-inset-bottom));
+    min-height:30px;
+    padding:2px 6px max(2px,env(safe-area-inset-bottom));
+    gap:4px;
   }
-  .actionbar button{height:37px;padding:0 9px;font-size:12px}
-  .toast{position:fixed;bottom:52px}
+  .actionbar button{height:26px;min-height:26px;padding:0 7px;border-radius:6px;font-size:11px;line-height:24px}
+  .toast{position:fixed;bottom:34px}
 }
 
 /* Summary states use type alone; card-face judgment icons keep their tiles. */
@@ -295,14 +342,14 @@
 <dialog id="sheet" aria-labelledby="sheet-title"><div class="sheet-head"><h2 id="sheet-title"></h2><button class="close" aria-label="关闭详情">×</button></div><div class="sheet-content" id="sheet-content"></div><p class="sheet-foot">移动端设计预览 · 操作仅影响本页示例</p></dialog>
 <script>
 const players=[
-{seat:2,name:'tt',hp:15,hand:12,role:'忠',states:['翻面','连环'],judges:['乐不思蜀','兵粮寸断','闪电'],faction:'蜀',cls:'',img:'j2.jpg',general:'界刘备',second:null,zones:[1,0]},
+{seat:2,name:'tt',hp:15,hand:12,role:'忠',states:['翻面','连环'],judges:['乐不思蜀','兵粮寸断','闪电'],faction:'群',cls:'',img:'j280.jpg',general:'界颜良文丑',second:'j226.jpg',zones:[1,0]},
 {seat:3,name:'sora',hp:11,hand:5,role:'匿',states:['翻面'],judges:['兵粮寸断'],faction:'魏',cls:'wei',img:'j3.jpg',general:'界曹操',second:null,zones:[0,1]},
 {seat:4,name:'lin',hp:15,hand:2,role:'匿',states:[],judges:[],img:null,second:null,zones:[0,0]},
 {seat:5,name:'north_player',hp:13,hand:6,role:'主',states:['连环'],judges:['乐不思蜀'],faction:'蜀',cls:'',img:'j1.jpg',general:'刘备',second:'j105.jpg',zones:[0,0]},
 {seat:6,name:'mei',hp:8,hand:4,role:'匿',states:['翻面','连环'],judges:[],faction:'吴',cls:'wu',img:'j341.jpg',general:'界孙鲁班',second:null,zones:[0,1]}];
 const faces=[['♣','J','铁索连环'],['♦','9','闪'],['♥','8','无中生有'],['♠','K','无懈可击'],['♥','Q','过河拆桥'],['♣','4','兵粮寸断'],['♦','7','杀'],['♥','3','桃'],['♠','10','顺手牵羊'],['♦','A','决斗'],['♣','6','杀'],['♥','K','桃园结义'],['♠','5','青龙偃月刀'],['♦','Q','火攻'],['♣','8','酒'],['♥','6','万箭齐发'],['♠','2','八卦阵'],['♦','5','闪'],['♣','K','借刀杀人'],['♥','9','杀'],['♠','8','杀'],['♦','3','五谷丰登'],['♣','10','知己知彼'],['♥','A','远交近攻']];
 let nextId=24,deck=84,hp=12,activeZone='hand',selected=new Set(),chained=true,turned=false;
-const zones={hand:faces.map((f,id)=>({f,id})),zone1:[{f:['♠','7','南蛮入侵'],id:1000},{f:['♥','2','桃'],id:1001}],zone2:[],equipment:[{f:['♠','Q','丈八蛇矛'],id:1100},{f:['♣','2','八卦盾'],id:1101},{f:['♦','K','爪黄飞电'],id:1102},{f:['♥','5','赤兔'],id:1103}],judgment:[{f:['♥','Q','闪电'],id:1200,effect:'judgeDian'},{f:['♣','J','乐不思蜀'],id:1201,effect:'judgeLe'}]};
+const zones={hand:faces.map((f,id)=>({f,id})),zone1:[{f:['♠','7','南蛮入侵'],id:1000},{f:['♥','2','桃'],id:1001}],zone2:[],equipment:[{f:['♠','Q','丈八蛇矛'],id:1100},{f:['♦','K','爪黄飞电'],id:1101},{f:['♣','2','八卦盾'],id:1102},{f:['♥','5','赤兔'],id:1103}],judgment:[{f:['♥','Q','闪电'],id:1200,effect:'judgeDian'},{f:['♣','J','乐不思蜀'],id:1201,effect:'judgeLe'}]};
 const localLabels={hand:'手牌',zone1:'区1',zone2:'区2',equipment:'装备',judgment:'判定'};
 const judgeKeys=['judgeLe','judgeBing','judgeDian'];const judgeNames={judgeLe:'乐不思蜀',judgeBing:'兵粮寸断',judgeDian:'闪电'};
 const effectLabels={judgeLe:'乐',judgeBing:'兵',judgeDian:'电'};
@@ -313,12 +360,13 @@ const drawPile=Array.from({length:84},(_,i)=>faces[(i+24)%faces.length]);
 const publicCards=[['♠','7','杀'],['♦','9','闪'],['♥','3','桃']];
 const logs=['greg 摸了 2 张牌','tt 使用【杀】，目标 sora','sora 打出【闪】','mei 进入翻面状态','greg 的体力 13 → 12'];
 const $=s=>document.querySelector(s);
-const generalInfo={"j2":{"name":"界刘备","gender":"M"},"j3":{"name":"界曹操","gender":"M"},"j1":{"name":"刘备","gender":"M"},"j105":{"name":"蔡夫人","gender":"F"},"j126":{"name":"董昭","gender":"M"},"j176":{"name":"孙亮","gender":"M"},"j341":{"name":"界孙鲁班","gender":"F"}};
-function portraits(p,interactive=false){const tag=interactive?'button':'span';return '<div class="portraits">'+[p.img,p.second].map((img,i)=>{const id=img?img.replace('.jpg',''):'hidden',g=generalInfo[id];return `<${tag} class="portrait-target" data-general="${id}" ${interactive?'aria-label="查看'+(g?g.name:'未亮武将')+'资料"':''}>${img?`<img src="../imgs/${img}" alt="${g?g.name:'武将'}">${i===0?`<span class="faction ${p.cls}">${p.faction}</span>`:''}`:'<span class="hidden-general">将</span>'}${img&&g?`<span class="portrait-name">${g.name}</span>`:''}</${tag}>`}).join('')+'</div>'}
+const generalInfo={"j2":{"name":"界刘备","gender":"M"},"j3":{"name":"界曹操","gender":"M"},"j1":{"name":"刘备","gender":"M"},"j105":{"name":"蔡夫人","gender":"F"},"j126":{"name":"董昭","gender":"M"},"j176":{"name":"孙亮","gender":"M"},"j226":{"name":"SP黄月英","gender":"F"},"j280":{"name":"界颜良文丑","gender":"M"},"j341":{"name":"界孙鲁班","gender":"F"}};
+function portraits(p,interactive=false){const tag=interactive?'button':'span';return '<div class="portraits">'+[p.img,p.second].map((img,i)=>{const id=img?img.replace('.jpg',''):'hidden',g=generalInfo[id];return `<${tag} class="portrait-target" data-general="${id}" ${interactive?'aria-label="查看'+(g?g.name:'未亮武将')+'资料"':''}>${img?`<img src="../imgs/${img}" alt="${g?g.name:'武将'}">${i===0?`<span class="faction ${p.cls}">${p.faction}</span>`:''}`:'<span class="hidden-general">将</span>'}${img&&g?`<span class="portrait-name${g.name.length>=5?' long-name':''}">${g.name}</span>`:''}</${tag}>`}).join('')+'</div>'}
 
-const equipment=[['♠Q','丈八蛇矛'],['♣2','八卦盾'],['♦K','爪黄飞电'],['♥5','赤兔']];
-players.forEach(p=>{p.areas={hand:Array.from({length:p.hand},(_,i)=>({id:'r'+p.seat+'h'+i,f:faces[(p.seat*3+i)%faces.length]})),zone1:Array.from({length:p.zones[0]},(_,i)=>({id:'r'+p.seat+'a'+i,f:['♠','7','南蛮入侵']})),zone2:Array.from({length:p.zones[1]},(_,i)=>({id:'r'+p.seat+'b'+i,f:['♥','2','桃']}))}});
-function compactPlayer(p){return `<button class="info-player" data-seat="${p.seat}" aria-label="打开 p${p.seat} ${p.name} 玩家面板"><span class="info-name"><span>${p.name}</span><i>${p.role}</i></span>${portraits(p)}<span class="info-health">♥ ${p.hp}<small> / 15</small></span><span class="info-equipment" aria-label="四个装备位">${equipment.filter(Boolean).map(c=>`<span>${c[1]}</span>`).join('<i aria-hidden="true">·</i>')}</span><span class="info-zones">${['hand','zone1','zone2'].map((z,i)=>`<span title="${['手牌','区1','区2'][i]}：${p.areas[z].length}张" aria-label="${['手牌','区1','区2'][i]} ${p.areas[z].length}张"><span class="zone-text" aria-hidden="true">${['手','区1','区2'][i]}</span><b>${p.areas[z].length}</b></span>`).join('')}</span><span class="info-states">${p.states.map(st=>`<span class="${st==='翻面'?'turned':'chained'}">${st==='翻面'?'翻':'链'}</span>`).join('')}${judgeMarks(p.judges)}</span></button>`}
+const equipment=[['♠Q','丈八蛇矛','武器'],['♦K','爪黄飞电','坐骑'],['♣2','八卦盾','防具'],['♥5','赤兔','坐骑']];
+const equipmentSamples=[equipment,equipment.slice(0,2),[equipment[2]],equipment.slice(0,3),[]];
+players.forEach((p,index)=>{p.equipment=equipmentSamples[index];p.areas={hand:Array.from({length:p.hand},(_,i)=>({id:'r'+p.seat+'h'+i,f:faces[(p.seat*3+i)%faces.length]})),zone1:Array.from({length:p.zones[0]},(_,i)=>({id:'r'+p.seat+'a'+i,f:['♠','7','南蛮入侵']})),zone2:Array.from({length:p.zones[1]},(_,i)=>({id:'r'+p.seat+'b'+i,f:['♥','2','桃']}))}});
+function compactPlayer(p){return `<button class="info-player" data-seat="${p.seat}" aria-label="打开 p${p.seat} ${p.name} 玩家面板"><span class="info-name"><span>${p.name}</span><i>${p.role}</i></span>${portraits(p)}<span class="info-health">♥ ${p.hp}<small> / 15</small></span><span class="info-equipment equipment-count-${p.equipment.length}" aria-label="${p.equipment.length}件装备">${p.equipment.map(c=>`<span>${c[1]}</span>`).join('')}</span><span class="info-zones">${['hand','zone1','zone2'].map((z,i)=>`<span title="${['手牌','区1','区2'][i]}：${p.areas[z].length}张" aria-label="${['手牌','区1','区2'][i]} ${p.areas[z].length}张"><span class="zone-text" aria-hidden="true">${['手','区1','区2'][i]}</span><b>${p.areas[z].length}</b></span>`).join('')}</span><span class="info-states">${p.states.map(st=>`<span class="${st==='翻面'?'turned':'chained'}">${st==='翻面'?'翻':'链'}</span>`).join('')}${judgeMarks(p.judges)}</span></button>`}
 function renderOpponents(){$('#seats').innerHTML=players.slice(0,4).map(compactPlayer).join('');$('#side-seat').innerHTML=compactPlayer(players[4]);}
 renderOpponents();
 function face(f){return `<span class="index"><span>${f[0]}</span><span>${f[1]}</span></span><span class="card-name">${f[2]}</span>`}
@@ -328,13 +376,13 @@ function takeDeckTop(){if(!drawPile.length){notify('牌堆已空');return null}c
 
 function renderHand(){$('#hand-cards').innerHTML=zones[activeZone].length?zones[activeZone].map((c,i)=>`<button data-card="${c.id}" class="${cardClass(c.f)}${selected.has(c.id)?' selected':''}" aria-label="${c.f.join(' ')}" aria-pressed="${selected.has(c.id)}">${face(c.f)}${activeZone==='judgment'?`<span class="judgment-effect" data-judgment="${c.effect}" title="${judgeNames[c.effect]}" aria-label="${judgeNames[c.effect]}判定">${effectLabels[c.effect]}</span>`:''}</button>`).join(''):'<p class="empty-zone">此区域暂无卡牌</p>';syncLocalInfo();updateActions()}
 function updateActions(){$('#selection').textContent=selected.size?`已选 ${selected.size} 张`:'';$('#play').disabled=!selected.size;$('#cancel').disabled=!selected.size;$('#move').disabled=!selected.size;$('#play').textContent=(activeZone==='hand'?'出牌':'移到公共区')+(selected.size?' · '+selected.size:'')}
-function syncLocalInfo(){document.querySelectorAll('[data-zone]').forEach(b=>{b.innerHTML=b.dataset.zone==='hand'?'手牌 <span id="hand-count">'+zones.hand.length+'</span>':localLabels[b.dataset.zone]+' · '+zones[b.dataset.zone].length});$('#my-equipment').innerHTML='<strong>装备</strong>'+ (zones.equipment.length?zones.equipment.map(c=>'<span>'+c.f[2]+'</span>').join('<i>·</i>'):'<span class="no-equipment">暂无装备</span>');$('#judgment-summary').innerHTML=[...new Set(zones.judgment.map(c=>c.effect))].map(k=>'<span class="judge-mark" data-judgment="'+k+'" title="'+judgeNames[k]+'">'+effectLabels[k]+'</span>').join('');$('#self-state').innerHTML=(turned?'<span class="turned">翻</span> ':'')+(chained?'<span class="chained">链</span>':'');$('#judgment-tab').textContent='判定 · '+judgmentCards().length;$('#judgment-tab').classList.toggle('active',activeZone.startsWith('judge'));$('#judgment-tab').setAttribute('aria-pressed',String(activeZone.startsWith('judge')));$('#zone-description').textContent=activeZone==='judgment'?'从左到右依次判定 · 新牌加入末尾':'横滑查看 · 点选卡牌'}
+function syncLocalInfo(){document.querySelectorAll('[data-zone]').forEach(b=>{b.innerHTML=b.dataset.zone==='hand'?'手牌 <span id="hand-count">'+zones.hand.length+'</span>':localLabels[b.dataset.zone]+' · '+zones[b.dataset.zone].length});$('#my-equipment').innerHTML='<strong>装备</strong>'+ (zones.equipment.length?zones.equipment.map(c=>'<span>'+c.f[2]+'</span>').join(''):'<span class="no-equipment">暂无装备</span>');$('#judgment-summary').innerHTML=[...new Set(zones.judgment.map(c=>c.effect))].map(k=>'<span class="judge-mark" data-judgment="'+k+'" title="'+judgeNames[k]+'">'+effectLabels[k]+'</span>').join('');$('#self-state').innerHTML=(turned?'<span class="turned">翻</span> ':'')+(chained?'<span class="chained">链</span>':'');$('#judgment-tab').textContent='判定 · '+judgmentCards().length;$('#judgment-tab').classList.toggle('active',activeZone.startsWith('judge'));$('#judgment-tab').setAttribute('aria-pressed',String(activeZone.startsWith('judge')));$('#zone-description').textContent=activeZone==='judgment'?'从左到右依次判定 · 新牌加入末尾':'横滑查看 · 点选卡牌'}
 
 let toastTimer;function notify(text){$('#toast').textContent=text;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').textContent='',2300)}
 function log(text){logs.push(text);$('#last-log').textContent=text}
 function sheet(title,content){$('#sheet-title').textContent=title;$('#sheet-content').innerHTML=content;$('#sheet').showModal()}
 $('#sheet .close').onclick=()=>$('#sheet').close();$('#sheet').addEventListener('click',e=>{if(e.target===$('#sheet')){const r=e.target.getBoundingClientRect();if(e.clientY<r.top||e.clientX<r.left||e.clientX>r.right)e.target.close()}});
-function openPlayer(seat){const p=players.find(p=>p.seat===seat);sheet(`p${p.seat} · ${p.name}`,`<div class="detail-generals">${portraits(p,true)}<p>身份 · ${p.role}<br>体力 <span style="color:#f1877e">♥ ${p.hp} / 15</span><br>${p.states.join(' · ')||'无特殊状态'}</p></div><h3>选择区域进行交互</h3><div class="player-panel-zones">${['hand','zone1','zone2'].map((z,i)=>`<button data-player-area="${z}" data-player="${p.seat}">${['手牌','区1','区2'][i]}<b>${p.areas[z].length} 张 ›</b></button>`).join('')}</div><h3>装备</h3><button class="player-panel-equipment" data-player-equipment="${p.seat}"><span>${equipment.map(c=>c?c[1]:'空位').join(' · ')}</span><b>查看完整装备牌 ›</b></button><h3>判定区域</h3><div class="chips">${['乐不思蜀','兵粮寸断','闪电'].map((j,i)=>`<span>${['乐','兵','电'][i]} · ${p.judges.filter(v=>v===j).length}</span>`).join('')}</div>`)}
+function openPlayer(seat){const p=players.find(p=>p.seat===seat);sheet(`p${p.seat} · ${p.name}`,`<div class="detail-generals">${portraits(p,true)}<p>身份 · ${p.role}<br>体力 <span style="color:#f1877e">♥ ${p.hp} / 15</span><br>${p.states.join(' · ')||'无特殊状态'}</p></div><h3>选择区域进行交互</h3><div class="player-panel-zones">${['hand','zone1','zone2'].map((z,i)=>`<button data-player-area="${z}" data-player="${p.seat}">${['手牌','区1','区2'][i]}<b>${p.areas[z].length} 张 ›</b></button>`).join('')}</div><h3>装备</h3><button class="player-panel-equipment" data-player-equipment="${p.seat}"><span>${p.equipment.length?p.equipment.map(c=>c[1]).join(' · '):'无装备'}</span><b>查看完整装备牌 ›</b></button><h3>判定区域</h3><div class="chips">${['乐不思蜀','兵粮寸断','闪电'].map((j,i)=>`<span>${['乐','兵','电'][i]} · ${p.judges.filter(v=>v===j).length}</span>`).join('')}</div>`)}
 function onPlayerClick(e){const portrait=e.target.closest('[data-general]');if(portrait){showGeneral(portrait.dataset.general);return}const b=e.target.closest('[data-seat]');if(b)openPlayer(Number(b.dataset.seat))}
 $('#seats').onclick=onPlayerClick;$('#side-seat').onclick=onPlayerClick;
 $('#sheet-content').addEventListener('click',e=>{const area=e.target.closest('[data-player-area]');if(area){openRemote(Number(area.dataset.player),area.dataset.playerArea);return}const eq=e.target.closest('[data-player-equipment]');if(eq)showEquipment(Number(eq.dataset.playerEquipment),0)});
@@ -380,8 +428,8 @@ $('#sheet-content').addEventListener('click',e=>{
 
 
 function showEquipment(owner,index){
- const name=owner===1?'我的':players.find(p=>p.seat===owner).name+' 的';
- sheet(name+'装备',`<p class="remote-help">装备完整牌面 · 花色、点数与名称</p><div class="equipment-detail">${equipment.map((c,i)=>{const f=c?[c[0].slice(0,1),c[0].slice(1),c[1]]:null;return `<figure><div class="${f?cardClass(f):'playing-card empty-card'} ${i===index?'focused':''}" aria-label="${f?f.join(' '):'空装备位'}">${f?face(f):'空位'}</div><figcaption>${['武器','防具','坐骑','装备位 4'][i]}</figcaption></figure>`}).join('')}</div>`);
+ const player=owner===1?null:players.find(p=>p.seat===owner),name=owner===1?'我的':player.name+' 的',cards=owner===1?equipment:player.equipment;
+ sheet(name+'装备',`<p class="remote-help">装备完整牌面 · 花色、点数与名称</p><div class="equipment-detail">${cards.length?cards.map((c,i)=>{const f=[c[0].slice(0,1),c[0].slice(1),c[1]];return `<figure><div class="${cardClass(f)} ${i===index?'focused':''}" aria-label="${f.join(' ')}">${face(f)}</div><figcaption>${c[2]}</figcaption></figure>`}).join(''):'<p class="remote-help">当前没有装备</p>'}</div>`);
 }
 
 

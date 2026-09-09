@@ -49,6 +49,82 @@
 
 /* Compact discard tiles and top-of-deck judgment. */
 .table-title{gap:7px}.table-title .deck{margin-left:auto;background:none;padding:0;color:#9fb6a7;display:flex;gap:5px;font-size:11px}.judge-draw{min-height:34px;padding:5px 13px;border:1px solid #b4945555;border-radius:6px;background:#d0ad5815;color:#e6cc8b;font-size:12px}.table-center{min-width:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:6px}.discard-heading{display:flex;align-items:center;justify-content:space-between;color:#b2c2b1;font-size:11px}.discard-heading b{font-size:11px;font-weight:400;color:#829e8e}.discard-heading button{background:transparent;color:#d8c18a;font-size:11px;min-height:28px;padding:3px}.table-stage .public-cards{display:grid;grid-template-columns:repeat(auto-fill,34px);grid-auto-rows:48px;gap:5px;align-content:start;justify-content:start;align-items:start;height:auto;min-height:48px;max-height:101px;flex:none;padding:0;overflow:auto}.table-stage .public-cards .discard-tile,.sheet-content .all-discards .discard-tile{width:34px;height:48px;min-height:0;min-width:0;margin:0;padding:3px;border:1px solid #a8905b;border-radius:3px;background:linear-gradient(#f4e7c5,#cdb47e);color:#302415;box-shadow:none;transform:none}.discard-tile .index{font-size:10px;line-height:1}.discard-tile .card-name{font-size:9px;line-height:1;letter-spacing:0;top:2px;right:3px}.judge-result{display:flex;align-items:center;gap:9px;min-height:58px;padding-top:6px;border-top:1px solid #e8cf8b18}.judge-result>.playing-card{width:40px;height:58px;padding:4px;box-shadow:none}.judge-result .index{font-size:11px}.judge-result .card-name{font-size:11px;line-height:1;letter-spacing:0;top:5px;right:5px}.judge-result b{font-size:11px;font-weight:400;color:#ddc486}.judge-result p{font-size:11px;margin:2px 0;color:#d5d8bd}.judge-result small,.judge-empty{font-size:10px;color:#90a997}.all-discards{display:grid;grid-template-columns:repeat(auto-fill,34px);gap:8px;margin-top:16px}.discard-detail{display:flex;gap:20px;align-items:center}.discard-detail>.playing-card{width:85px;height:125px}.discard-detail p{font-size:16px}.discard-detail small{font-size:12px;color:var(--muted)}
+
+/* Quiet separators group player information without adding boxes. */
+.info-player .info-equipment,.info-player .info-zones{position:relative;padding-top:5px;margin-top:1px}
+.info-player .info-equipment::before,.info-player .info-zones::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(207,184,124,.04),rgba(207,184,124,.25) 18%,rgba(207,184,124,.25) 82%,rgba(207,184,124,.04))}
+.my-info .equipment-summary{position:relative;padding-top:5px;margin-top:4px}
+.my-info .equipment-summary::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(207,184,124,.22),rgba(207,184,124,.06))}
+
+/* Inline equipment summary: two names per row, wrapping longer names. */
+.info-player .info-equipment{display:flex;flex-wrap:wrap;align-content:flex-start;align-items:baseline;gap:2px 2px;min-width:0;line-height:13px}
+.info-player .info-equipment>span{display:inline;max-width:100%;font-size:10px;line-height:13px;white-space:normal;overflow-wrap:anywhere}
+.info-player .info-equipment .vacant{font-size:10px}
+
+/* Four occupied equipment names, separated by quiet dots. */
+.info-player .info-equipment i{font-style:normal;font-size:10px;line-height:13px;color:#75917b}
+
+/* More portrait space; quieter identity row and robust two-digit counts. */
+.info-player .info-name{padding-bottom:5px;margin-bottom:2px;border-bottom:1px solid rgba(207,184,124,.2);font-family:"Microsoft YaHei","PingFang SC",sans-serif;font-size:12px;line-height:16px}.info-player .info-name>span{font-weight:500}.info-player .portraits{height:74px}.portrait-name{position:absolute;bottom:3px;right:2px;z-index:2;writing-mode:vertical-rl;font:500 11px/1.25 "Microsoft YaHei","PingFang SC",sans-serif;letter-spacing:1px;color:#f6ecd4;text-shadow:0 1px 3px #000,0 0 5px #000;background:linear-gradient(90deg,transparent,#06181290);padding:3px 1px;pointer-events:none}.info-player .info-zones{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;width:100%}.info-player .info-zones>span{display:grid;grid-template-columns:minmax(0,1fr) minmax(2ch,max-content);align-items:center;column-gap:6px;min-width:0;font-size:11px;line-height:14px}.info-player .info-zones .zone-label{white-space:nowrap}.info-player .info-zones b{display:block;min-width:2ch;text-align:right;font:600 12px/14px "Microsoft YaHei","PingFang SC",sans-serif;font-variant-numeric:tabular-nums}.table-stage{align-items:start}
+
+/* All three area summaries share one line: label and count stay together. */
+.info-player .info-zones{display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:2px;width:100%}.info-player .info-zones>span{display:inline-flex;flex-direction:row;align-items:baseline;flex:none;gap:0;min-width:0;font-size:9px;line-height:13px;white-space:nowrap;letter-spacing:-.3px}.info-player .info-zones .zone-label::after{content:':'}.info-player .info-zones b{display:inline;min-width:0;text-align:left;font:600 9px/13px "Microsoft YaHei","PingFang SC",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+
+/* Slightly larger inline area labels and counts. */
+.info-player .info-zones{gap:1px}.info-player .info-zones>span{font-size:10px;line-height:14px;letter-spacing:-.5px}.info-player .info-zones b{font-size:10px;line-height:14px;letter-spacing:-.5px}
+
+/* Quiet line icons free room for readable two-digit area counts. */
+.info-player .info-zones{gap:3px}.info-player .info-zones>span{gap:2px;align-items:center;letter-spacing:0}.zone-icon{display:inline-flex;width:15px;height:17px;color:#a7b9a5;flex:none}.zone-icon svg{display:block;width:100%;height:100%}.info-player .info-zones b{font-size:12px;line-height:17px;letter-spacing:0;font-weight:600}
+
+/* The complete table surface occupies only the column beside the player. */
+.table-stage{padding:0;align-items:start;gap:9px}.table-center{justify-content:flex-start;gap:6px;min-width:0;padding:7px;border:1px solid rgba(207,184,124,.16);border-radius:7px;background:rgba(5,31,24,.35)}.table-center .table-title{flex-wrap:wrap;gap:5px}.table-center .table-title h2{font-size:12px;letter-spacing:1px}.table-center .judge-draw{padding:4px 9px;min-height:30px}.table-center .log-peek{width:100%;min-width:0;gap:5px;font-size:10px;padding-top:7px}.table-center .log-peek #last-log{flex:1;min-width:0}.table-center .log-peek>span:first-child,.table-center .log-peek>span:last-child{flex:none}.table-stage #side-seat{align-self:start;position:relative;min-width:0}
+
+/* Log is a separate row below the table, confined to its left column. */
+.table-left-column{display:flex;flex-direction:column;gap:7px;min-width:0}.table-left-column>.table-center{width:100%}.table-left-column>.log-peek{display:flex;align-items:center;gap:5px;width:100%;min-width:0;min-height:30px;padding:5px 7px;border:0;border-radius:5px;background:rgba(5,31,24,.23);font-size:10px;text-align:left}.table-left-column>.log-peek #last-log{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.table-left-column>.log-peek>span:first-child,.table-left-column>.log-peek>span:last-child{flex:none}
+
+/* Fixed player-card geometry based on a 390px portrait canvas.
+   Four 88px cards + 9px gaps = 361px; compact outer padding. */
+.phone{--player-card-width:90px;width:390px}
+.opponents{padding-left:10px;padding-right:10px;min-width:0}
+.seats{display:grid;grid-template-columns:repeat(4,var(--player-card-width));gap:5px;justify-content:start;overflow-x:auto;scrollbar-width:thin}
+.info-player{width:var(--player-card-width);min-width:var(--player-card-width);max-width:var(--player-card-width);padding:5px}
+.table{padding-left:10px;padding-right:10px}
+.table-stage{grid-template-columns:minmax(0,1fr) var(--player-card-width)}
+.table-stage #side-seat{width:var(--player-card-width)}
+@media(max-width:760px){.phone{width:100%;max-width:480px}}
+
+/* Stack each area indicator above its count within the fixed player width. */
+.info-player .info-zones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;align-items:start}
+.info-player .info-zones>span{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;min-width:0;letter-spacing:0}
+.info-player .info-zones .zone-icon{width:17px;height:18px}
+.info-player .info-zones b{display:block;min-width:2ch;text-align:center;font-size:12px;line-height:15px;font-variant-numeric:tabular-nums;letter-spacing:0}
+
+/* Restore card width while tightening the surrounding spacing. */
+.opponents{padding-left:6px;padding-right:6px}.seats{gap:3px}.table{padding-left:6px;padding-right:6px}.table-stage{gap:6px}
+
+/* Tighter internal spacing within the fixed-width player cards. */
+.info-player{padding:3px}
+
+/* Align both outer cards with the table edges; distribute middle gaps automatically. */
+.seats{
+  column-gap:0;
+  justify-content:space-between;
+}
+
+/* Equipment summary occupies at most two lines; excess content is clipped. */
+.info-player .info-equipment{
+  display:block;
+  height:31px;
+  max-height:31px;
+  overflow:hidden;
+  line-height:13px;
+}
+.info-player .info-equipment>span,
+.info-player .info-equipment>i{
+  display:inline;
+  line-height:13px;
+}
+.info-player .info-equipment>i{margin:0 2px}
 </style>
 </head>
 <body>
@@ -56,8 +132,8 @@
 <aside class="design-note"><div class="eyebrow">SANGO / MOBILE / PLAN E</div><h1>一张卡，<br>一个入口。</h1><p>4 上 + 1 侧。把玩家卡变成紧凑的信息总览，五名对手同时留在牌桌上。</p><ol><li><strong>卡片上只读信息</strong>装备无边框、无独立按钮，手牌与区1、区2只显示数量。</li><li><strong>点玩家，再操作</strong>整张卡是唯一入口。底部展开玩家面板，再进入手牌、区域或装备详情。</li><li><strong>第五席贴近公共桌面</strong>p2–p5 在顶部，p6 靠右；保留中央出牌区与下方自己的手牌。</li></ol><div class="prototype-label">独立方案 E · 示例交互<br>原 Mobile Plan D 保留，可对照比较。</div></aside>
 <section class="phone" aria-label="SANGO 移动端设计预览">
 <header class="topbar"><span class="seal">杀</span><div><div class="brand">SANGO</div><div class="room">双将 3v3 · 房间 006</div></div><button class="icon-btn" id="menu" aria-label="打开牌桌菜单">☰</button></header>
-<section class="opponents" aria-label="对手座次"><div class="section-line"><b>对手 · p2—p5</b><span>点玩家展开操作</span></div><div class="seats" id="seats"></div></section>
-<section class="table"><div class="table-title"><h2>公共桌面</h2><span class="deck">牌堆 <b id="deck-count">84</b></span><button id="judge-draw" class="judge-draw" aria-label="翻出牌堆顶第一张并加入弃牌堆">判定</button></div><div class="table-stage"><div class="table-center"><div class="discard-heading"><span>弃牌 <b id="public-count">3 张</b></span><button id="all-discards">查看全部 ›</button></div><div class="public-cards" id="public-cards" aria-label="最近十二张弃牌"></div><div id="judge-result" class="judge-result" role="status" aria-live="polite"><span class="judge-empty">判定：翻开牌堆顶一张，放入弃牌堆</span></div></div><div id="side-seat" aria-label="右侧对手 p6"></div></div><button class="log-peek" id="log"><span>行动日志</span><span id="last-log">greg 的体力 13 → 12</span><span>›</span></button></section>
+<section class="opponents" aria-label="对手座次"><div class="section-line"><b>对手</b><span>点玩家展开操作</span></div><div class="seats" id="seats"></div></section>
+<section class="table"><div class="table-stage"><div class="table-left-column"><div class="table-center" role="region" aria-label="公共桌面"><div class="table-title"><h2>公共桌面</h2><span class="deck">牌堆 <b id="deck-count">84</b></span><button id="judge-draw" class="judge-draw" aria-label="翻出牌堆顶第一张并加入弃牌堆">判定</button></div><div class="discard-heading"><span>弃牌 <b id="public-count">3 张</b></span><button id="all-discards">查看全部 ›</button></div><div class="public-cards" id="public-cards" aria-label="最近十二张弃牌"></div><div id="judge-result" class="judge-result" role="status" aria-live="polite"><span class="judge-empty">判定：翻开牌堆顶一张，放入弃牌堆</span></div></div><button class="log-peek" id="log"><span>行动日志</span><span id="last-log">greg 的体力 13 → 12</span><span>›</span></button></div><div id="side-seat" aria-label="右侧对手 p6"></div></div></section>
 <section class="local" aria-label="我的武将与装备"><div class="local-top"><div class="my-generals"><button class="my-general" data-general="j176" aria-label="查看孙亮的名字和性别"><img src="../imgs/j176.jpg" alt="孙亮"><span class="faction wu">吴</span></button><button class="my-general" data-general="j126" aria-label="查看董昭的名字和性别"><img src="../imgs/j126.jpg" alt="董昭"><span class="faction wu">吴</span></button></div><div class="my-info"><div class="my-name"><b title="greg_the_conqueror_2026">greg_the_conqueror_2026</b><span class="role">忠</span></div><div class="health">♥ <span id="hp">12</span> / 15 <small>p1 · 我</small></div><div class="local-state"><span id="self-state">连环</span><span class="judges" id="judgment-summary">判定 ① 电 → ② 乐</span></div><div class="equipment-row equipment-summary" id="my-equipment" aria-label="当前装备信息"></div></div><button id="self" class="more-self" aria-label="管理我的武将与状态">⋯</button></div></section>
 <section class="hand" aria-label="我的卡牌"><nav class="hand-tabs" aria-label="切换卡牌区域"><button class="active" data-zone="hand" aria-pressed="true">手牌 <span id="hand-count">24</span></button><button data-zone="zone1" aria-pressed="false">区1 · 2</button><button data-zone="zone2" aria-pressed="false">区2 · 0</button><button data-zone="equipment" aria-pressed="false">装备 · 3</button><button id="judgment-tab" data-zone="judgment" aria-pressed="false">判定 · 2</button></nav><div class="zone-caption"><span id="zone-description">横滑查看 · 点选卡牌</span><span id="selection" role="status"></span></div><div class="hand-scroll" id="hand-cards"></div></section>
 <footer class="actionbar"><button id="cancel" disabled>取消</button><button id="move" disabled>移动</button><button class="primary" id="play" disabled>出牌</button><button class="draw" id="draw">摸牌 +1</button></footer><div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -66,7 +142,7 @@
 <dialog id="sheet" aria-labelledby="sheet-title"><div class="sheet-head"><h2 id="sheet-title"></h2><button class="close" aria-label="关闭详情">×</button></div><div class="sheet-content" id="sheet-content"></div><p class="sheet-foot">移动端设计预览 · 操作仅影响本页示例</p></dialog>
 <script>
 const players=[
-{seat:2,name:'tt',hp:15,hand:6,role:'忠',states:['连环'],judges:['闪电','乐不思蜀'],faction:'蜀',cls:'',img:'j2.jpg',general:'界刘备',second:null,zones:[1,0]},
+{seat:2,name:'tt',hp:15,hand:12,role:'忠',states:['连环'],judges:['闪电','乐不思蜀'],faction:'蜀',cls:'',img:'j2.jpg',general:'界刘备',second:null,zones:[1,0]},
 {seat:3,name:'sora',hp:11,hand:5,role:'匿',states:['翻面'],judges:['兵粮寸断'],faction:'魏',cls:'wei',img:'j3.jpg',general:'界曹操',second:null,zones:[0,1]},
 {seat:4,name:'lin',hp:15,hand:2,role:'匿',states:[],judges:[],img:null,second:null,zones:[0,0]},
 {seat:5,name:'north_player',hp:13,hand:6,role:'主',states:['连环'],judges:['乐不思蜀'],faction:'蜀',cls:'',img:'j1.jpg',general:'刘备',second:'j105.jpg',zones:[0,0]},
@@ -85,11 +161,12 @@ const publicCards=[['♠','7','杀'],['♦','9','闪'],['♥','3','桃']];
 const logs=['greg 摸了 2 张牌','tt 使用【杀】，目标 sora','sora 打出【闪】','mei 进入翻面状态','greg 的体力 13 → 12'];
 const $=s=>document.querySelector(s);
 const generalInfo={"j2":{"name":"界刘备","gender":"M"},"j3":{"name":"界曹操","gender":"M"},"j1":{"name":"刘备","gender":"M"},"j105":{"name":"蔡夫人","gender":"F"},"j126":{"name":"董昭","gender":"M"},"j176":{"name":"孙亮","gender":"M"},"j341":{"name":"界孙鲁班","gender":"F"}};
-function portraits(p,interactive=false){const tag=interactive?'button':'span';return '<div class="portraits">'+[p.img,p.second].map((img,i)=>{const id=img?img.replace('.jpg',''):'hidden',g=generalInfo[id];return `<${tag} class="portrait-target" data-general="${id}" ${interactive?'aria-label="查看'+(g?g.name:'未亮武将')+'资料"':''}>${img?`<img src="../imgs/${img}" alt="${g?g.name:'武将'}">${i===0?`<span class="faction ${p.cls}">${p.faction}</span>`:''}`:'<span class="hidden-general">将</span>'}</${tag}>`}).join('')+'</div>'}
+function portraits(p,interactive=false){const tag=interactive?'button':'span';return '<div class="portraits">'+[p.img,p.second].map((img,i)=>{const id=img?img.replace('.jpg',''):'hidden',g=generalInfo[id];return `<${tag} class="portrait-target" data-general="${id}" ${interactive?'aria-label="查看'+(g?g.name:'未亮武将')+'资料"':''}>${img?`<img src="../imgs/${img}" alt="${g?g.name:'武将'}">${i===0?`<span class="faction ${p.cls}">${p.faction}</span>`:''}`:'<span class="hidden-general">将</span>'}${img&&g?`<span class="portrait-name">${g.name}</span>`:''}</${tag}>`}).join('')+'</div>'}
 
-const equipment=[['♠Q','丈八蛇矛'],['♣2','仁王盾'],['♦K','骅骝'],null];
+const equipment=[['♠Q','丈八蛇矛'],['♣2','丈八蛇矛'],['♦K','丈八蛇矛'],['♥5','丈八蛇矛']];
 players.forEach(p=>{p.areas={hand:Array.from({length:p.hand},(_,i)=>({id:'r'+p.seat+'h'+i,f:faces[(p.seat*3+i)%faces.length]})),zone1:Array.from({length:p.zones[0]},(_,i)=>({id:'r'+p.seat+'a'+i,f:['♠','7','南蛮入侵']})),zone2:Array.from({length:p.zones[1]},(_,i)=>({id:'r'+p.seat+'b'+i,f:['♥','2','桃']}))}});
-function compactPlayer(p){return `<button class="info-player" data-seat="${p.seat}" aria-label="打开 p${p.seat} ${p.name} 玩家面板"><span class="info-name"><b>${p.seat}</b><span>${p.name}</span><i>${p.role}</i></span>${portraits(p)}<span class="info-health">♥ ${p.hp}<small> / 15</small></span><span class="info-equipment" aria-label="四个装备位">${equipment.map((c,i)=>`<span class="${c?'':'vacant'}">${c?c[1]:'— 空装备位'}</span>`).join('')}</span><span class="info-zones">${['hand','zone1','zone2'].map((z,i)=>`<span>${['手牌','区1','区2'][i]}<b>${p.areas[z].length}</b></span>`).join('')}</span><span class="info-states">${p.states.map(st=>`<span class="${st==='翻面'?'turned':''}">${st==='翻面'?'翻':'链'}</span>`).join('')}${judgeMarks(p.judges)}</span></button>`}
+function areaIcon(index){return index===0?'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="8" y="3" width="8" height="13" rx="1.4" transform="rotate(12 12 10)"/><path d="M6 4 3 5a1 1 0 0 0-.7 1.2l2.3 10a1 1 0 0 0 1.2.8l3-.7"/></svg>':'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2.5" y="3.5" width="15" height="13" rx="2"/><path d="M3 7h14"/><text x="10" y="14.2" fill="currentColor" stroke="none" text-anchor="middle" font-size="8" font-family="Arial,sans-serif" font-weight="600">'+index+'</text></svg>'}
+function compactPlayer(p){return `<button class="info-player" data-seat="${p.seat}" aria-label="打开 p${p.seat} ${p.name} 玩家面板"><span class="info-name"><span>${p.name}</span><i>${p.role}</i></span>${portraits(p)}<span class="info-health">♥ ${p.hp}<small> / 15</small></span><span class="info-equipment" aria-label="四个装备位">${equipment.filter(Boolean).map(c=>`<span>${c[1]}</span>`).join('<i aria-hidden="true">·</i>')}</span><span class="info-zones">${['hand','zone1','zone2'].map((z,i)=>`<span title="${['手牌','区1','区2'][i]}：${p.areas[z].length}张" aria-label="${['手牌','区1','区2'][i]} ${p.areas[z].length}张"><span class="zone-icon" aria-hidden="true">${areaIcon(i)}</span><b>${p.areas[z].length}</b></span>`).join('')}</span><span class="info-states">${p.states.map(st=>`<span class="${st==='翻面'?'turned':''}">${st==='翻面'?'翻':'链'}</span>`).join('')}${judgeMarks(p.judges)}</span></button>`}
 function renderOpponents(){$('#seats').innerHTML=players.slice(0,4).map(compactPlayer).join('');$('#side-seat').innerHTML=compactPlayer(players[4]);}
 renderOpponents();
 function face(f){return `<span class="index"><span>${f[0]}</span><span>${f[1]}</span></span><span class="card-name">${f[2]}</span>`}

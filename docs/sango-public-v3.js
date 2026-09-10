@@ -11,7 +11,7 @@ export function mountPublicDesign(root, bridge) {
     <div class="v3-shell">
       <section class="v3-deck">
         <div class="v3-topline"><strong>牌堆</strong><small>从牌顶取牌</small></div>
-        <div class="v3-stock"><div class="v3-back">三国</div><div class="v3-stock-info"><b class="v3-count" id="v3-count"></b><small>张剩余</small></div></div>
+        <div class="v3-stock"><div class="v3-back" aria-hidden="true"></div><div class="v3-stock-info"><b class="v3-count" id="v3-count"></b><small>张剩余</small></div></div>
         <div class="v3-more"><button class="primary" data-act="draw">摸 1 张</button><button data-act="show">展示／判定</button><button data-act="sort">展开牌堆 <span aria-hidden="true">↗</span></button><button class="primary v3-shuffle" data-act="shuffle" hidden>洗牌</button></div>
       </section>
       <section class="v3-stage v3-discard-zone">
@@ -19,7 +19,7 @@ export function mountPublicDesign(root, bridge) {
         <div class="v3-discard-body">
           <div class="v3-stage-viewport"><button class="v3-stage-scroll scroll-left" type="button" data-stage-scroll="-1" aria-label="向左查看最近弃牌" hidden>‹</button><div class="v3-faces" id="v3-stage"></div><button class="v3-stage-scroll scroll-right" type="button" data-stage-scroll="1" aria-label="向右查看最近弃牌" hidden>›</button></div>
           <aside class="v3-discard-summary" aria-label="弃牌堆摘要">
-            <div class="v3-stock"><div class="stack">弃</div><div class="v3-stock-info"><b class="v3-count" id="v3-discard-count"></b><small>全部弃牌</small></div></div>
+            <div class="v3-stock"><div class="stack" aria-hidden="true">弃</div><div class="v3-stock-info"><b class="v3-count" id="v3-discard-count"></b><small>张弃牌</small></div></div>
             <button data-act="discard">查看全部 <span aria-hidden="true">↗</span></button>
           </aside>
         </div>
@@ -87,7 +87,7 @@ export function mountPublicDesign(root, bridge) {
   }
   function open(title,body,footer=''){dialog.innerHTML=`<header><h2 id="v3-dialog-title">${title}</h2><button data-close aria-label="关闭">关闭 ×</button></header>${body}${footer}`;if(!dialog.open)dialog.showModal()}
   function close(){draft=null;dialog.close()}
-  const compactTile=(c,hidden=false)=>hidden?`<div class="v3-sort-tile v3-sort-tile-back"><strong>三国</strong></div>`:`<div class="v3-sort-tile v3-sort-tile-face ${'♥♦'.includes(c.suit)?'red':''}"><b><span>${c.suit}</span><span>${c.rank}</span></b><strong>${c.name}</strong></div>`;
+  const compactTile=(c,hidden=false)=>hidden?`<div class="v3-sort-tile v3-sort-tile-back"></div>`:`<div class="v3-sort-tile v3-sort-tile-face ${'♥♦'.includes(c.suit)?'red':''}"><b><span>${c.suit}</span><span>${c.rank}</span></b><strong>${c.name}</strong></div>`;
   function discardView(){open(`弃牌堆 · 全部 ${discard.length} 张`,`<p class="muted">最新进入的在前，已收取的牌不在这里。</p><div class="v3-sort v3-discard-grid">${discard.slice().reverse().map(c=>`<div class="v3-discard-card">${compactTile(c)}<button data-take="${c.id}">收入手牌</button></div>`).join('')||'<p class="muted">暂无弃牌</p>'}</div>`)}
   function sortView(){
     const tile=c=>compactTile(c,!draft.viewed.has(c.id));

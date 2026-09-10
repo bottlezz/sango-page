@@ -132,11 +132,7 @@ class SgJiang extends HTMLElement {
     const dbPathUrl = ref(this.gameController.db).toString();
     const cardPath = cardPathUrl.replace(dbPathUrl, "");
     this.dataset.path = cardPath;
-    this.setAttribute("draggable", "true");
-    this.addEventListener("dragstart", (e) => {
-      console.log("draggggggg");
-      e.dataTransfer.setData("text", cardPath);
-    });
+    this.setAttribute("draggable", "false");
 
     this.initControls();
   }

@@ -10,7 +10,7 @@ export function installPublicTablePanel(table,host,cardMenu){
   const controller=table.gameController,db=controller.db,prefix=`game/${controller.gameId}`;
   host.innerHTML=`<section class="public-deck-panel">
       <header><strong>牌堆</strong><small>从牌顶取牌</small></header>
-      <div class="public-deck-summary"><div class="public-card-back">三国</div><div><b class="public-deck-count">0</b><small>张剩余</small></div></div>
+      <div class="public-deck-summary"><div class="public-card-back" aria-hidden="true"></div><div><b class="public-deck-count">0</b><small>张剩余</small></div></div>
       <div class="public-deck-actions">
         <div class="public-draw-split"><button class="primary" data-public-action="draw" data-count="1">摸 1 张</button><button class="primary draw-toggle" aria-label="选择摸牌张数" aria-expanded="false">▾</button><div class="draw-options" hidden>${[2,3,4].map(count=>`<button data-public-action="draw" data-count="${count}">摸 ${count} 张</button>`).join('')}</div></div>
         <button data-public-action="reveal">展示／判定</button>
@@ -20,7 +20,7 @@ export function installPublicTablePanel(table,host,cardMenu){
     </section>
     <section class="public-discard-panel">
       <header><strong>弃牌区</strong><small>最近 ${RECENT_LIMIT} 张 · 最新 → 较早</small></header>
-      <div class="public-discard-body"><div class="recent-discard-list"></div><aside class="discard-summary"><div class="discard-summary-main"><div class="discard-icon">弃</div><div><b class="discard-count">0</b><small>全部弃牌</small></div></div><button class="text-action" data-public-action="all-discard">查看全部 ↗</button></aside></div>
+      <div class="public-discard-body"><div class="recent-discard-list"></div><aside class="discard-summary"><div class="discard-summary-main"><div class="discard-icon" aria-hidden="true">弃</div><div><b class="discard-count">0</b><small>张弃牌</small></div></div><button class="text-action" data-public-action="all-discard">查看全部 ↗</button></aside></div>
     </section>`;
   host.append(cardMenu);
   const discardDialog=document.createElement('dialog');discardDialog.className='public-dialog discard-dialog';

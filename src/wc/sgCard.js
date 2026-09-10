@@ -31,9 +31,7 @@ ${css}
       <div class ="info-line"><span class="pai-name"></span></div>
       <div class="info-line desc-line"><span class="pai-desc"></span></div>
     </div>
-    <div class="card-back" part="card-back">
-      <p>牌</p>
-    </div>
+    <div class="card-back" part="card-back"></div>
   </div>
 </div>
 `;

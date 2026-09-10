@@ -86,22 +86,6 @@ class SgJiangArea extends SgArea {
       }
     }));
 
-    this.addEventListener("drop", (e) => {
-      e.preventDefault();
-      if (this.selectionLocked) return;
-      console.log("areaDrop");
-      const fromPath = e.dataTransfer.getData("text");
-      if (!fromPath.includes("/jiang")) {
-        return;
-      }
-      this.gameController.moveCardFromPathToRef(
-        fromPath,
-        child(this.deckRef, "/cards")
-      );
-    });
-    this.addEventListener("dragover", (e) => {
-      e.preventDefault();
-    });
   }
 
   lockJiangArea() {

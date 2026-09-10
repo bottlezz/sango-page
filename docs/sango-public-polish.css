@@ -50,7 +50,8 @@
 .design-public.v3 .v3-stock-info small { font-size: 12px; white-space: nowrap; }
 .design-public.v3 .v3-count { color: #efdcb0; font: 32px/1 Georgia, serif; }
 .design-public.v3 .v3-back,
-.design-public.v3 .v3-discard .stack { float: none; flex: 0 0 44px; width: 44px; height: 58px; margin: 0; border-radius: 5px; font-size: 13px; }
+.design-public.v3 .v3-discard-summary .stack { float: none; flex: 0 0 44px; width: 44px; height: 58px; margin: 0; border-radius: 5px; }
+.design-public.v3 .v3-back { background: repeating-linear-gradient(45deg,#70342e,#70342e 4px,#803b33 4px,#803b33 8px); }
 .design-public.v3 .v3-more { display: grid; grid-template-columns: 1.08fr 1fr; grid-template-rows: 30px 22px; gap: 5px 7px; align-content: end; min-width: 0; }
 .design-public.v3 .v3-more > button { width: 100%; height: 30px; padding-inline: 6px; font-size: 11px; }
 .design-public.v3 .v3-more > [data-act="sort"] { grid-column: 1 / -1; height: 22px; justify-content: center; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #9fb6aa; font-size: 11px; font-weight: 500; }
@@ -88,8 +89,8 @@
 .design-public.v3 .v3-face-actions button:hover:not(:disabled) { color: #f0cc73; border: 0; background: #ffffff08; }
 .design-public.v3 .v3-face-actions small { display: grid; place-items: center; width: 62px; height: 22px; color: #738f82; font-size: 10px; }
 .design-public.v3 .v3-discard-summary { display: grid; grid-template-rows: minmax(0,1fr) 22px; gap: 8px; min-width: 0; padding-left: 14px; border-left: 1px solid #d7be781c; }
-.design-public.v3 .v3-discard-summary .v3-stock { align-self: center; justify-content: center; gap: 12px; }
-.design-public.v3 .v3-discard-summary .stack { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 58px; border: 1px solid #a88c54; border-radius: 5px; background: #254739; box-shadow: 3px 3px #173d2f,4px 4px #8c794d; color: #d8c69a; font-size: 13px; }
+.design-public.v3 .v3-discard-summary .v3-stock { align-self: start; justify-content: center; gap: 12px; padding-top: 6px; }
+.design-public.v3 .v3-discard-summary .stack { display: grid; place-items: center; border: 1px solid #a88c54; background: #254739; box-shadow: 3px 3px #173d2f,4px 4px #8c794d; color: #d8c69a; font-size: 13px; }
 .design-public.v3 .v3-discard-summary .v3-stock-info { align-items: flex-start; }
 .design-public.v3 .v3-discard-summary .v3-stock-info small { font-size: 10px; }
 .design-public.v3 .v3-discard-summary > button { width: 100%; height: 22px; justify-content: center; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #9fb6aa; font-size: 11px; font-weight: 500; }

@@ -46,7 +46,7 @@ class SgTable extends HTMLElement {
     help.className = "table-help";
     help.setAttribute("aria-label", "操作说明");
     help.innerHTML = `<h3>操作说明</h3><p>点击卡牌可选中或取消选择，支持多选。</p>
-      <p>拖到玩家卡片后，选择目标区域；取消或按 Esc 保留原位。</p>
+      <p>选中后可点击“移动”，依次选择目标玩家和区域；也可直接拖到玩家卡片。</p>
       <p>通过侧栏调整血量、翻面和连环。技能与结算由玩家执行。</p>
       <form method="dialog"><button class="top-btn">关闭</button></form>`;
     topbar.querySelector("button").addEventListener("click", () => help.showModal());
@@ -138,6 +138,40 @@ class SgTable extends HTMLElement {
     return this.playerDoms.find((player) => player.dataset.key === playerKey);
   }
 
+  openMovePlayerPicker() {
+    const cards=[...this.gameController.selectedCards];
+    if(!cards.length)return;
+    const paths=[...new Set(cards.map(card=>card.dataset.path).filter(Boolean))];
+    if(!paths.length)return;
+    if(!this.movePlayerPicker){
+      this.movePlayerPicker=document.createElement('dialog');
+      this.movePlayerPicker.className='move-player-picker';
+      this.movePlayerPicker.innerHTML='<header><h3>移动到哪位玩家？</h3><button type="button" data-move-close aria-label="关闭">关闭 ×</button></header><p class="move-summary"></p><div class="move-player-options"></div>';
+      this.movePlayerPicker.querySelector('[data-move-close]').addEventListener('click',()=>this.movePlayerPicker.close());
+      this.movePlayerPicker.querySelector('.move-player-options').addEventListener('click',event=>{
+        const button=event.target.closest('[data-player]');if(!button)return;
+        const player=this.playerDoms.find(item=>item.dataset.key===button.dataset.player);
+        const pending=this.pendingMenuMove;this.movePlayerPicker.close();
+        if(!player||!pending)return;
+        queueMicrotask(()=>player.openDropPicker(pending.paths[0],pending.paths,ok=>{
+          if(ok)pending.cards.forEach(card=>{if(card.isConnected&&this.gameController.selectedCards.includes(card))card.unselectCard();});
+        }));
+      });
+      this.movePlayerPicker.addEventListener('close',()=>{this.pendingMenuMove=null;});
+      this.shadowRoot.append(this.movePlayerPicker);
+    }
+    this.pendingMenuMove={cards,paths};
+    this.movePlayerPicker.querySelector('.move-summary').textContent=`已选择 ${paths.length} 张牌，请选择唯一的目标玩家。`;
+    const options=this.movePlayerPicker.querySelector('.move-player-options');options.replaceChildren();
+    this.playerDoms.forEach(player=>{
+      const button=document.createElement('button');button.type='button';button.dataset.player=player.dataset.key;
+      const name=player.shadowRoot.querySelector('.player-name')?.textContent?.trim();
+      button.innerHTML=`<b>${name&&name!=='empty'?name:player.dataset.key}</b><small>${player.dataset.key===this.gameController.currentPlayer?'自己':'玩家'}</small>`;
+      options.append(button);
+    });
+    this.movePlayerPicker.showModal();
+  }
+
   getCardMenu() {
     const cardMenu = document.createElement("div");
     cardMenu.className = "card-menu hide";
@@ -172,12 +206,16 @@ class SgTable extends HTMLElement {
     cancelButton.addEventListener("click", () => {
       [...this.gameController.selectedCards].forEach(card => card.unselectCard());
     });
+    const moveButton=document.createElement('button');
+    moveButton.textContent='移动';
+    moveButton.addEventListener('click',()=>this.openMovePlayerPicker());
 
     cardMenu.appendChild(drawButton);
     cardMenu.appendChild(discardButton);
 
     cardMenu.appendChild(playButton);
     cardMenu.appendChild(showButton);
+    cardMenu.appendChild(moveButton);
     cardMenu.appendChild(cancelButton);
     // cardMenu.appendChild(peakButton);
     return cardMenu;

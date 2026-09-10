@@ -169,7 +169,7 @@
 :host(.selection-card) .detail-ctrl:hover { color: #f0cc73; }
 :host(.selection-card) .card-front { display: block; }
 :host(.selection-card) .card-back { display: none; }
-:host(.selection-card) { cursor: grab; }
+:host(.selection-card) { cursor: pointer; }
 :host(.selection-card) .card-front {
   transition: filter 0.18s ease, opacity 0.18s ease;
 }

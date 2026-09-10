@@ -40,7 +40,7 @@ export function installCardTransferAnimation(table){
     caption.style.left=`${(start.x+end.x)/2+14}px`;caption.style.top=`${(start.y+end.y)/2-25}px`;group.append(caption);
     caption.animate([{opacity:0},{opacity:1,offset:100/trailDuration},{opacity:1,offset:trailHold},{opacity:0}],{duration:trailDuration,fill:'forwards'});
     if(!reduced.matches)for(let index=0;index<Math.min(count,3);index++){
-      const card=document.createElement('div');card.className='card-transfer-card';card.textContent='三';group.append(card);
+      const card=document.createElement('div');card.className='card-transfer-card';group.append(card);
       const position=(x,y,scale,rotation)=>`translate(${x-16+index*4}px,${y-22-index*3}px) scale(${scale}) rotate(${rotation}deg)`;
       card.animate([
         {transform:position(start.x,start.y,.85,-6),opacity:0},

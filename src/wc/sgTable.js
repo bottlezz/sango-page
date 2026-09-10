@@ -1,16 +1,16 @@
 //This file will be the web component
 //It only needs to run, not be imported by main.js
 
-import { getDatabase, ref, child, get, set, onValue } from "firebase/database";
+import { ref } from "firebase/database";
 import { gameController } from "../gameController.js";
 import commonCss from "./css/common.css";
 import tableCss from "./css/sgTable.css";
-import { SgArea } from "./sgArea.js";
 import { SgPlayer } from "./sgPlayer.js";
-import { SgPaiArea } from "./sgPaiArea.js";
 import "./sgJiangArea.js";
 import { installCardDrag } from "../cardDrag.js";
 import { installActionLog } from './actionLogPanel.js';
+import { installPublicTablePanel } from './publicTablePanel.js';
+import { installCardTransferAnimation } from './cardTransferAnimation.js';
 
 class SgTable extends HTMLElement {
   db;
@@ -75,6 +75,7 @@ class SgTable extends HTMLElement {
 
     this.initGame();
     this.disposeDrag = installCardDrag(this);
+    this.disposeTransferAnimation = installCardTransferAnimation(this);
     this.disposeLog = installActionLog(this);
   }
 
@@ -129,7 +130,7 @@ class SgTable extends HTMLElement {
   }
 
   disconnectedCallback() {
-    queueMicrotask(() => { if (!this.isConnected) {this.disposeDrag?.(); this.disposeLog?.();} });
+    queueMicrotask(() => { if (!this.isConnected) {this.disposeDrag?.();this.disposeTransferAnimation?.();this.disposeLog?.();this.disposePublicPanel?.();} });
   }
 
   getCurrentPlayerDom() {
@@ -158,7 +159,7 @@ class SgTable extends HTMLElement {
     const playButton = document.createElement("button");
     playButton.innerHTML = "出";
     playButton.addEventListener("click", () => {
-      this.gameController.discardSelectedCards().catch(error => window.alert(error.message || '移动失败，请重试')); 
+      this.gameController.playSelectedCards().catch(error => window.alert(error.message || '移动失败，请重试')); 
     });
     const showButton = document.createElement("button");
     showButton.innerHTML = "亮";
@@ -214,32 +215,7 @@ class SgTable extends HTMLElement {
       );
     }
 
-    this.paiArea = new SgPaiArea();
-    this.paiArea.init(
-      ref(this.db, `game/${this.gameController.gameId}/tableDecks/pai`),
-      this.gameController
-    );
-    const pilePanel = document.createElement("section");
-    pilePanel.className = "deck-panel";
-    pilePanel.innerHTML = "<header><strong>牌堆</strong><span class='pile-count'>0 张</span></header>";
-    pilePanel.appendChild(this.paiArea);
-    tableDeckWidget.appendChild(pilePanel);
-
-    this.discardArea = document.createElement("sg-area");
-    this.discardArea.init(
-      ref(this.db, `game/${this.gameController.gameId}/tableDecks/discard`),
-      this.gameController
-    );
-    const discardPanel = document.createElement("section");
-    discardPanel.className = "public-cards-panel";
-    discardPanel.innerHTML =
-      "<header><strong>公共区 · 弃牌与结算</strong><span class='pool-count'>0 张</span></header>";
-    discardPanel.append(this.cardMenu, this.discardArea);
-    tableDeckWidget.appendChild(discardPanel);
-    this.addEventListener('cards-updated', () => {
-      pilePanel.querySelector('.pile-count').textContent = `${this.paiArea.cardArea.children.length} 张`;
-      discardPanel.querySelector('.pool-count').textContent = `${this.discardArea.cardArea.children.length} 张`;
-    });
+    this.disposePublicPanel=installPublicTablePanel(this,tableDeckWidget,this.cardMenu);
   }
 
   lockPlayerSelection() {
@@ -268,6 +244,7 @@ class SgTable extends HTMLElement {
       `sg-player[data-key="${mainPlayer}"]`
     );
     this.shadowRoot.querySelector(".table-container").appendChild(currentPlayerDom);
+    this.dispatchEvent(new CustomEvent('player-seat-changed'));
   }
 
   hideCardMenu() {

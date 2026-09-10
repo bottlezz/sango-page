@@ -6,6 +6,8 @@ export const ACTION_HINT_OPCODE = Object.freeze({
   DISCARD_OTHER:'d', DRAW_FOR_OTHER:'m', TRANSFER_CARD:'t', MOVE_OTHER:'o',
   DEAL_CARDS:'c', DEAL_GENERALS:'j', ASSIGN_ROLES:'i', SHUFFLE:'s',
   RESET_DECK:'r', RESET_TABLE:'x',
+  PLAY:'p', DISCARD:'e', DRAW:'w', REVEAL_JUDGMENT:'v',
+  TAKE_DISCARD:'k', REARRANGE_DECK:'u',
 });
 
 const VALID_OPCODES = new Set(Object.values(ACTION_HINT_OPCODE));
@@ -67,6 +69,29 @@ function moves(before,after){
   return [...groups.values()];
 }
 
+function transferLabel(hint, source, target) {
+  const opcode=hint?.opcode;
+  if(opcode===ACTION_HINT_OPCODE.PLAY)return '打出';
+  if(opcode===ACTION_HINT_OPCODE.DISCARD||opcode===ACTION_HINT_OPCODE.DISCARD_OTHER)return '弃置';
+  if(opcode===ACTION_HINT_OPCODE.REVEAL_JUDGMENT)return '展示／判定';
+  if(opcode===ACTION_HINT_OPCODE.TAKE_DISCARD)return '收入手牌';
+  if(opcode===ACTION_HINT_OPCODE.DRAW||opcode===ACTION_HINT_OPCODE.DRAW_FOR_OTHER)return '摸牌';
+  if(opcode===ACTION_HINT_OPCODE.TRANSFER_CARD)return '交牌';
+  if(/^tableDecks\/(pai|paiBottom)$/.test(source)&&/^p\d+\//.test(target))return '摸牌';
+  if(/^tableDecks\/(pai|paiBottom)$/.test(source)&&target==='tableDecks/discard')return '展示／判定';
+  if(source==='tableDecks/discard'&&/^p\d+\//.test(target))return '收入手牌';
+  if(/^p\d+\//.test(source)&&target==='tableDecks/discard')return '移入弃牌堆';
+  if(/^p\d+\//.test(source)&&/^p\d+\//.test(target))return '交牌';
+  return '移动';
+}
+
+// The local UI can animate real card movement from the same room snapshots used
+// by the action log. No persisted animation queue or additional listener is needed.
+export function createCardTransfers(before,after) {
+  const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
+  return moves(before,after).map(move=>({...move,label:transferLabel(hint,move.source,move.target)}));
+}
+
 function hintedChanges(hint,before,after){
   const moved=moves(before,after);
   switch(hint.opcode){
@@ -80,6 +105,12 @@ function hintedChanges(hint,before,after){
     case ACTION_HINT_OPCODE.SHUFFLE:{const names={p:'牌堆',b:'牌堆底部',d:'公共区',h:'手牌',z:'装备区',n:'判定区',o:'卡牌区',j:'选将区'};return [`洗混了${names[hint.args[0]]||'卡牌'}`];}
     case ACTION_HINT_OPCODE.RESET_DECK:return ['重置并洗混了牌堆'];
     case ACTION_HINT_OPCODE.RESET_TABLE:return ['清空了桌面'];
+    case ACTION_HINT_OPCODE.PLAY:return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`打出了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.DISCARD:return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`弃置了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.DRAW:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&/^p\d+\/hand$/.test(x.target)).map(x=>`摸了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.REVEAL_JUDGMENT:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&x.target==='tableDecks/discard').map(x=>`展示／判定了牌堆顶 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.TAKE_DISCARD:return moved.filter(x=>x.source==='tableDecks/discard'&&/^p\d+\/hand$/.test(x.target)).map(x=>`从弃牌堆收入了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.REARRANGE_DECK:return ['调整了牌堆顺序'];
     default:return [];
   }
 }

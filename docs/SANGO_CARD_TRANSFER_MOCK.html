@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>卡牌流转 · 动画提案</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#071f1a;color:#ebeadb;font:14px 'Microsoft YaHei',sans-serif}button{font:inherit;cursor:pointer}header{padding:26px 32px 18px;display:flex;align-items:center;justify-content:space-between;gap:20px}h1{font-size:21px;color:#eed293;margin:0 0 8px}p{color:#91ada1;margin:0;line-height:1.7}.back{color:#d9bd7b;text-decoration:none}.board{max-width:1160px;margin:auto;padding:16px 30px 30px}.players{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.player{position:relative;min-height:145px;border:1px solid #466457;border-radius:12px;background:linear-gradient(135deg,#183e32,#102c25);padding:18px;display:flex;align-items:center;gap:16px;box-shadow:0 12px 30px #0002}.portrait{width:64px;height:88px;background:#294b3e;border:1px solid #7c8554;border-radius:7px;display:grid;place-items:center;font:26px serif;color:#e3c98c;writing-mode:vertical-rl}.info{flex:1}.info b{font-size:17px}.info small{display:block;color:#9bb4a5;margin-top:8px}.health{color:#c0b777;letter-spacing:4px;margin:10px 0}.zone{font-size:11px;color:#92ab9e;padding:5px 8px;border:1px solid #395448;border-radius:4px;display:inline-block}.public{margin:74px 0;display:grid;grid-template-columns:220px 1fr;gap:22px}.pile{border:1px solid #50634a;border-radius:12px;background:#143128;padding:18px}.pile h2{font-size:14px;margin:0 0 14px;color:#c7cbb5}.pile-head{display:flex;align-items:center;gap:18px}.cardback{width:46px;height:62px;border:1px solid #c6a969;border-radius:5px;background:repeating-linear-gradient(45deg,#315247 0 4px,#29493e 4px 8px);display:grid;place-items:center;color:#d7bd7e;font:18px serif;box-shadow:3px 3px #091e17,4px 4px #637552}.count{font-size:28px;font-variant-numeric:tabular-nums}.count small{display:block;color:#90a99a;font:11px 'Microsoft YaHei'}.discard-inner{display:flex;align-items:center;justify-content:space-between;gap:20px}.cards{display:flex;gap:10px}.face{display:flex;width:57px;height:76px;gap:8px;background:#eee5cb;border:1px solid #c7b889;border-radius:5px;padding:7px;color:#24352e;box-shadow:0 4px 10px #0002}.face b{font-size:12px;line-height:1.3}.face span{writing-mode:vertical-rl;font:18px serif;letter-spacing:2px}.red{color:#a44236}.text-action{border:0;background:none;color:#d8c492;padding:12px 0 0;font-size:12px}.local{width:360px;margin-left:auto;border-color:#988555}.local .portrait{background:#4b4b31}.demo{border-top:1px solid #345044;margin-top:28px;padding-top:20px}.controls{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.controls button{border:1px solid #58725d;background:#203d30;color:#dfdfca;padding:9px 14px;border-radius:6px}.controls button:hover{background:#36533c;border-color:#aeaa70}.controls .primary{background:#c9b67c;color:#1c3226;border-color:#c9b67c}.status{min-height:25px;color:#b5c6b8;font-size:12px}.legend{font-size:12px;margin-top:10px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e6c476;margin-right:7px}.fx{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden}.fx svg{position:absolute;inset:0;width:100%;height:100%}.flying{position:absolute;width:32px;height:44px;left:0;top:0;border:1px solid #e6cd87;border-radius:4px;background:repeating-linear-gradient(45deg,#315247 0 3px,#254137 3px 6px);box-shadow:0 5px 12px #0005;display:grid;place-items:center;color:#f1d796;font:14px serif;will-change:transform,opacity}.flight-label{position:absolute;color:#ffdf99;font-size:11px;white-space:nowrap;text-shadow:0 1px 6px #071c13;transform:translate(-50%,-50%)}@media(max-width:760px){header{padding:20px}.board{padding:10px 16px}.players{gap:8px}.player{padding:10px;gap:8px}.portrait{width:38px;height:70px;font-size:20px}.info b{font-size:14px}.zone{display:none}.public{grid-template-columns:150px 1fr;margin:50px 0;gap:10px}.cards .face:nth-child(n+3){display:none}.pile{padding:12px}.local{width:290px}.discard-inner{gap:8px}.count{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div><h1>卡牌流转</h1><p>短箭头指路，卡牌跟随移动。每次更新独立播放，可以同时发生。</p></div><a class="back" href="SANGO_PUBLIC_TABLE_V3.html">公共桌面 ↗</a></header>
+<main class="board">
+<div class="players">
+<section class="player" id="p1"><div class="portrait">曹操</div><div class="info"><b>玩家一</b><div class="health">● ● ● ●</div><small>手牌 <strong data-hand="p1">4</strong></small><div class="zone">装备 · 判定 · 区域牌</div></div></section>
+<section class="player" id="p2"><div class="portrait">孙权</div><div class="info"><b>玩家二</b><div class="health">● ● ●</div><small>手牌 <strong data-hand="p2">4</strong></small><div class="zone">装备 · 判定 · 区域牌</div></div></section>
+<section class="player" id="p3"><div class="portrait">刘备</div><div class="info"><b>玩家三</b><div class="health">● ● ● ●</div><small>手牌 <strong data-hand="p3">4</strong></small><div class="zone">装备 · 判定 · 区域牌</div></div></section>
+</div>
+<div class="public">
+<section class="pile" id="deck"><h2>摸牌堆</h2><div class="pile-head"><div class="cardback">三国</div><div class="count"><span id="deck-count">72</span><small>张剩余</small></div></div><button class="text-action" data-demo="draw">摸一张 ↗</button></section>
+<section class="pile" id="discard"><h2>弃牌堆 <small style="color:#91a899;font-weight:normal"> · 最新在左</small></h2><div class="discard-inner"><div class="cards"><div class="face"><b>♠<br>7</b><span>杀</span></div><div class="face red"><b>♥<br>3</b><span>桃</span></div><div class="face"><b>♣<br>J</b><span>无懈可击</span></div></div><div class="count"><span id="discard-count">28</span><small>全部弃牌</small></div></div></section>
+</div>
+<section class="player local" id="self"><div class="portrait">诸葛亮</div><div class="info"><b>你</b><div class="health">● ● ●</div><small>手牌 <strong data-hand="self">4</strong></small><div class="zone">手牌、装备、区 1 / 区 2 共用此人物卡</div></div></section>
+<section class="demo"><p>试一试 · 连续点击也不会等待上一段动画</p><div class="controls"><button class="primary" data-demo="parallel">两人同时摸牌</button><button data-demo="draw">你摸 1 张</button><button data-demo="discard">你弃置 2 张</button><button data-demo="reveal">展示／判定</button><button data-demo="take">弃牌收入手牌</button><button data-demo="give">玩家之间交牌</button><button data-demo="mixed">摸牌 + 打出同时发生</button></div><div class="status" role="status" id="status">点击任意操作预览；数字仅为本地演示，刷新重置。</div><p class="legend"><span class="dot"></span>700ms 移动 · 最多 3 张叠影 · 落点轻亮 · 仅显示牌背，避免透露手牌</p></section>
+</main>
+<div class="fx" aria-hidden="true" id="fx"></div>
+<script>
+const $=id=>document.getElementById(id),layer=$('fx');
+const names={deck:'牌堆',discard:'弃牌堆',p1:'玩家一',p2:'玩家二',p3:'玩家三',self:'你'};
+const counts={deck:72,discard:28,p1:4,p2:4,p3:4,self:4};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+function edge(rect,toward){const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,dx=toward.x-cx,dy=toward.y-cy;const t=Math.min((rect.width/2)/Math.max(Math.abs(dx),.001),(rect.height/2)/Math.max(Math.abs(dy),.001));return{x:cx+dx*t,y:cy+dy*t}}
+function flight(from,to,count,label){
+ const a=$(from).getBoundingClientRect(),b=$(to).getBoundingClientRect();
+ const start=edge(a,{x:b.left+b.width/2,y:b.top+b.height/2}),end=edge(b,{x:a.left+a.width/2,y:a.top+a.height/2});
+ const group=document.createElement('div');layer.append(group);
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ const dx=end.x-start.x,dy=end.y-start.y,length=Math.hypot(dx,dy)||1,ux=dx/length,uy=dy/length;
+ svg.innerHTML=`<path d="M ${start.x} ${start.y} L ${end.x} ${end.y} M ${end.x-ux*10-uy*5} ${end.y-uy*10+ux*5} L ${end.x} ${end.y} L ${end.x-ux*10+uy*5} ${end.y-uy*10-ux*5}" fill="none" stroke="#e7c67b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+ group.append(svg);
+ const duration=reduced.matches?140:700;
+ const trailDuration=duration+44+500+150;
+ const trailHold=(trailDuration-150)/trailDuration;
+ svg.animate([{opacity:0},{opacity:.7,offset:100/trailDuration},{opacity:.7,offset:trailHold},{opacity:0}],{duration:trailDuration,fill:'forwards'});
+ const caption=document.createElement('span');caption.className='flight-label';caption.textContent=`${label} · ${count} 张`;caption.style.left=(start.x+end.x)/2+14+'px';caption.style.top=(start.y+end.y)/2-25+'px';group.append(caption);
+ caption.animate([{opacity:0},{opacity:1,offset:100/trailDuration},{opacity:1,offset:trailHold},{opacity:0}],{duration:trailDuration,fill:'forwards'});
+ if(!reduced.matches)for(let i=0;i<Math.min(count,3);i++){
+  const tile=document.createElement('div');tile.className='flying';tile.textContent='三';group.append(tile);
+  const pos=(x,y,s,r)=>`translate(${x-16+i*4}px,${y-22-i*3}px) scale(${s}) rotate(${r}deg)`;
+  tile.animate([{transform:pos(start.x,start.y,.85,-6),opacity:0},{transform:pos(start.x+dx*.08,start.y+dy*.08,1,-3),opacity:1,offset:.12},{transform:pos(end.x,end.y,.9,0),opacity:1,offset:.88},{transform:pos(end.x,end.y,.7,0),opacity:0}],{duration,delay:i*22,easing:'cubic-bezier(.2,.65,.3,1)',fill:'forwards'});
+ }
+ setTimeout(()=>$(to).animate([{boxShadow:'0 0 0 0 #e7c67b00'},{boxShadow:'0 0 0 2px #e7c67b88',offset:.3},{boxShadow:'0 0 0 5px #e7c67b00'}],{duration:220}),duration-80);
+ setTimeout(()=>group.remove(),trailDuration+20);
+}
+function batch(moves){
+ const valid=moves.filter(m=>counts[m[0]]>=m[2]);
+ // Apply one event's data immediately; all effects start together, without a shared queue.
+ valid.forEach(([from,to,n])=>{counts[from]-=n;counts[to]+=n});
+ $('deck-count').textContent=counts.deck;$('discard-count').textContent=counts.discard;
+ document.querySelectorAll('[data-hand]').forEach(el=>el.textContent=counts[el.dataset.hand]);
+ valid.forEach(m=>flight(...m));
+ $('status').textContent=valid.length?valid.map(([from,to,n,label])=>`${names[from]} → ${names[to]}：${label} ${n} 张`).join('　 /　 '):'来源区域暂无足够卡牌，请尝试其他操作。';
+}
+const demos={parallel:[['deck','p1',2,'摸牌'],['deck','p2',2,'摸牌']],draw:[['deck','self',1,'摸牌']],discard:[['self','discard',2,'弃置']],reveal:[['deck','discard',1,'展示／判定']],take:[['discard','self',1,'收入手牌']],give:[['p1','p3',1,'交牌']],mixed:[['deck','p1',2,'摸牌'],['p2','discard',1,'打出']]};
+document.addEventListener('click',e=>{const button=e.target.closest('[data-demo]');if(button)batch(demos[button.dataset.demo])});
+</script>
+</body>
+</html>

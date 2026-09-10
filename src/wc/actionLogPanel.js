@@ -1,5 +1,5 @@
 import {ref, onValue} from 'firebase/database';
-import {createLocalLogEntry} from '../localActionLog.mjs';
+import {createCardTransfers, createLocalLogEntry} from '../localActionLog.mjs';
 
 const LOCAL_LOG_LIMIT = 500;
 
@@ -25,7 +25,9 @@ export function installActionLog(table) {
     // First snapshot is baseline only: never replay state or a hint that existed
     // before this client entered the room.
     if(previousRoom===null){previousRoom=room;return;}
+    const transfers=createCardTransfers(previousRoom,room);
     const entry=createLocalLogEntry(previousRoom,room);previousRoom=room;
+    if(transfers.length)table.dispatchEvent(new CustomEvent('card-transfers',{detail:{transfers}}));
     if(!entry)return;
     const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 30;
     const row=document.createElement('li');row.className='log-entry';

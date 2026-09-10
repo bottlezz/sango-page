@@ -509,3 +509,42 @@ span.spade::before { content: "♠"; }
 :host(.other2-area-card:not(.current-player)) .card-block.show-front .card-back {
   display: none;
 }
+
+/* Keep discarded cards visually consistent with every other face-up card. */
+:host(.discard-area-card) .card-front {
+  color: #261d13;
+  background: linear-gradient(145deg, #fff8e5, #dfc891);
+}
+:host(.discard-area-card) .card-block.show-front .card-widget {
+  border-color: #8c713b;
+  background: linear-gradient(145deg, #fff8e5, #d7bf88);
+}
+:host(.discard-area-card) .card-block.show-front .card-front {
+  background: linear-gradient(145deg, #fff8e5, #dfc891);
+}
+:host(.discard-area-card) .card-suit .heart,
+:host(.discard-area-card) .card-suit .diamond {
+  color: #b3342a;
+}
+:host(.discard-area-card) .card-suit .spade,
+:host(.discard-area-card) .card-suit .club {
+  color: #172820;
+}
+
+/* Large public discard card: same two-column language as local narrow cards. */
+:host(.recent-public-card) { display:block; flex:0 0 5.25rem; width:5.25rem; height:6.125rem; }
+:host(.recent-public-card) .card-block,
+:host(.recent-public-card) .card-widget { display:block; width:100%; height:100%; }
+:host(.recent-public-card) .card-front {
+  box-sizing:border-box; display:grid; grid-template-columns:1.5rem minmax(0,1fr);
+  align-items:center; justify-items:center; width:100%; height:100%; padding:.38rem .3rem;
+}
+:host(.recent-public-card) .card-suit { align-self:start; justify-self:start; font:800 1.1rem/1 Georgia,serif; }
+:host(.recent-public-card) .card-suit > span { display:flex; flex-direction:column; align-items:center; gap:.08rem; }
+:host(.recent-public-card) .info-line { min-width:0; max-height:100%; overflow:hidden; }
+:host(.recent-public-card) .pai-name {
+  display:block; width:auto; max-height:100%; margin:0; overflow:hidden;
+  writing-mode:vertical-rl; text-orientation:upright; font-size:.86rem; font-weight:800;
+  line-height:1; letter-spacing:.06rem; white-space:nowrap;
+}
+:host(.recent-public-card.has-desc) .desc-line { display:none; }

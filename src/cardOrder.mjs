@@ -55,7 +55,8 @@ export function orderedMovePatch(targetPath, targetCards, sources, beforeKey, ne
     if (remaining.length + incoming.length > 3) throw Error('判定区最多放三张牌');
   }
   if (targetPath.includes('/zhuang/') && remaining.length + incoming.length > 4) throw Error('装备区最多放四张牌');
-  const index = beforeKey == null ? remaining.length : remaining.findIndex(item => item.key === beforeKey);
+  const prepend=beforeKey==null&&/\/(hand|other1|other2)\/cards$/.test(targetPath)&&sources.every(source=>!source.path.startsWith(`${targetPath}/`));
+  const index = beforeKey == null ? (prepend?0:remaining.length) : remaining.findIndex(item => item.key === beforeKey);
   if (index < 0) throw Error('目标牌已移动，请重新拖放');
   remaining.splice(index, 0, ...incoming);
   const patch = {};

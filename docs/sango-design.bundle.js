@@ -14,34 +14,85 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 function mountPublicDesign(root, bridge) {
   root.classList.add('v3');
+  const RECENT_DISCARD_LIMIT=6;
   const samples=[['♠','7','杀'],['♥','3','桃'],['♣','J','无懈可击'],['♦','9','闪'],['♠','2','八卦阵'],['♥','8','无中生有'],['♣','4','兵粮寸断'],['♦','A','决斗']];
   const make=i=>({id:i,suit:samples[i%8][0],rank:samples[i%8][1],name:samples[i%8][2]});
   let deck=Array.from({length:72},(_,i)=>make(i));
   let discard=Array.from({length:28},(_,i)=>({...make(i+72),source:'此前弃牌'}));
-  let batch=[],actor=null,draft=null,busy=false;
+  let draft=null,busy=false;
   const localActor={id:'p1',name:'你'};
-  root.innerHTML=`<div class="v3-shell"><section class="v3-deck"><div class="v3-topline"><strong>牌堆</strong><small>每次操作牌顶 1 张</small></div><div class="v3-back">三国</div><div><b class="v3-count" id="v3-count"></b><small> 张剩余</small></div><div class="v3-more"><button class="primary" data-act="draw">摸 1 张</button><button data-act="show">展示／判定 1 张</button><button data-act="sort">展开牌堆 ↗</button></div></section><section class="v3-stage"><div class="v3-topline"><strong>结算面板</strong><small id="v3-batch">所有人可见</small><button data-act="clear">清算</button></div><div class="v3-faces" id="v3-stage"></div></section><section class="v3-discard"><div class="stack">弃</div><strong>弃牌堆 <span id="v3-discard-count"></span></strong><small>包含本批结算牌</small><button data-act="discard">查看全部 ↗</button></section></div><div class="v3-status"><span role="status" id="v3-feedback">结算牌已计入弃牌堆；清算只清空面板。</span></div><div class="v3-sim"><small>换批演示</small><button data-act="other-play">玩家2打出</button><button data-act="other-discard">玩家2弃置</button></div>`;
+  root.innerHTML=`
+    <div class="v3-shell">
+      <section class="v3-deck">
+        <div class="v3-topline"><strong>牌堆</strong><small>从牌顶取牌</small></div>
+        <div class="v3-stock"><div class="v3-back">三国</div><div class="v3-stock-info"><b class="v3-count" id="v3-count"></b><small>张剩余</small></div></div>
+        <div class="v3-more"><button class="primary" data-act="draw">摸 1 张</button><button data-act="show">展示／判定</button><button data-act="sort">展开牌堆 <span aria-hidden="true">↗</span></button><button class="primary v3-shuffle" data-act="shuffle" hidden>洗牌</button></div>
+      </section>
+      <section class="v3-stage v3-discard-zone">
+        <div class="v3-topline"><strong>弃牌区</strong><small>最近 ${RECENT_DISCARD_LIMIT} 张 · 最新 → 较早</small></div>
+        <div class="v3-discard-body">
+          <div class="v3-stage-viewport"><button class="v3-stage-scroll scroll-left" type="button" data-stage-scroll="-1" aria-label="向左查看最近弃牌" hidden>‹</button><div class="v3-faces" id="v3-stage"></div><button class="v3-stage-scroll scroll-right" type="button" data-stage-scroll="1" aria-label="向右查看最近弃牌" hidden>›</button></div>
+          <aside class="v3-discard-summary" aria-label="弃牌堆摘要">
+            <div class="v3-stock"><div class="stack">弃</div><div class="v3-stock-info"><b class="v3-count" id="v3-discard-count"></b><small>全部弃牌</small></div></div>
+            <button data-act="discard">查看全部 <span aria-hidden="true">↗</span></button>
+          </aside>
+        </div>
+      </section>
+    </div>
+    <div class="v3-footer">
+      <div class="v3-status"><span role="status" id="v3-feedback">主区域显示弃牌堆最近加入的 ${RECENT_DISCARD_LIMIT} 张牌。</span></div>
+      <div class="v3-sim"><small>新增弃牌演示</small><button data-act="other-play">玩家2打出</button><button data-act="other-discard">玩家2弃置</button></div>
+    </div>`;
+  const drawSplit=document.createElement('div');drawSplit.className='v3-draw-split';
+  drawSplit.innerHTML=`<button class="primary" data-act="draw">摸 1 张</button><button class="primary v3-draw-toggle" type="button" aria-label="选择摸牌张数" aria-expanded="false" aria-controls="v3-draw-options">▾</button><div id="v3-draw-options" class="v3-draw-options" hidden>${[2,3,4].map(n=>`<button data-act="draw" data-draw-count="${n}">摸 ${n} 张</button>`).join('')}</div>`;
+  root.querySelector('[data-act="draw"]').replaceWith(drawSplit);
+  root.querySelector('[data-act="show"]').textContent='展示／判定';
+  root.querySelector('.v3-deck .v3-topline small').textContent='从牌顶取牌';
+  const drawToggle=drawSplit.querySelector('.v3-draw-toggle'),drawOptions=drawSplit.querySelector('.v3-draw-options');
+  const stageFaces=root.querySelector('#v3-stage'),stageScrollButtons=[...root.querySelectorAll('[data-stage-scroll]')];
+  const updateStageScroll=()=>{
+    const max=stageFaces.scrollWidth-stageFaces.clientWidth;
+    stageScrollButtons.forEach(button=>{
+      const direction=Number(button.dataset.stageScroll);
+      button.hidden=max<=1||(direction<0?stageFaces.scrollLeft<=1:stageFaces.scrollLeft>=max-1);
+    });
+  };
+  stageScrollButtons.forEach(button=>button.addEventListener('click',()=>stageFaces.scrollBy({left:Number(button.dataset.stageScroll)*Math.max(120,stageFaces.clientWidth*.7),behavior:'smooth'})));
+  stageFaces.addEventListener('scroll',updateStageScroll,{passive:true});
+  new ResizeObserver(updateStageScroll).observe(stageFaces);
+  const setDrawOpen=open=>{drawOptions.hidden=!open;drawToggle.setAttribute('aria-expanded',String(open))};
+  document.addEventListener('click',event=>{if(!event.composedPath().includes(drawSplit))setDrawOpen(false)});
+  drawSplit.addEventListener('keydown',event=>{if(event.key==='Escape'&&!drawOptions.hidden){event.preventDefault();setDrawOpen(false);drawToggle.focus()}});
+  const splitStyle=document.createElement('style');
+  splitStyle.textContent=`.v3 .v3-draw-split{display:inline-flex;position:relative;flex:none}.v3 .v3-draw-split>button:first-child{border-radius:6px 0 0 6px}.v3 .v3-draw-toggle{border-radius:0 6px 6px 0;border-left:1px solid #624b2355;padding-inline:8px}.v3 .v3-draw-options{position:absolute;left:0;top:calc(100% + 5px);z-index:20;min-width:112px;display:grid;gap:3px;padding:5px;border:1px solid #b79952;border-radius:7px;background:#10392f;box-shadow:0 8px 22px #0008}.v3 .v3-draw-options[hidden]{display:none}.v3 .v3-draw-options button{text-align:left;padding:8px 12px;white-space:nowrap}.v3 .v3-deck>.v3-more{clear:both}`;
+  root.append(splitStyle);
   const dialog=document.createElement('dialog');dialog.className='v3 v3-dialog';dialog.setAttribute('aria-labelledby','v3-dialog-title');document.body.append(dialog);
-  const face=c=>`<div class="v3-card ${'♥♦'.includes(c.suit)?'red':''} ${c.taken?'taken':''}"><b>${c.suit} ${c.rank}</b><strong>${c.name}</strong><small>${c.source||''}</small></div>`;
+  const face=c=>`<div class="v3-card ${'♥♦'.includes(c.suit)?'red':''} ${c.taken?'taken':''}"><b><span>${c.suit}</span><span>${c.rank}</span></b><strong>${c.name}</strong><small>${c.source||''}</small></div>`;
   const feedback=s=>root.querySelector('#v3-feedback').textContent=s;
   function render(){
     root.querySelector('#v3-count').textContent=deck.length;
     root.querySelector('#v3-discard-count').textContent=discard.length;
-    root.querySelector('#v3-batch').textContent=actor?`${actor.name} · 本批结算`:'所有人可见';
-    root.querySelector('#v3-stage').innerHTML=batch.length?batch.map(c=>`<div>${face(c)}<div class="v3-face-actions">${c.taken?'<small>已收入你的手牌</small>':`<button data-take="${c.id}">收入手牌</button>`}</div></div>`).join(''):'<div class="v3-empty"><b>暂无结算牌</b><small>打出、弃置或展示牌堆顶牌后在此显示</small></div>';
-    root.querySelector('[data-act="clear"]').disabled=busy||!batch.length;
+    const recent=discard.slice(-RECENT_DISCARD_LIMIT).reverse();
+    stageFaces.innerHTML=recent.length?recent.map(c=>`<div>${face(c)}<div class="v3-face-actions"><button data-take="${c.id}">收入手牌</button></div></div>`).join(''):'<div class="v3-empty"><b>暂无弃牌</b><small>最新打出、弃置或展示／判定的牌在此显示</small></div>';
     root.querySelectorAll('[data-act="draw"],[data-act="show"],[data-act="sort"]').forEach(b=>b.disabled=busy||!deck.length);
+    const deckEmpty=!deck.length,shuffleButton=root.querySelector('[data-act="shuffle"]');
+    drawSplit.hidden=deckEmpty;
+    root.querySelector('[data-act="show"]').hidden=deckEmpty;
+    root.querySelector('[data-act="sort"]').hidden=deckEmpty;
+    shuffleButton.hidden=!deckEmpty;
+    shuffleButton.disabled=busy||!discard.length;
+    drawOptions.querySelectorAll('button').forEach(b=>b.disabled=busy||deck.length<Number(b.dataset.drawCount));
+    drawToggle.disabled=busy||deck.length<2;
     root.querySelectorAll('[data-take],[data-act^="other-"]').forEach(b=>b.disabled=busy);
+    requestAnimationFrame(updateStageScroll);
   }
   function accept(incoming,action,who=localActor){
     if(!incoming.length)return;
     const existing=new Set(discard.map(c=>c.id));
     const fresh=incoming.filter(c=>!existing.has(c.id));if(!fresh.length)return;
-    if(actor?.id!==who.id)batch=[];
-    actor={...who};
     const source=action==='play'?'打出':action==='discard'?'弃置':'展示／判定';
     const additions=fresh.map(c=>({...c,source,taken:false}));
-    discard.push(...additions);batch.push(...additions);
+    discard.push(...additions);
     feedback(`${who.name}${source} ${fresh.length} 张，已进入弃牌堆。`);render();
   }
   async function run(action){
@@ -50,43 +101,213 @@ function mountPublicDesign(root, bridge) {
   }
   function open(title,body,footer=''){dialog.innerHTML=`<header><h2 id="v3-dialog-title">${title}</h2><button data-close aria-label="关闭">关闭 ×</button></header>${body}${footer}`;if(!dialog.open)dialog.showModal()}
   function close(){draft=null;dialog.close()}
-  function discardView(){open(`弃牌堆 · 全部 ${discard.length} 张`,`<p class="muted">包含当前结算面板中的牌。最新进入的在前，已收取的牌不在这里。</p><div class="v3-grid">${discard.slice().reverse().map(c=>`<div class="v3-record">${face(c)}<button data-take="${c.id}">收入手牌</button></div>`).join('')||'<p>暂无弃牌</p>'}</div>`)}
+  const compactTile=(c,hidden=false)=>hidden?`<div class="v3-sort-tile v3-sort-tile-back"><strong>三国</strong></div>`:`<div class="v3-sort-tile v3-sort-tile-face ${'♥♦'.includes(c.suit)?'red':''}"><b><span>${c.suit}</span><span>${c.rank}</span></b><strong>${c.name}</strong></div>`;
+  function discardView(){open(`弃牌堆 · 全部 ${discard.length} 张`,`<p class="muted">最新进入的在前，已收取的牌不在这里。</p><div class="v3-sort v3-discard-grid">${discard.slice().reverse().map(c=>`<div class="v3-discard-card">${compactTile(c)}<button data-take="${c.id}">收入手牌</button></div>`).join('')||'<p class="muted">暂无弃牌</p>'}</div>`)}
   function sortView(){
-    const lane=(key,title)=>`<section><h3>${title}</h3>${draft[key].map((c,i)=>`<div class="v3-row"><span>${i+1}. ${draft.viewed.has(c.id)?`${c.suit}${c.rank} ${c.name}`:'牌背'}</span><button data-lane="${key}" data-i="${i}" data-view-card ${draft.viewed.has(c.id)?'disabled':''}>${draft.viewed.has(c.id)?'已观看':'观看'}</button><button data-lane="${key}" data-i="${i}" data-dir="-1" ${i===0?'disabled':''} aria-label="前移第${i+1}张">↑</button><button data-lane="${key}" data-i="${i}" data-dir="1" ${i===draft[key].length-1?'disabled':''} aria-label="后移第${i+1}张">↓</button>${key!=='draw'?`<button data-lane="${key}" data-i="${i}" data-move>${key==='top'?'放牌底':'放牌顶'}</button><button data-lane="${key}" data-i="${i}" data-draw>摸牌</button>`:`<button data-lane="${key}" data-i="${i}" data-return>放回牌顶</button>`}</div>`).join('')||'<p class="muted">暂无卡牌</p>'}</section>`;
-    open('展开牌堆 · 调整顺序',`<p><span class="privacy">仅你可见</span> 点击任意牌旁的“观看”逐张翻看。所有移动在确认后一起生效。</p><div class="v3-sort three-lanes">${lane('top','牌顶列 · 从上到下')}${lane('bottom','牌底列 · 追加在牌顶列后')}${lane('draw','确认后摸牌 · 从上到下')}</div><p class="muted">确认后摸牌列进入你的手牌；剩余顺序为牌顶列 → 牌底列。取消不会摸牌或改变牌序，但已经看过的牌无法撤回玩家记忆。</p>`,'<footer><button data-close>取消</button><button class="primary" data-commit>确认顺序并摸牌'+(draft.draw.length?`（${draft.draw.length}）`:'')+'</button></footer>');
+    const tile=c=>compactTile(c,!draft.viewed.has(c.id));
+    const lane=(key,title)=>`<section class="v3-sort-lane v3-sort-lane-${key}"><h3>${title}</h3>${draft[key].map((c,i)=>`<div class="v3-row ${key==='top'?'':'v3-row-passive'}">${tile(c,i)}${key==='top'?`<div class="v3-row-actions"><button data-lane="${key}" data-i="${i}" data-view-card ${draft.viewed.has(c.id)?'disabled':''}>观看</button><button data-lane="${key}" data-i="${i}" data-dir="-1" ${i===0?'disabled':''} aria-label="前移第${i+1}张">↑</button><button data-lane="${key}" data-i="${i}" data-dir="1" ${i===draft[key].length-1?'disabled':''} aria-label="后移第${i+1}张">↓</button><button data-lane="${key}" data-i="${i}" data-move>放牌底</button><button data-lane="${key}" data-i="${i}" data-draw>摸牌</button></div>`:''}</div>`).join('')||'<p class="muted">暂无卡牌</p>'}</section>`;
+    open('展开牌堆 · 调整顺序',`<p><span class="privacy">仅你可见</span> 在牌顶列观看、排序或分配卡牌，所有改变在确认后一起生效。</p><div class="v3-sort three-lanes">${lane('top','牌顶列 · 从上到下')}${lane('bottom','牌底列 · 按加入顺序')}${lane('draw','确认摸牌列')}</div><p class="muted">牌底列和确认摸牌列为结果区。放错时可重置排列；已经看过的牌仍会保持正面显示。</p>`,'<footer><button data-reset>重置排列</button><span class="v3-footer-spacer"></span><button data-close>取消</button><button class="primary" data-commit>确认顺序并摸牌'+(draft.draw.length?`（${draft.draw.length}）`:'')+'</button></footer>');
   }
   async function take(id){
     const card=discard.find(c=>c.id===id);if(!card)return;
     await bridge.receive([card]);
-    discard=discard.filter(c=>c.id!==id);card.taken=true;
-    feedback('已从弃牌堆收入手牌，本批结算保持不变。');
+    discard=discard.filter(c=>c.id!==id);
+    feedback('已从弃牌堆收入手牌，最近弃牌显示已更新。');
     if(dialog.open&&!draft)discardView();
   }
   root.addEventListener('click',event=>{
-    const b=event.target.closest('button');if(!b)return;
+    const b=event.target.closest('button');if(!b||b.disabled)return;
+    if(b.dataset.stageScroll!==undefined)return;
+    if(b===drawToggle){setDrawOpen(drawOptions.hidden);return}
+    setDrawOpen(false);
     run(async()=>{
       if(b.dataset.take!==undefined){await take(Number(b.dataset.take));return}
       const action=b.dataset.act;
-      if(action==='clear'){batch=[];actor=null;feedback('已清算面板，弃牌堆内容保持不变。');return}
       if(action==='discard'){discardView();return}
-      if(action==='sort'){draft={top:deck.slice(),bottom:[],draw:[],viewed:new Set()};sortView();return}
+      if(action==='sort'){draft={top:deck.slice(),bottom:[],draw:[],viewed:new Set(),initial:deck.slice()};sortView();return}
+      if(action==='shuffle'){
+        deck=discard.map(({source,taken,...card})=>card);
+        for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
+        discard=[];feedback(`弃牌堆已洗牌，${deck.length} 张牌进入牌堆。`);return
+      }
       if(action==='other-play'||action==='other-discard'){await bridge.simulateOther(action==='other-play'?'play':'discard');return}
       if(action!=='draw'&&action!=='show')return;
-      const incoming=deck.slice(0,1);
-      if(action==='draw'){await bridge.receive(incoming);deck.splice(0,1);feedback('已摸 1 张，结算面板保持不变。')}
+      const count=action==='draw'?Number(b.dataset.drawCount||1):1;
+      if(deck.length<count)throw Error('牌堆剩余张数不足。');
+      const incoming=deck.slice(0,count);
+      if(action==='draw'){await bridge.receive(incoming);deck.splice(0,count);feedback(`已摸 ${count} 张，弃牌区保持不变。`)}
       else{deck.splice(0,1);accept(incoming,'show')}
     });
   });
   dialog.addEventListener('click',event=>{
     const b=event.target.closest('button');if(!b||busy)return;
     if(b.hasAttribute('data-close')){close();return}
+    if(b.hasAttribute('data-reset')){draft.top=draft.initial.slice();draft.bottom=[];draft.draw=[];sortView();return}
     if(b.dataset.take!==undefined){run(()=>take(Number(b.dataset.take)));return}
-    if(b.hasAttribute('data-commit')){const drawn=draft.draw.slice(),nextDeck=[...draft.top,...draft.bottom];run(async()=>{if(drawn.length)await bridge.receive(drawn);deck=nextDeck;close();feedback(drawn.length?`牌序已更新，${drawn.length} 张牌已加入你的手牌。`:'牌堆顺序已更新，结算面板保持不变。')});return}
+    if(b.hasAttribute('data-commit')){const drawn=draft.draw.slice(),nextDeck=[...draft.top,...draft.bottom];run(async()=>{if(drawn.length)await bridge.receive(drawn);deck=nextDeck;close();feedback(drawn.length?`牌序已更新，${drawn.length} 张牌已加入你的手牌。`:'牌堆顺序已更新，弃牌区保持不变。')});return}
     if(b.dataset.lane){const list=draft[b.dataset.lane],i=Number(b.dataset.i);if(b.hasAttribute('data-view-card'))draft.viewed.add(list[i].id);else if(b.hasAttribute('data-draw'))draft.draw.push(...list.splice(i,1));else if(b.hasAttribute('data-return'))draft.top.push(...list.splice(i,1));else if(b.hasAttribute('data-move'))draft[b.dataset.lane==='top'?'bottom':'top'].push(...list.splice(i,1));else{const j=i+Number(b.dataset.dir);[list[i],list[j]]=[list[j],list[i]]}sortView()}
   });
   dialog.addEventListener('cancel',()=>{draft=null});render();
   return {accept};
 }
+
+
+/***/ }),
+
+/***/ "./docs/sango-public-polish.css":
+/*!**************************************!*\
+  !*** ./docs/sango-public-polish.css ***!
+  \**************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/noSourceMaps.js */ "./node_modules/css-loader/dist/runtime/noSourceMaps.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
+// Imports
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, `/* Shared spacing and action hierarchy for the public-table design preview. */
+.design-public.v3 { --control-height: 36px; }
+.design-public.v3 .v3-shell {
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  height: 236px;
+  min-height: 236px;
+  padding: 16px 20px;
+  border-color: #d7be7830;
+  background: linear-gradient(115deg, #103a30, #0a2d25 72%);
+  box-shadow: 0 12px 30px #0002;
+}
+.design-public.v3 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--control-height);
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background .12s, border-color .12s;
+}
+.design-public.v3 button.primary { background: #e2b84b; border-color: #e2b84b; }
+.design-public.v3 button.primary:hover:not(:disabled) { background: #edc65f; border-color: #edc65f; }
+.design-public.v3 .v3-topline {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  gap: 10px;
+  margin: 0;
+}
+.design-public.v3 .v3-topline strong { font-size: 14px; letter-spacing: .03em; white-space: nowrap; }
+.design-public.v3 .v3-topline small { font-size: 12px; color: #91aea0; }
+.design-public.v3 .v3-deck {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 28px 70px minmax(0, 1fr);
+  gap: 7px;
+  padding-right: 18px;
+  border-right: 1px solid #d7be781c;
+}
+.design-public.v3 .v3-deck > .v3-stock { align-self: center; justify-content: center; gap: 16px; }
+.design-public.v3 .v3-deck .v3-stock-info { align-items: flex-start; gap: 5px; }
+.design-public.v3 .v3-deck .v3-stock-info small { font-size: 11px; }
+.design-public.v3 .v3-stock { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.design-public.v3 .v3-stock-info { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.design-public.v3 .v3-stock-info small { font-size: 12px; white-space: nowrap; }
+.design-public.v3 .v3-count { color: #efdcb0; font: 32px/1 Georgia, serif; }
+.design-public.v3 .v3-back,
+.design-public.v3 .v3-discard .stack { float: none; flex: 0 0 44px; width: 44px; height: 58px; margin: 0; border-radius: 5px; font-size: 13px; }
+.design-public.v3 .v3-more { display: grid; grid-template-columns: 1.08fr 1fr; grid-template-rows: 30px 22px; gap: 5px 7px; align-content: end; min-width: 0; }
+.design-public.v3 .v3-more > button { width: 100%; height: 30px; padding-inline: 6px; font-size: 11px; }
+.design-public.v3 .v3-more > [data-act="sort"] { grid-column: 1 / -1; height: 22px; justify-content: center; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #9fb6aa; font-size: 11px; font-weight: 500; }
+.design-public.v3 .v3-more > [data-act="sort"]:hover:not(:disabled) { color: #f0cc73; border: 0; background: #ffffff08; }
+.design-public.v3 .v3-more > .v3-shuffle { grid-column: 1 / -1; width: 100%; height: 30px; }
+.design-public.v3 .v3-more > [hidden] { display: none !important; }
+.design-public.v3 .v3-draw-split { display: grid; grid-template-columns: minmax(0, 1fr) 25px; height: 30px; min-width: 0; }
+.design-public.v3 .v3-draw-split > button { height: 30px; }
+.design-public.v3 .v3-draw-split > button:first-child { padding-inline: 6px; }
+.design-public.v3 .v3-draw-split > .v3-draw-toggle { width: 25px; padding: 0; border-left-color: #72542055; border-radius: 0 6px 6px 0; font-size: 11px; }
+.design-public.v3 .v3-draw-options { min-width: 100%; gap: 3px; padding: 5px; border-radius: 8px; }
+.design-public.v3 .v3-draw-options button { width: 100%; justify-content: flex-start; border-color: transparent; background: transparent; }
+.design-public.v3 .v3-draw-options button:hover:not(:disabled) { background: #e2b84b18; }
+.design-public.v3 .v3-stage { display: grid; grid-template-rows: 28px minmax(0, 1fr); gap: 12px; min-width: 0; min-height: 0; }
+.design-public.v3 .v3-stage .v3-topline { justify-content: flex-start; }
+.design-public.v3 .v3-discard-body { display: grid; grid-template-columns: minmax(0,1fr) 154px; gap: 14px; min-width: 0; min-height: 0; }
+.design-public.v3 .v3-stage-viewport { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+.design-public.v3 .v3-faces { align-items: center; gap: 0; width: 100%; height: 100%; min-height: 0; padding: 5px 26px 8px 2px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.design-public.v3 .v3-faces::-webkit-scrollbar { display: none; }
+.design-public.v3 .v3-faces > div { position: relative; flex-shrink: 0; margin-left: -20px; }
+.design-public.v3 .v3-faces > div:first-child { margin-left: 0; }
+.design-public.v3 .v3-faces > .v3-empty { flex: 1; min-height: 140px; border: 1px dashed #d7be7817; border-radius: 8px; background: #ffffff02; }
+.design-public.v3 .v3-stage-scroll { position: absolute; top: 50%; z-index: 10; width: 26px; height: 38px; padding: 0; transform: translateY(-50%); border-color: #d7be7850; border-radius: 7px; background: #10392ff0; box-shadow: 0 3px 10px #0007; font: 22px/1 Georgia,serif; }
+.design-public.v3 .v3-stage-scroll.scroll-left { left: 3px; }
+.design-public.v3 .v3-stage-scroll.scroll-right { right: 3px; }
+.design-public.v3 .v3-stage-scroll[hidden] { display: none; }
+.design-public.v3 .v3-empty b { font-size: 16px; color: #9bb7a8; }
+.design-public.v3 .v3-empty small { font-size: 12px; color: #728f81; }
+.design-public.v3 .v3-card { display: grid; grid-template-columns: 24px minmax(0,1fr); grid-template-rows: minmax(0,1fr) 16px; align-items: center; justify-items: center; width: 84px; height: 98px; padding: 6px 5px 4px; }
+.design-public.v3 .v3-card > b { align-self: start; justify-self: start; display: flex; flex-direction: column; align-items: center; gap: 1px; font: 800 18px/1 Georgia,serif; }
+.design-public.v3 .v3-card > strong { display: block; max-height: 68px; margin: 0; overflow: hidden; writing-mode: vertical-rl; text-orientation: upright; font-size: 14px; line-height: 1; letter-spacing: 1px; white-space: nowrap; }
+.design-public.v3 .v3-card > small { grid-column: 1 / -1; align-self: end; width: 100%; padding-top: 3px; overflow: hidden; border-top: 1px solid #765f3826; color: #76623e; font-size: 9px; line-height: 1; text-align: center; white-space: nowrap; text-overflow: ellipsis; }
+.design-public.v3 .v3-face-actions { display: flex; justify-content: center; width: 84px; margin-top: 2px; }
+.design-public.v3 .v3-face-actions button { width: 62px; height: 22px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #9fb6aa; font-size: 11px; font-weight: 500; }
+.design-public.v3 .v3-face-actions button:hover:not(:disabled) { color: #f0cc73; border: 0; background: #ffffff08; }
+.design-public.v3 .v3-face-actions small { display: grid; place-items: center; width: 62px; height: 22px; color: #738f82; font-size: 10px; }
+.design-public.v3 .v3-discard-summary { display: grid; grid-template-rows: minmax(0,1fr) 22px; gap: 8px; min-width: 0; padding-left: 14px; border-left: 1px solid #d7be781c; }
+.design-public.v3 .v3-discard-summary .v3-stock { align-self: center; justify-content: center; gap: 12px; }
+.design-public.v3 .v3-discard-summary .stack { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 58px; border: 1px solid #a88c54; border-radius: 5px; background: #254739; box-shadow: 3px 3px #173d2f,4px 4px #8c794d; color: #d8c69a; font-size: 13px; }
+.design-public.v3 .v3-discard-summary .v3-stock-info { align-items: flex-start; }
+.design-public.v3 .v3-discard-summary .v3-stock-info small { font-size: 10px; }
+.design-public.v3 .v3-discard-summary > button { width: 100%; height: 22px; justify-content: center; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #9fb6aa; font-size: 11px; font-weight: 500; }
+.design-public.v3 .v3-discard-summary > button:hover:not(:disabled) { color: #f0cc73; border: 0; background: #ffffff08; }
+.design-public.v3 .v3-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 34px; padding: 4px 2px; }
+.design-public.v3 .v3-status { min-width: 0; padding: 0; font-size: 12px; }
+.design-public.v3 .v3-status span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #8eaa9a; }
+.design-public.v3 .v3-sim { flex: none; gap: 6px; }
+.design-public.v3 .v3-sim small { margin-right: 3px; font-size: 11px; color: #718e80; }
+.design-public.v3 .v3-sim button { height: 24px; padding-inline: 8px; font-size: 11px; color: #9db4a5; border-color: transparent; background: transparent; }
+.design-public.v3 .v3-sim button:hover { background: #ffffff0a; border-color: #d7be782b; }
+/* Expanded deck: actions stay in one compact row; result lanes remain quiet. */
+.v3-dialog:has(.three-lanes) { width: min(1060px, 94vw); }
+.v3-dialog .v3-sort.three-lanes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; overflow-x: visible; }
+.v3-dialog .v3-sort .v3-row { display: flex; align-items: center; flex-wrap: nowrap; gap: 8px; min-height: 58px; padding: 4px 0; }
+.v3-dialog .v3-sort .v3-sort-tile { position: relative; display: grid; flex: 0 0 41px; width: 41px; height: 50px; padding: 3px 2px; overflow: hidden; border: 1px solid #bda05f; border-radius: 4px; box-shadow: 0 2px 6px #0005; }
+.v3-dialog .v3-sort .v3-sort-tile-face { grid-template-columns: 12px minmax(0,1fr); align-items: center; justify-items: center; color: #302417; background: linear-gradient(135deg,#fff4d7,#d6bb83); }
+.v3-dialog .v3-sort .v3-sort-tile-face.red { color: #a3332d; }
+.v3-dialog .v3-sort .v3-sort-tile-face b { align-self: start; display: flex; flex-direction: column; align-items: center; gap: 1px; font: 800 11px/1 Georgia,serif; }
+.v3-dialog .v3-sort .v3-sort-tile-face strong { display: block; max-height: 100%; overflow: hidden; writing-mode: vertical-rl; text-orientation: upright; font-size: 10px; line-height: 1; letter-spacing: .2px; white-space: nowrap; }
+.v3-dialog .v3-sort .v3-sort-tile-back { place-items: center; background: repeating-linear-gradient(45deg,#70342e,#70342e 4px,#803b33 4px,#803b33 8px); color: #edce91; font: 12px serif; }
+.v3-dialog .v3-sort .v3-row-actions { display: flex; align-items: center; flex: 1 1 auto; gap: 4px; min-width: 0; }
+.v3-dialog .v3-sort .v3-row-actions button { display: inline-flex; align-items: center; justify-content: center; flex: 0 1 auto; min-width: 30px; height: 26px; padding: 0 6px; font-size: 10px; white-space: nowrap; }
+.v3-dialog .v3-sort .v3-row-passive { justify-content: flex-start; }
+.v3-dialog .v3-sort.v3-discard-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(66px,1fr)); gap: 12px 8px; max-height: 55vh; padding: 12px; overflow-y: auto; border: 1px solid #ffffff18; border-radius: 8px; background: #0002; }
+.v3-dialog .v3-discard-card { display: grid; justify-items: center; gap: 5px; min-width: 0; }
+.v3-dialog .v3-discard-card button { width: 62px; height: 22px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #9fb6aa; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.v3-dialog .v3-discard-card button:hover:not(:disabled) { color: #f0cc73; border: 0; background: #ffffff08; }
+.v3-dialog footer .v3-footer-spacer { flex: 1; }
+.v3-dialog footer button { min-width: 80px; height: 36px; padding: 0 16px; font-size: 13px; }
+@media(max-width:700px) {
+  .design-public.v3 .v3-shell { grid-template-columns: 1fr; height: auto; }
+  .design-public.v3 .v3-deck { border: 0; padding: 0; grid-template-columns: 1fr; grid-template-rows: 28px 70px minmax(64px,auto); }
+  .design-public.v3 .v3-stage { min-height: 210px; }
+  .design-public.v3 .v3-discard-body { grid-template-columns: minmax(0,1fr) 126px; }
+  .design-public.v3 .v3-discard-summary { padding-left: 10px; }
+  .design-public.v3 .v3-footer { flex-wrap: wrap; }
+  .v3-dialog .v3-sort.three-lanes { grid-template-columns: 1fr; }
+}
+`, ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
@@ -881,6 +1102,24 @@ span.spade::before { content: "♠"; }
 :host(.other2-area-card:not(.current-player)) .card-block.show-front .card-back {
   display: none;
 }
+
+/* Large public discard card: same two-column language as local narrow cards. */
+:host(.recent-public-card) { display:block; flex:0 0 5.25rem; width:5.25rem; height:6.125rem; }
+:host(.recent-public-card) .card-block,
+:host(.recent-public-card) .card-widget { display:block; width:100%; height:100%; }
+:host(.recent-public-card) .card-front {
+  box-sizing:border-box; display:grid; grid-template-columns:1.5rem minmax(0,1fr);
+  align-items:center; justify-items:center; width:100%; height:100%; padding:.38rem .3rem;
+}
+:host(.recent-public-card) .card-suit { align-self:start; justify-self:start; font:800 1.1rem/1 Georgia,serif; }
+:host(.recent-public-card) .card-suit > span { display:flex; flex-direction:column; align-items:center; gap:.08rem; }
+:host(.recent-public-card) .info-line { min-width:0; max-height:100%; overflow:hidden; }
+:host(.recent-public-card) .pai-name {
+  display:block; width:auto; max-height:100%; margin:0; overflow:hidden;
+  writing-mode:vertical-rl; text-orientation:upright; font-size:.86rem; font-weight:800;
+  line-height:1; letter-spacing:.06rem; white-space:nowrap;
+}
+:host(.recent-public-card.has-desc) .desc-line { display:none; }
 `, ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
@@ -1420,33 +1659,6 @@ ___CSS_LOADER_EXPORT___.push([module.id, `:host {
 
 /***/ }),
 
-/***/ "./src/wc/css/sgPaiArea.css":
-/*!**********************************!*\
-  !*** ./src/wc/css/sgPaiArea.css ***!
-  \**********************************/
-/***/ ((module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/noSourceMaps.js */ "./node_modules/css-loader/dist/runtime/noSourceMaps.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
-// Imports
-
-
-var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
-// Module
-___CSS_LOADER_EXPORT___.push([module.id, `:host { display:block; min-width:0; min-height:0; height:100%; padding:0; } .wrapper { width:100%; height:100%; border:0; overflow:hidden; }`, ""]);
-// Exports
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
-
-
-/***/ }),
-
 /***/ "./src/wc/css/sgPlayer.css":
 /*!*********************************!*\
   !*** ./src/wc/css/sgPlayer.css ***!
@@ -1692,11 +1904,33 @@ sg-player { min-width: 0; min-height: 0; }
 
 .table-public {
   position: absolute; top: 17.9375rem; left: 1.25rem; z-index: 1; display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 0.55rem;
+  grid-template-columns: 13.75rem minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 0.9rem;
   width: 63.75rem; height: 15.625rem; min-width: 0; min-height: 0; padding: 0.55rem;
   border: 1px solid var(--line); border-radius: 0.8rem; background: rgba(4, 29, 24, 0.7);
   box-shadow: inset 0 0 3rem rgba(0, 0, 0, 0.16), 0 0.55rem 1.4rem rgba(0, 0, 0, 0.22);
 }
+.public-deck-panel,.public-discard-panel{display:grid;grid-template-rows:1.75rem minmax(0,1fr);min-width:0;min-height:0}
+.public-deck-panel{grid-template-rows:1.75rem 4.4rem minmax(0,1fr);gap:.4rem;padding-right:.9rem;border-right:1px solid rgba(232,207,139,.14)}
+.public-deck-panel>header,.public-discard-panel>header{display:flex;align-items:center;gap:.6rem;min-width:0;color:#d8cda8}
+.public-deck-panel>header strong,.public-discard-panel>header strong{font-size:.84rem}.public-deck-panel>header small,.public-discard-panel>header small{color:#91aea0;font-size:.7rem}
+.public-deck-summary{display:flex;align-items:center;justify-content:center;gap:1rem}.public-deck-summary>div:last-child,.discard-summary-main>div:last-child{display:flex;flex-direction:column;gap:.2rem}.public-deck-summary small,.discard-summary small{color:#9fb6aa;font-size:.65rem}
+.public-card-back,.discard-icon{display:grid;place-items:center;width:2.75rem;height:3.63rem;border:1px solid #b89857;border-radius:.32rem;color:#edce91;font:700 .78rem Georgia,serif;box-shadow:3px 3px #102820,4px 4px #8c794d}
+.public-card-back{background:repeating-linear-gradient(45deg,#70342e,#70342e 4px,#803b33 4px,#803b33 8px)}.discard-icon{background:#254739}
+.public-deck-count,.discard-count{color:#efdcb0;font:2rem/1 Georgia,serif}
+.public-deck-actions{display:grid;grid-template-columns:1.08fr 1fr;grid-template-rows:1.88rem 1.38rem;gap:.3rem .42rem;align-content:end;min-width:0}
+.public-deck-actions button,.recent-discard-card button,.discard-grid-item button,.public-dialog button{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:1.88rem;padding:0 .45rem;border:1px solid var(--line);border-radius:.38rem;color:var(--text);background:#ffffff0b;font:inherit;font-size:.68rem;cursor:pointer;white-space:nowrap}
+.public-deck-actions button:disabled,.recent-discard-card button:disabled,.discard-grid-item button:disabled,.public-dialog button:disabled{opacity:.4;cursor:default}
+.public-deck-actions button.primary,.public-dialog button.primary{border-color:#e2b84b;background:#e2b84b;color:#291f13;font-weight:800}
+.public-draw-split{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 1.6rem;min-width:0}.public-draw-split>button:first-child{border-radius:.38rem 0 0 .38rem}.public-draw-split>.draw-toggle{width:1.6rem;padding:0;border-left-color:#72542055;border-radius:0 .38rem .38rem 0}
+.draw-options{position:absolute;top:calc(100% + .3rem);left:0;z-index:20;display:grid;width:100%;gap:.15rem;padding:.3rem;border:1px solid #b79952;border-radius:.45rem;background:#10392f;box-shadow:0 .5rem 1.4rem #0008}.draw-options[hidden]{display:none}.draw-options button{justify-content:flex-start;width:100%;border-color:transparent;background:transparent}
+.public-deck-actions>.text-action{grid-column:1/-1;height:1.38rem;border:0;background:transparent;color:#9fb6aa}.public-deck-actions>.shuffle-empty{grid-column:1/-1;width:100%}.public-deck-actions>[hidden],.public-draw-split[hidden]{display:none!important}
+.public-discard-body{display:grid;grid-template-columns:minmax(0,1fr) 9.6rem;gap:.85rem;min-width:0;min-height:0}.recent-discard-list{display:flex;align-items:center;min-width:0;min-height:0;padding:.25rem 1.6rem .4rem .15rem;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}.recent-discard-list::-webkit-scrollbar{display:none}
+.recent-discard-card{position:relative;display:grid;justify-items:center;flex:0 0 5.25rem;width:5.25rem}.recent-discard-card+ .recent-discard-card{margin-left:-1.25rem}.recent-discard-card>small{width:4.6rem;margin-top:.12rem;overflow:hidden;color:#76623e;background:#dec994;border-radius:0 0 .2rem .2rem;font-size:.56rem;text-align:center;white-space:nowrap;text-overflow:ellipsis}
+.text-action,.recent-discard-card>.text-action,.discard-grid-item>.text-action{height:1.35rem;padding:0;border:0;background:transparent;color:#9fb6aa}.text-action:hover:not(:disabled){color:#f0cc73;background:#ffffff08}
+.discard-summary{display:grid;grid-template-rows:minmax(0,1fr) 1.38rem;gap:.45rem;padding-left:.85rem;border-left:1px solid rgba(232,207,139,.14)}.discard-summary-main{display:flex;align-items:center;justify-content:center;gap:.75rem}.discard-summary>.text-action{width:100%}
+.public-empty{display:grid;place-content:center;flex:1;min-height:7rem;color:#718f82;text-align:center;line-height:1.8}.public-empty b{font-weight:500}.public-empty small{font-size:.68rem}
+.public-dialog{width:min(66rem,94vw);max-height:85vh;padding:1.3rem;border:1px solid #b79952;border-radius:.8rem;color:var(--text);background:#0c3027;box-shadow:0 1.5rem 6rem #0009}.public-dialog::backdrop{background:#001510b8}.public-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:1rem}.public-dialog h2{margin:0;color:#efd18b;font-size:1.2rem}.public-dialog>p{color:#9fb6aa;font-size:.75rem}.discard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.15rem,1fr));gap:.75rem .5rem;max-height:60vh;padding:.75rem;overflow-y:auto;border:1px solid #ffffff18;border-radius:.5rem;background:#0002}.discard-grid-item{display:grid;justify-items:center;gap:.3rem}.discard-grid-item>.text-action{width:3.9rem}
+.deck-sort-lanes{display:grid;grid-template-columns:repeat(3,minmax(15.5rem,1fr));gap:.75rem;overflow-x:auto}.sort-lane{max-height:43vh;min-height:11rem;padding:.75rem;overflow-y:auto;border:1px solid #ffffff18;border-radius:.5rem;background:#0002}.sort-lane h3{position:sticky;top:-.75rem;z-index:1;margin:0 0 .5rem;padding:.45rem 0;color:#e6ce8c;background:#0b3027;font-size:.78rem}.sort-row{display:flex;align-items:center;gap:.5rem;min-height:3.65rem;padding:.25rem 0;border-bottom:1px solid #ffffff10}.sort-public-tile{flex:0 0 2.56rem;width:2.56rem;height:3.15rem;pointer-events:none}.sort-row-actions{display:flex;align-items:center;gap:.2rem;min-width:0}.sort-row-actions button{min-width:1.85rem;height:1.6rem;padding:0 .3rem;font-size:.62rem}.public-dialog .privacy{display:inline-block;padding:.2rem .45rem;border-radius:.25rem;color:#c1b2e8;background:#8871b222}.public-dialog .muted{color:#9fb6aa;font-size:.72rem}.public-dialog>footer{display:flex;align-items:center;gap:.55rem;margin-top:1rem}.public-dialog>footer>span{flex:1}
 .round-menu, .card-menu { display: flex; flex-direction: column; gap: 0.38rem; min-width: 0; padding: 0.4rem; border: 1px solid var(--line); border-radius: 0.65rem; background: rgba(4, 26, 22, 0.74); }
 .public-tools { position: relative; flex: none; }
 .public-tools summary { padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: #ffffff0f; font-size: 12px; cursor: pointer; }
@@ -1712,15 +1946,6 @@ sg-player { min-width: 0; min-height: 0; }
 .round-menu span { margin-top: auto; color: #edaaa2; border-color: rgba(208, 93, 78, 0.42); }
 .card-menu.hide { display: none; }
 .card-menu button { flex: none; min-height: 1.3rem; height: 1.3rem; padding: 0 0.35rem; white-space: nowrap; }
-.public-cards-panel:has(.card-menu:not(.hide)) > header { visibility: hidden; }
-.deck-panel, .public-cards-panel { grid-row: 1; display: grid; grid-template-rows: 1.8rem minmax(0, 1fr); min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 0.65rem; background: rgba(4, 26, 22, 0.5); }
-.deck-panel { grid-column: 2; background: rgba(4, 26, 22, 0.62); }
-.public-cards-panel { position: relative; grid-column: 1; background: rgba(4, 26, 22, 0.42); }
-.deck-panel > header, .public-cards-panel > header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0 0.55rem; color: #d8cda8; border-bottom: 1px solid rgba(232, 207, 139, 0.12); font-size: 0.72rem; }
-.public-cards-panel > header span { color: var(--muted); font-size: 0.62rem; }
-.deck-panel > sg-paiarea, .public-cards-panel > sg-area { min-width: 0; min-height: 0; overflow: hidden; }
-.public-cards-panel > sg-area::part(wrapper) { border: 0; }
-.public-cards-panel > sg-area::part(card-area) { align-content: start; align-items: start; justify-content: start; height: 100%; padding: 10px 7px 8px; overflow: auto; }
 
 @media (max-width: 900px) {
   :host { min-height: 100%; }
@@ -1734,8 +1959,7 @@ sg-player { min-width: 0; min-height: 0; }
 @media (max-width: 620px) {
   .table-container { grid-template-rows: 14.5rem auto auto; gap: 0.4rem; padding: 0.4rem; }
   .table-public { grid-template-columns: minmax(0, 1fr); grid-template-rows: 13rem auto; min-height: 22rem; }
-  .public-cards-panel { grid-column: 1; grid-row: 1; }
-  .deck-panel { grid-column: 1; grid-row: 2; min-height: 8rem; }
+  .table-public{grid-template-columns:1fr;grid-template-rows:auto auto}.public-deck-panel{grid-row:1;padding:0 0 .7rem;border:0;border-bottom:1px solid rgba(232,207,139,.14)}.public-discard-panel{grid-row:2;min-height:12rem}.public-discard-body{grid-template-columns:minmax(0,1fr) 7.8rem}.deck-sort-lanes{grid-template-columns:repeat(3,minmax(15.5rem,1fr))}
   :host(.player-seated) .slot0 { position: sticky; bottom: 0; min-height: 24rem; z-index: 10; }
 }
 
@@ -2077,8 +2301,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _data_jiang_json__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./data/jiang.json */ "./src/data/jiang.json");
 /* harmony import */ var _data_pai_json__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./data/pai.json */ "./src/data/pai.json");
 /* harmony import */ var _cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./cardOrder.mjs */ "./src/cardOrder.mjs");
-/* harmony import */ var _actionLog_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./actionLog.mjs */ "./src/actionLog.mjs");
-/* harmony import */ var _roomTransaction_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./roomTransaction.mjs */ "./src/roomTransaction.mjs");
+/* harmony import */ var _databaseLocks_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./databaseLocks.mjs */ "./src/databaseLocks.mjs");
+/* harmony import */ var _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./localActionLog.mjs */ "./src/localActionLog.mjs");
 
 
 
@@ -2105,22 +2329,12 @@ class gameController {
     this.rootComponent.lockPlayerSelection();
   }
 
-  async commitRoom(transform, action = '') {
-    const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, `game/${this.gameId}`);
-    const key = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(roomRef, 'actionLogs')).key;
-    const actor = this.userName || this.currentPlayer || '未入座';
-    return (0,_roomTransaction_mjs__WEBPACK_IMPORTED_MODULE_5__.runLoadedTransaction)(roomRef, room => {
-      const next = transform(room);
-      return next === undefined ? undefined : (0,_actionLog_mjs__WEBPACK_IMPORTED_MODULE_4__.appendActionLog)(room, next, key, actor, (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.serverTimestamp)(), action);
-    }, {onValue: firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue, runTransaction: firebase_database__WEBPACK_IMPORTED_MODULE_0__.runTransaction});
-  }
-
-  writePatch(patch, action = '') {
-    return this.commitRoom(room => (0,_actionLog_mjs__WEBPACK_IMPORTED_MODULE_4__.applyRoomPatch)(room, patch, `game/${this.gameId}/`), action);
+  writePatch(patch) {
+    return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db), patch);
   }
 
   setValue(target, value) {
-    return this.writePatch({[target.toString().replace((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString(), '')]: value});
+    return this.setScalarValue(target, value);
   }
 
   getDiscardDeckPath() {
@@ -2128,11 +2342,24 @@ class gameController {
   }
 
   showCard(cardRef) {
-    return this.setValue((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(cardRef, "/show"), "1");
+    return this.setScalarValue((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(cardRef, "/show"), "1");
   }
 
   resetCard(cardRef) {
-    return this.setValue((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(cardRef, "/show"), "0");
+    return this.setScalarValue((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(cardRef, "/show"), "0");
+  }
+
+  setScalarValue(target, value) {
+    return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.set)(target, value);
+  }
+
+  togglePlayerStatus(playerRef, index) {
+    if (index !== 0 && index !== 1) throw Error('无效的玩家状态');
+    return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.runTransaction)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, '/debuff'), current => {
+      const chars = String(current || '00').padEnd(2, '0').slice(0, 2).split('');
+      chars[index] = chars[index] === '1' ? '0' : '1';
+      return chars.join('');
+    }, {applyLocally: false});
   }
 
   async recycle(cardsRef) {
@@ -2140,6 +2367,39 @@ class gameController {
     if (!snapshot.exists()) return;
     const source = cardsRef.toString().replace((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString(), '');
     return this.moveOrderedCards(Object.keys(snapshot.val()).map(key=>`${source}/${key}`), (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, `game/${this.gameId}/tableDecks/pai/cards`));
+  }
+
+  acquireGameLocks(resources) {
+    const lockRootPath = `game/${this.gameId}/operationLocks`;
+    return (0,_databaseLocks_mjs__WEBPACK_IMPORTED_MODULE_4__.acquireLocks)(resources, {
+      lockRootPath, ttlMs: 15000,
+      newToken: () => (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, lockRootPath)).key,
+      makeRef: path => (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, path),
+      runTransaction: firebase_database__WEBPACK_IMPORTED_MODULE_0__.runTransaction,
+      updateRoot: patch => (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db), patch),
+    });
+  }
+
+  // This value coordinates local best-effort logs; it is not replayable history.
+  // Always spread it into the same root update as its state patch so subscribers
+  // cannot associate a new state with an old action hint.
+  actionHintPatch(opcode, args = []) {
+    return {[`game/${this.gameId}/runtime/a`]:(0,_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.encodeActionHint)(opcode,this.currentPlayer,args)};
+  }
+
+  moveActionOpcode(paths, targetPath) {
+    if (!this.currentPlayer) return null;
+    const playerArea = path => path.match(/^game\/[^/]+\/(p\d+)\/([^/]+)\/cards(?:\/[^/]+)?$/);
+    const sources = paths.map(playerArea).filter(Boolean), target = playerArea(targetPath);
+    if (/\/tableDecks\/discard\/cards$/.test(targetPath) && sources.length) {
+      return sources.some(match=>match[1]!==this.currentPlayer) ? _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DISCARD_OTHER : _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DISCARD;
+    }
+    if(target?.[2]==='hand'&&target[1]===this.currentPlayer&&paths.some(path=>/\/tableDecks\/(pai|paiBottom)\/cards\//.test(path)))return _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DRAW;
+    if(target?.[2]==='hand'&&target[1]===this.currentPlayer&&paths.some(path=>/\/tableDecks\/discard\/cards\//.test(path)))return _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.TAKE_DISCARD;
+    if (!sources.some(match=>match[1]!==this.currentPlayer) && !(target&&target[1]!==this.currentPlayer)) return null;
+    if (target?.[2]==='hand' && target[1]!==this.currentPlayer && paths.some(path=>/\/tableDecks\/(pai|paiBottom)\/cards\//.test(path))) return _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DRAW_FOR_OTHER;
+    if (target && sources.some(match=>match[1]!==target[1])) return _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.TRANSFER_CARD;
+    return _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.MOVE_OTHER;
   }
 
   moveCardToTableDeck(cardRef, deck) {
@@ -2160,48 +2420,85 @@ class gameController {
   }
 
   async dealCards() {
-    const roomRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, `game/${this.gameId}`);
-    let reason = '发牌未完成，请重试';
-    const result = await this.commitRoom(room => {
-      try {
-        return (0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.dealOpeningHands)(room, Number(this.playerCount));
-      } catch (error) {
-        reason = error.message;
-        return undefined;
+    const prefix = `game/${this.gameId}`;
+    const deckPaths = [`${prefix}/tableDecks/pai/cards`, `${prefix}/tableDecks/paiBottom/cards`];
+    const handPaths = Array.from({length:Number(this.playerCount)}, (_,index)=>`${prefix}/p${index+1}/hand/cards`);
+    const locks = await this.acquireGameLocks([...deckPaths, ...handPaths].map(path=>`area:${path}`));
+    let released = false;
+    try {
+      const snapshots = await Promise.all([...deckPaths, ...handPaths].map(path=>(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,path))));
+      const hands = snapshots.slice(deckPaths.length);
+      if (hands.some(snapshot=>snapshot.exists() && Object.keys(snapshot.val() || {}).length)) {
+        throw Error('只有所有玩家手牌为空时才能发牌');
       }
-    });
-    if (!result.committed) throw Error(reason);
+      const deck = deckPaths.flatMap((path,index)=>(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.orderedEntries)(snapshots[index].val() || {}).map(card=>({...card,path})));
+      const needed = handPaths.length * 4;
+      if (deck.length < needed) throw Error(`牌堆不足，需要 ${needed} 张牌`);
+      const patch = locks.releasePatch();
+      deck.slice(0,needed).forEach((item,index)=>{
+        patch[`${item.path}/${item.key}`] = null;
+        const handPath = handPaths[Math.floor(index/4)], card = {...item.value,show:'0',order:(index%4)*1024};
+        delete card.panOrder;delete card.judgmentEffect;
+        patch[`${handPath}/${(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,handPath)).key}`] = card;
+      });
+      handPaths.forEach(path => {
+        patch[path.replace(/\/hand\/cards$/, '/areaCounts/hand')] = 4;
+      });
+      Object.assign(patch,this.actionHintPatch(_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DEAL_CARDS));
+      await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db),patch);released=true;return true;
+    } finally {
+      if (!released) await locks.release();
+    }
   }
 
-  async moveOrderedCards(paths, targetRef, beforeKey = null, effects = {}) {
+  async moveOrderedCards(paths, targetRef, beforeKey = null, effects = {}, actionOpcode = null) {
     const base = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString();
     const targetPath = targetRef.toString().replace(base, '');
     const prefix = `game/${this.gameId}/`;
     if (!targetPath.startsWith(prefix) || !targetPath.endsWith('/cards')) throw Error('无效的目标区域');
     const unique = [...new Set(paths)];
     if (!unique.length || unique.some(path => !path.startsWith(prefix) || !/\/cards\/[^/]+$/.test(path))) throw Error('无效的卡牌');
-    {
-      let reason = '卡牌移动失败';
-      const result = await this.commitRoom(room => {
-        try {
-          const read = path => path.slice(prefix.length).split('/').reduce((value, key) => value?.[key], room);
-          const sources = unique.map(path => ({path, value: read(path)}));
-          if (sources.some(source => !source.value)) throw Error('卡牌已移动，请重新选择');
-          const patch = (0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.orderedMovePatch)(targetPath, read(targetPath) || {}, sources, beforeKey,
-            () => (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)(targetRef).key, effects, card => _data_pai_json__WEBPACK_IMPORTED_MODULE_2__[card.id]?.name);
-          const next = structuredClone(room);
-          for (const [path, value] of Object.entries(patch)) {
-            const keys = path.slice(prefix.length).split('/');
-            let parent = next;
-            for (const key of keys.slice(0, -1)) parent = parent[key] ??= {};
-            if (value === null) delete parent[keys.at(-1)];
-            else parent[keys.at(-1)] = value;
-          }
-          return next;
-        } catch (error) { reason = error.message; return undefined; }
+    const sourceAreas = unique.map(path=>path.slice(0,path.lastIndexOf('/')));
+    const locks = await this.acquireGameLocks([
+      `area:${targetPath}`,...sourceAreas.map(path=>`area:${path}`),...unique.map(path=>`card:${path}`)
+    ]);
+    let released = false;
+    try {
+      const [target, ...snapshots] = await Promise.all([(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(targetRef), ...unique.map(path => (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, path)))]);
+      if (snapshots.some(snapshot => !snapshot.exists())) throw Error('卡牌已移动，请重新选择');
+      const sources = snapshots.map((snapshot, index) => ({path: unique[index], value: snapshot.val()}));
+      const patch = (0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.orderedMovePatch)(targetPath, target.val() || {}, sources, beforeKey,
+        () => (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)(targetRef).key, effects, card => _data_pai_json__WEBPACK_IMPORTED_MODULE_2__[card.id]?.name);
+      const countInfo = path => {
+        const match = path.match(/^game\/[^/]+\/(p\d+)\/(hand|other1|other2)\/cards$/);
+        return match ? {areaPath:path,countPath:`game/${this.gameId}/${match[1]}/areaCounts/${match[2]}`} : null;
+      };
+      const targetCount = countInfo(targetPath);
+      const incomingCount = unique.filter(path => path.slice(0,path.lastIndexOf('/')) !== targetPath).length;
+      if (targetCount && incomingCount) {
+        patch[targetCount.countPath] = Object.keys(target.val() || {}).length + incomingCount;
+      }
+      const movedBySource = new Map();
+      sourceAreas.forEach(areaPath => {
+        if (areaPath !== targetPath && countInfo(areaPath)) movedBySource.set(areaPath,(movedBySource.get(areaPath)||0)+1);
       });
-      if (!result.committed) throw Error(reason);
+      for (const [areaPath,movedCount] of movedBySource) {
+        const info=countInfo(areaPath),countSnapshot=await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,info.countPath));
+        let currentCount=Number(countSnapshot.val());
+        if (!countSnapshot.exists()) {
+          const areaSnapshot=await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,areaPath));
+          currentCount=Object.keys(areaSnapshot.val()||{}).length;
+        }
+        patch[info.countPath]=Math.max(0,currentCount-movedCount);
+      }
+      const hintOpcode=actionOpcode||this.moveActionOpcode(unique,targetPath);
+      if(hintOpcode)Object.assign(patch,this.actionHintPatch(hintOpcode));
+      Object.assign(patch, locks.releasePatch());
+      await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db), patch);
+      released = true;
       return true;
+    } finally {
+      if (!released) await locks.release();
     }
   }
 
@@ -2214,22 +2511,23 @@ class gameController {
     return this.moveCardFromPathToRef(cardRef.toString().replace((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString(), ''), targetRef);
   }
 
-  async targetHasCapacity(targetRef, incomingCount = 1) {
-    const targetPath = targetRef.toString();
-    if (!targetPath.includes("/zhuang/cards")) return true;
-    const snapshot = await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(targetRef);
-    const currentCount = snapshot.exists()
-      ? Object.keys(snapshot.val()).length
-      : 0;
-    return currentCount + incomingCount <= 4;
-  }
-
-  addItem(toPath, key, value) {
-    console.log(`Add item to: ${toPath}`);
-    const dbRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db);
-    const updates = {};
-    updates[toPath + "/" + key] = value;
-    return this.writePatch(updates);
+  async lockSelectedGenerals(cardRefs, playerKey) {
+    if (!/^p\d+$/.test(playerKey) || cardRefs.length !== 2) return false;
+    const base=(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString(),sources=cardRefs.map(cardRef=>cardRef.toString().replace(base,''));
+    const playerPath=`game/${this.gameId}/${playerKey}`,sourceAreas=sources.map(path=>path.slice(0,path.lastIndexOf('/')));
+    const targetPaths=[`${playerPath}/jiang1/cards`,`${playerPath}/jiang2/cards`];
+    const locks=await this.acquireGameLocks([
+      ...sourceAreas.map(path=>`area:${path}`),...targetPaths.map(path=>`area:${path}`),...sources.map(path=>`card:${path}`)
+    ]);
+    let released=false;
+    try {
+      const snapshots=await Promise.all(sources.map(path=>(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,path))));
+      if(snapshots.some(snapshot=>!snapshot.exists()))throw Error('武将已移动，请重新选择');
+      const patch=locks.releasePatch();
+      snapshots.forEach((snapshot,index)=>{patch[sources[index]]=null;patch[`${targetPaths[index]}/${snapshot.key}`]=snapshot.val();});
+      patch[`${playerPath}/jiangLocked`]=true;
+      await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db),patch);released=true;return true;
+    } finally {if(!released)await locks.release();}
   }
 
   getPlayerPath(playerKey) {
@@ -2243,14 +2541,15 @@ class gameController {
     } else {
       roles = ["忠", "忠", "忠", "反", "反", "反", "内", "主"];
     }
+    const updates = {};
     for (let i = 0; i < this.playerCount; i++) {
       const len = roles.length;
       const idx = Math.floor(Math.random() * len);
       const role = roles[idx];
       roles.splice(idx, 1);
-      const dbPath = `game/${this.gameId}/p${i + 1}/role`;
-      this.setValue((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, dbPath), role);
+      updates[`game/${this.gameId}/p${i + 1}/role`] = role;
     }
+    return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db), {...updates,...this.actionHintPatch(_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.ASSIGN_ROLES)});
   }
 
   isTableItem(dbRef) {
@@ -2258,13 +2557,21 @@ class gameController {
     return pathStr.includes("/tableDecks/");
   }
 
-  shuffleDeck(deckRef) {
+  async shuffleDeck(deckRef) {
     const cardsRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards");
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(cardsRef).then((snapshot) => {
+    const path = cardsRef.toString().replace((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString(), '');
+    const locks = await this.acquireGameLocks([`area:${path}`]);
+    let released = false;
+    try {
+      const snapshot = await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(cardsRef);
       if (!snapshot.exists()) return;
       const cardsData = this.shuffleData(snapshot.val());
-      this.setValue(cardsRef, cardsData);
-    });
+      const area=path.match(/\/(pai|paiBottom|discard|hand|zhuang|pan|other1|other2|jiang)\/cards$/)?.[1];
+      const code={pai:'p',paiBottom:'b',discard:'d',hand:'h',zhuang:'z',pan:'n',other1:'o',other2:'o',jiang:'j'}[area]||'o';
+      await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db),{[path]:cardsData,...this.actionHintPatch(_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.SHUFFLE,[code]),...locks.releasePatch()});released=true;
+    } finally {
+      if (!released) await locks.release();
+    }
   }
 
   shuffleData(cardsData) {
@@ -2282,16 +2589,26 @@ class gameController {
   }
 
   async resetPai() {
-    return this.commitRoom(room => {
-      const next = structuredClone(room);
-      const decks = next.tableDecks ??= {};
-      const cards = ['pai','paiBottom','discard'].flatMap(area => Object.values(decks[area]?.cards || {}));
-      cards.forEach(card => {card.show = '0'; delete card.judgmentEffect; delete card.panOrder;});
-      decks.pai = {cards: this.shuffleData(cards)};
-      decks.paiBottom = {};
-      decks.discard = {};
-      return next;
-    }, '洗牌');
+    const prefix=`game/${this.gameId}/tableDecks`, paths=['pai','paiBottom','discard'].map(area=>`${prefix}/${area}/cards`);
+    const locks=await this.acquireGameLocks(paths.map(path=>`area:${path}`));
+    let released=false;
+    try {
+      const snapshots=await Promise.all(paths.map(path=>(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,path))));
+      const merged={};
+      snapshots.forEach(snapshot=>Object.entries(snapshot.val()||{}).forEach(([key,value])=>{
+        const nextKey=merged[key] ? (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,paths[0])).key : key;
+        const card={...value,show:'0'};delete card.judgmentEffect;delete card.panOrder;
+        merged[nextKey]=card;
+      }));
+      this.shuffleData(merged);
+      await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db),{
+        [`${prefix}/pai/cards`]:merged,[`${prefix}/paiBottom`]:null,[`${prefix}/discard`]:null,
+        ...this.actionHintPatch(_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.RESET_DECK),...locks.releasePatch()
+      });
+      released=true;return true;
+    } finally {
+      if(!released)await locks.release();
+    }
   }
 
   resetTable() {
@@ -2309,6 +2626,9 @@ class gameController {
       updates[`${playerPath}/zhuang/cards`] = {};
       updates[`${playerPath}/other1/cards`] = {};
       updates[`${playerPath}/other2/cards`] = {};
+      updates[`${playerPath}/areaCounts/hand`] = 0;
+      updates[`${playerPath}/areaCounts/other1`] = 0;
+      updates[`${playerPath}/areaCounts/other2`] = 0;
     }
 
     const tableDeckPath = `game/${this.gameId}/tableDecks`;
@@ -2316,8 +2636,7 @@ class gameController {
     updates[`${tableDeckPath}/paiBottom`] = {};
     updates[`${tableDeckPath}/jiang`] = {};
     updates[`${tableDeckPath}/pai`] = { cards: this.getShuffledPai() };
-    const dbRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db);
-    return this.writePatch(updates);
+    return (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db),{...updates,...this.actionHintPatch(_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.RESET_TABLE)});
   }
 
   getShuffledJiang() {
@@ -2343,21 +2662,23 @@ class gameController {
     return initPaiDeckCards;
   }
 
-  dispatchJiang() {
+  async dispatchJiang() {
     const jiangCards = this.getShuffledJiang();
     const updates = {};
-
-    for (let i = 0; i < 6; i++) {
+    const areas = [];
+    for (let i = 0; i < this.playerCount; i++) {
       const jiangs = jiangCards.splice(0, 7);
-      updates[`game/${this.gameId}/p${i + 1}/jiang/cards`] = jiangs;
-      updates[`game/${this.gameId}/p${i + 1}/jiang1`] = {};
-      updates[`game/${this.gameId}/p${i + 1}/jiang2`] = {};
-      updates[`game/${this.gameId}/p${i + 1}/jiangLocked`] = false;
+      const playerPath=`game/${this.gameId}/p${i + 1}`;
+      updates[`${playerPath}/jiang/cards`] = jiangs;
+      updates[`${playerPath}/jiang1`] = {};
+      updates[`${playerPath}/jiang2`] = {};
+      updates[`${playerPath}/jiangLocked`] = false;
+      areas.push(`${playerPath}/jiang/cards`,`${playerPath}/jiang1/cards`,`${playerPath}/jiang2/cards`);
     }
-    console.log(updates);
-
-    const dbRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db);
-    return this.writePatch(updates);
+    const locks=await this.acquireGameLocks(areas.map(path=>`area:${path}`));
+    let released=false;
+    try {await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db),{...updates,...this.actionHintPatch(_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DEAL_GENERALS),...locks.releasePatch()});released=true;return true;}
+    finally {if(!released)await locks.release();}
   }
 
   addSelectedCard(sgCard) {
@@ -2385,10 +2706,14 @@ class gameController {
   }
 
   async discardSelectedCards(cards = [...this.selectedCards]) {
-    return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`);
+    return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`, _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DISCARD);
   }
 
-  async moveSelectedCards(cards, targetPath) {
+  async playSelectedCards(cards = [...this.selectedCards]) {
+    return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`, _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.PLAY);
+  }
+
+  async moveSelectedCards(cards, targetPath, actionOpcode = null) {
     if (this.selectionMoveBusy) return;
     const base = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString();
     const paths = [...new Set(cards.map(card => card.cardRef.toString().replace(base, '')))]
@@ -2396,32 +2721,91 @@ class gameController {
     if (!paths.length) return;
     this.selectionMoveBusy = true;
     try {
-      return await this.moveOrderedCards(paths, (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, targetPath));
+      const ownOnly=paths.every(path=>path.includes(`/${this.currentPlayer}/`));
+      return await this.moveOrderedCards(paths, (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, targetPath), null, {}, ownOnly?actionOpcode:null);
     } finally {
       this.selectionMoveBusy = false;
     }
   }
 
-  showSelectedCards() {
-    for (let i = this.selectedCards.length - 1; i >= 0; i--) {
-      const wc = this.selectedCards[i];
-      wc.showPai();
-      wc.unselectCard();
-    }
+  async topDeckPaths(count = 1) {
+    const prefix=`game/${this.gameId}/tableDecks`;
+    const areas=['pai','paiBottom'];
+    const snapshots=await Promise.all(areas.map(area=>(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,`${prefix}/${area}/cards`))));
+    const cards=areas.flatMap((area,index)=>(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.orderedEntries)(snapshots[index].val()||{}).map(({key})=>`${prefix}/${area}/cards/${key}`));
+    if(cards.length<count)throw Error(`牌堆不足，需要 ${count} 张牌`);
+    return cards.slice(0,count);
+  }
+
+  async drawTopCards(count = 1) {
+    if(!this.currentPlayer)throw Error('请先入座');
+    const paths=await this.topDeckPaths(count);
+    return this.moveOrderedCards(paths,(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,`game/${this.gameId}/${this.currentPlayer}/hand/cards`),null,{},_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.DRAW);
+  }
+
+  async revealTopCard() {
+    const paths=await this.topDeckPaths(1);
+    return this.moveOrderedCards(paths,(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,`game/${this.gameId}/tableDecks/discard/cards`),null,{},_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.REVEAL_JUDGMENT);
+  }
+
+  async takeDiscardCards(paths) {
+    if(!this.currentPlayer)throw Error('请先入座');
+    return this.moveOrderedCards(paths,(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,`game/${this.gameId}/${this.currentPlayer}/hand/cards`),null,{},_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.TAKE_DISCARD);
+  }
+
+  async rearrangeDeck({top=[],bottom=[],draw=[]}) {
+    if(!this.currentPlayer)throw Error('请先入座');
+    const prefix=`game/${this.gameId}`,topPath=`${prefix}/tableDecks/pai/cards`,bottomPath=`${prefix}/tableDecks/paiBottom/cards`;
+    const handPath=`${prefix}/${this.currentPlayer}/hand/cards`,areaPaths=[topPath,bottomPath,handPath];
+    const locks=await this.acquireGameLocks(areaPaths.map(path=>`area:${path}`));
+    let released=false;
+    try{
+      const [topSnapshot,bottomSnapshot,handSnapshot]=await Promise.all(areaPaths.map(path=>(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,path))));
+      const deckItems=[...(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.orderedEntries)(topSnapshot.val()||{}).map(item=>({...item,path:topPath})),...(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.orderedEntries)(bottomSnapshot.val()||{}).map(item=>({...item,path:bottomPath}))];
+      const byPath=new Map(deckItems.map(item=>[`${item.path}/${item.key}`,item.value]));
+      const requested=[...top,...bottom,...draw];
+      if(requested.length!==byPath.size||new Set(requested).size!==requested.length||requested.some(path=>!byPath.has(path)))throw Error('牌堆已变化，请重新展开');
+      const patch=locks.releasePatch();
+      requested.forEach(path=>{patch[path]=null;});
+      const place=(paths,targetPath)=>paths.forEach((sourcePath,index)=>{
+        const sameArea=sourcePath.slice(0,sourcePath.lastIndexOf('/'))===targetPath;
+        const key=sameArea?sourcePath.split('/').pop():(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,targetPath)).key;
+        const card={...byPath.get(sourcePath),show:'0',order:index*1024};delete card.panOrder;delete card.judgmentEffect;
+        patch[`${targetPath}/${key}`]=card;
+      });
+      place(top,topPath);place(bottom,bottomPath);
+      let handOrder=Math.max(-1024,...(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_3__.orderedEntries)(handSnapshot.val()||{}).map(item=>Number(item.value.order)||0));
+      draw.forEach(sourcePath=>{
+        const key=(0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.push)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db,handPath)).key,card={...byPath.get(sourcePath),show:'0',order:handOrder+=1024};delete card.panOrder;delete card.judgmentEffect;
+        patch[`${handPath}/${key}`]=card;
+      });
+      patch[`${prefix}/${this.currentPlayer}/areaCounts/hand`]=Object.keys(handSnapshot.val()||{}).length+draw.length;
+      Object.assign(patch,this.actionHintPatch(_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_5__.ACTION_HINT_OPCODE.REARRANGE_DECK));
+      await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db),patch);released=true;return true;
+    }finally{if(!released)await locks.release();}
+  }
+
+  async showSelectedCards(cards = [...this.selectedCards]) {
+    const uniqueCards = [...new Set(cards)];
+    if (!uniqueCards.length) return;
+    const base = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString();
+    const updates = {};
+    uniqueCards.forEach(card => {
+      const path = card.cardRef.toString().replace(base, '');
+      updates[`${path}/show`] = card.cardData.show === '1' ? '0' : '1';
+    });
+    await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.update)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db), updates);
+    uniqueCards.forEach(card => card.unselectCard());
   }
 
   async dropSeletedCards(targetCardsRef) {
-    let cardsToMove = [...this.selectedCards];
-    if (targetCardsRef.toString().includes("/zhuang/cards")) {
-      const snapshot = await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(targetCardsRef);
-      const currentCount = snapshot.exists()
-        ? Object.keys(snapshot.val()).length
-        : 0;
-      cardsToMove = cardsToMove.slice(0, Math.max(0, 4 - currentCount));
-    }
-    for (const wc of cardsToMove) {
-      await this.moveCardRefToTargetRef(wc.cardRef, targetCardsRef);
-    }
+    const base = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db).toString();
+    const targetPath = targetCardsRef.toString().replace(base, '');
+    const paths = [...new Set(this.selectedCards
+      .map(card => card.cardRef.toString().replace(base, '')))]
+      .filter(path => !path.startsWith(`${targetPath}/`));
+    if (!paths.length) return;
+    return this.moveOrderedCards(paths, targetCardsRef);
   }
 }
 
@@ -2442,18 +2826,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   installActionLog: () => (/* binding */ installActionLog)
 /* harmony export */ });
 /* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/database */ "./docs/sango-design-memory.cjs");
+/* harmony import */ var _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../localActionLog.mjs */ "./src/localActionLog.mjs");
 
+
+
+const LOCAL_LOG_LIMIT = 500;
 
 function installActionLog(table) {
   const panel = document.createElement('section');
   panel.className = 'action-log';
   panel.setAttribute('aria-label', '行动日志');
-  panel.innerHTML = `<header class="log-header"><strong>行动日志</strong><small>实时同步</small><button type="button" aria-label="折叠行动日志" aria-expanded="true">−</button></header>
+  panel.innerHTML = `<header class="log-header"><strong>行动日志</strong><small>仅本地</small><button type="button" aria-label="折叠行动日志" aria-expanded="true">−</button></header>
     <ol class="log-list" role="log" aria-live="polite" aria-relevant="additions" aria-label="玩家行动记录"></ol>
-    <footer class="log-footer"><span>暂无记录</span></footer>`;
+    <footer class="log-footer"><span>暂无本地记录</span></footer>`;
   table.shadowRoot.querySelector('.table-container').append(panel);
   const list = panel.querySelector('.log-list'), count = panel.querySelector('.log-footer span');
-  const rows = new Map();
   panel.querySelector('button').addEventListener('click', event => {
     const collapsed = panel.classList.toggle('collapsed');
     event.currentTarget.textContent = collapsed ? '+' : '−';
@@ -2461,31 +2848,213 @@ function installActionLog(table) {
     event.currentTarget.setAttribute('aria-label', collapsed ? '展开行动日志' : '折叠行动日志');
   });
   const controller = table.gameController;
-  const unsubscribe = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(controller.db, `game/${controller.gameId}/actionLogs`), snapshot => {
-    const entries = Object.entries(snapshot.val() || {}).sort((a,b) => a[0].localeCompare(b[0]));
+  let previousRoom = null;
+  const unsubscribe = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(controller.db, `game/${controller.gameId}`), snapshot => {
+    const room=snapshot.val()||{};
+    // First snapshot is baseline only: never replay state or a hint that existed
+    // before this client entered the room.
+    if(previousRoom===null){previousRoom=room;return;}
+    const entry=(0,_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_1__.createLocalLogEntry)(previousRoom,room);previousRoom=room;
+    if(!entry)return;
     const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 30;
-    const keys = new Set(entries.map(([key])=>key));
-    for (const [key,row] of rows) if (!keys.has(key)) {row.remove(); rows.delete(key);}
-    for (const [key,entry] of entries) {
-      let row = rows.get(key);
-      if (!row) {
-        row = document.createElement('li');row.className = 'log-entry';
-        row.append(document.createElement('time'), document.createElement('p'));
-        rows.set(key,row);list.append(row);
-      }
-      const time = row.querySelector('time');
-      const date = new Date(typeof entry.timestamp === 'number' ? entry.timestamp : Date.now());
-      time.textContent = date.toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
-      time.title = date.toLocaleString('zh-CN');time.dateTime = date.toISOString();
-      const text = row.querySelector('p'), actor = document.createElement('b');
-      actor.textContent = `${entry.actor || '玩家'} `;
-      const changes = (entry.changes || []).join('；');
-      text.replaceChildren(actor, document.createTextNode(`${entry.action ? entry.action + '：' : ''}${changes}${changes ? '。' : ''}`));
-    }
-    count.textContent = entries.length ? `最近 ${entries.length} 条 · 最多保留 500 条` : '暂无记录';
+    const row=document.createElement('li');row.className='log-entry';
+    row.append(document.createElement('time'),document.createElement('p'));
+    const time=row.querySelector('time'),date=new Date(entry.timestamp);
+    time.textContent=date.toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
+    time.title=date.toLocaleString('zh-CN');time.dateTime=date.toISOString();
+    const text=row.querySelector('p'),message=`${entry.changes.join('；')}。`;
+    if(entry.actor){const actor=document.createElement('b');actor.textContent=`${entry.actor} `;text.replaceChildren(actor,document.createTextNode(message));}
+    else text.textContent=message;
+    list.append(row);
+    while(list.children.length>LOCAL_LOG_LIMIT)list.firstElementChild.remove();
+    count.textContent=`本地记录 · ${list.children.length} 条`;
     if (atBottom) list.scrollTop = list.scrollHeight;
-  }, () => { count.textContent = '日志加载失败，请刷新重试'; });
+  }, () => { count.textContent = '本地日志监听失败，请刷新重试'; });
   return () => {unsubscribe();panel.remove();};
+}
+
+
+/***/ }),
+
+/***/ "./src/wc/publicTablePanel.js":
+/*!************************************!*\
+  !*** ./src/wc/publicTablePanel.js ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   installPublicTablePanel: () => (/* binding */ installPublicTablePanel)
+/* harmony export */ });
+/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/database */ "./docs/sango-design-memory.cjs");
+/* harmony import */ var _cardOrder_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../cardOrder.mjs */ "./src/cardOrder.mjs");
+/* harmony import */ var _localActionLog_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../localActionLog.mjs */ "./src/localActionLog.mjs");
+/* harmony import */ var _sgCard_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./sgCard.js */ "./src/wc/sgCard.js");
+
+
+
+
+
+const RECENT_LIMIT=6;
+
+function installPublicTablePanel(table,host,cardMenu){
+  const controller=table.gameController,db=controller.db,prefix=`game/${controller.gameId}`;
+  host.innerHTML=`<section class="public-deck-panel">
+      <header><strong>牌堆</strong><small>从牌顶取牌</small></header>
+      <div class="public-deck-summary"><div class="public-card-back">三国</div><div><b class="public-deck-count">0</b><small>张剩余</small></div></div>
+      <div class="public-deck-actions">
+        <div class="public-draw-split"><button class="primary" data-public-action="draw" data-count="1">摸 1 张</button><button class="primary draw-toggle" aria-label="选择摸牌张数" aria-expanded="false">▾</button><div class="draw-options" hidden>${[2,3,4].map(count=>`<button data-public-action="draw" data-count="${count}">摸 ${count} 张</button>`).join('')}</div></div>
+        <button data-public-action="reveal">展示／判定</button>
+        <button class="text-action expand-deck" data-public-action="expand">展开牌堆 ↗</button>
+        <button class="primary shuffle-empty" data-public-action="shuffle" hidden>洗牌</button>
+      </div>
+    </section>
+    <section class="public-discard-panel">
+      <header><strong>弃牌区</strong><small>最近 ${RECENT_LIMIT} 张 · 最新 → 较早</small></header>
+      <div class="public-discard-body"><div class="recent-discard-list"></div><aside class="discard-summary"><div class="discard-summary-main"><div class="discard-icon">弃</div><div><b class="discard-count">0</b><small>全部弃牌</small></div></div><button class="text-action" data-public-action="all-discard">查看全部 ↗</button></aside></div>
+    </section>`;
+  host.append(cardMenu);
+  const discardDialog=document.createElement('dialog');discardDialog.className='public-dialog discard-dialog';
+  discardDialog.innerHTML='<header><h2>弃牌堆</h2><button data-dialog-close>关闭 ×</button></header><p>最新进入的牌排在前面。</p><div class="discard-grid"></div>';
+  const sortDialog=document.createElement('dialog');sortDialog.className='public-dialog deck-sort-dialog';
+  host.append(discardDialog,sortDialog);
+  const recentList=host.querySelector('.recent-discard-list'),drawSplit=host.querySelector('.public-draw-split');
+  const drawToggle=host.querySelector('.draw-toggle'),drawOptions=host.querySelector('.draw-options');
+  let deckTop={},deckBottom={},discard={},draft=null,busy=false,lastHint=null,lastHintNonce=null,hintInitialized=false,previousDiscardKeys=null;
+  const sourceByKey=new Map(),pendingDiscardKeys=new Set();
+
+  const pathFor=(area,key)=>`${prefix}/tableDecks/${area}/cards/${key}`;
+  const deckEntries=()=>[
+    ...(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_1__.orderedEntries)(deckTop).map(item=>({...item,path:pathFor('pai',item.key)})),
+    ...(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_1__.orderedEntries)(deckBottom).map(item=>({...item,path:pathFor('paiBottom',item.key)})),
+  ];
+  function cardFor(path,value,className,show=true){
+    const card=document.createElement('sg-card');card.className=className;
+    card.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db,path),{...value,show:show?'1':'0'},controller,{subscribe:false});card.renderCard();
+    return card;
+  }
+  function hintSource(hint){
+    if(!hint)return '';
+    if(hint.opcode===_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_2__.ACTION_HINT_OPCODE.PLAY)return '打出';
+    if(hint.opcode===_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_2__.ACTION_HINT_OPCODE.DISCARD||hint.opcode===_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_2__.ACTION_HINT_OPCODE.DISCARD_OTHER)return '弃置';
+    if(hint.opcode===_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_2__.ACTION_HINT_OPCODE.REVEAL_JUDGMENT)return '展示／判定';
+    return '';
+  }
+  function classifyPending(){
+    if(!pendingDiscardKeys.size||!lastHint||lastHint.nonce===lastHintNonce)return;
+    const source=hintSource(lastHint);
+    pendingDiscardKeys.forEach(key=>{if(source)sourceByKey.set(key,source);});
+    pendingDiscardKeys.clear();lastHintNonce=lastHint.nonce;renderDiscard();
+  }
+  function renderDiscard(){
+    const entries=(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_1__.orderedEntries)(discard).reverse();
+    recentList.replaceChildren();
+    entries.slice(0,RECENT_LIMIT).forEach(({key,value})=>{
+      const item=document.createElement('div');item.className='recent-discard-card';
+      item.append(cardFor(pathFor('discard',key),value,'discard-area-card recent-public-card'));
+      const source=document.createElement('small');source.textContent=sourceByKey.get(key)||'弃牌';
+      const take=document.createElement('button');take.className='text-action';take.textContent='收入手牌';take.dataset.takeDiscard=pathFor('discard',key);take.disabled=busy||!controller.currentPlayer;
+      item.append(source,take);recentList.append(item);
+    });
+    if(!entries.length){const empty=document.createElement('div');empty.className='public-empty';empty.innerHTML='<b>暂无弃牌</b><small>打出、弃置或展示／判定的牌会显示在这里</small>';recentList.append(empty);}
+    host.querySelector('.discard-count').textContent=entries.length;
+    if(discardDialog.open)renderDiscardDialog(entries);
+  }
+  function renderDiscardDialog(entries=(0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_1__.orderedEntries)(discard).reverse()){
+    const grid=discardDialog.querySelector('.discard-grid');grid.replaceChildren();
+    entries.forEach(({key,value})=>{
+      const item=document.createElement('div');item.className='discard-grid-item';
+      item.append(cardFor(pathFor('discard',key),value,'discard-area-card discard-public-tile'));
+      const take=document.createElement('button');take.className='text-action';take.textContent='收入手牌';take.dataset.takeDiscard=pathFor('discard',key);take.disabled=busy||!controller.currentPlayer;
+      item.append(take);grid.append(item);
+    });
+    if(!entries.length)grid.innerHTML='<p>暂无弃牌</p>';
+    discardDialog.querySelector('h2').textContent=`弃牌堆 · 全部 ${entries.length} 张`;
+  }
+  function renderDeck(){
+    const count=deckEntries().length,empty=count===0;
+    host.querySelector('.public-deck-count').textContent=count;
+    drawSplit.hidden=empty;host.querySelector('[data-public-action="reveal"]').hidden=empty;host.querySelector('[data-public-action="expand"]').hidden=empty;
+    const shuffle=host.querySelector('[data-public-action="shuffle"]');shuffle.hidden=!empty;shuffle.disabled=busy||!Object.keys(discard).length;
+    host.querySelectorAll('[data-public-action="draw"]').forEach(button=>button.disabled=busy||!controller.currentPlayer||count<Number(button.dataset.count));
+    drawToggle.disabled=busy||!controller.currentPlayer||count<2;
+    host.querySelector('[data-public-action="reveal"]').disabled=busy||!controller.currentPlayer||!count;
+    host.querySelector('[data-public-action="expand"]').disabled=busy||!controller.currentPlayer||!count;
+  }
+  function setDrawOpen(open){drawOptions.hidden=!open;drawToggle.setAttribute('aria-expanded',String(open));}
+  async function run(action){if(busy)return;busy=true;renderDeck();renderDiscard();try{await action();}catch(error){window.alert(error.message||'操作失败，请重试');}finally{busy=false;renderDeck();renderDiscard();}}
+
+  function openSort(){
+    const cards=deckEntries();draft={initial:cards.slice(),top:cards.slice(),bottom:[],draw:[],viewed:new Set()};renderSort();sortDialog.showModal();
+  }
+  function sortLane(key,title){
+    const section=document.createElement('section');section.className=`sort-lane sort-${key}`;section.innerHTML=`<h3>${title}</h3>`;
+    if(!draft[key].length)section.insertAdjacentHTML('beforeend','<p class="muted">暂无卡牌</p>');
+    draft[key].forEach((item,index)=>{
+      const row=document.createElement('div');row.className='sort-row';
+      row.append(cardFor(item.path,item.value,'pai-area-card sort-public-tile',draft.viewed.has(item.path)));
+      if(key==='top'){
+        const actions=document.createElement('div');actions.className='sort-row-actions';
+        const specs=[['观看','view'],['↑','up'],['↓','down'],['放牌底','bottom'],['摸牌','draw']];
+        specs.forEach(([label,action])=>{const button=document.createElement('button');button.textContent=label;button.dataset.sortAction=action;button.dataset.index=index;button.disabled=action==='view'?draft.viewed.has(item.path):action==='up'?index===0:action==='down'?index===draft.top.length-1:false;actions.append(button);});
+        row.append(actions);
+      }
+      section.append(row);
+    });
+    return section;
+  }
+  function renderSort(){
+    sortDialog.replaceChildren();
+    const header=document.createElement('header');header.innerHTML='<h2>展开牌堆 · 调整顺序</h2><button data-dialog-close>关闭 ×</button>';
+    const intro=document.createElement('p');intro.innerHTML='<span class="privacy">仅你可见</span> 在牌顶列观看、排序或分配卡牌，确认后一次生效。';
+    const lanes=document.createElement('div');lanes.className='deck-sort-lanes';lanes.append(sortLane('top','牌顶列 · 从上到下'),sortLane('bottom','牌底列'),sortLane('draw','确认摸牌列'));
+    const note=document.createElement('p');note.className='muted';note.textContent='牌底列和确认摸牌列为结果区；放错时可重置排列。';
+    const footer=document.createElement('footer');footer.innerHTML=`<button data-sort-reset>重置排列</button><span></span><button data-dialog-close>取消</button><button class="primary" data-sort-commit>确认顺序并摸牌${draft.draw.length?`（${draft.draw.length}）`:''}</button>`;
+    sortDialog.append(header,intro,lanes,note,footer);
+  }
+
+  host.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||button.disabled)return;
+    if(button===drawToggle){setDrawOpen(drawOptions.hidden);return;}
+    if(!button.closest('.draw-options'))setDrawOpen(false);
+    if(button.dataset.takeDiscard)return run(()=>controller.takeDiscardCards([button.dataset.takeDiscard]));
+    const action=button.dataset.publicAction;
+    if(action==='draw')return run(()=>controller.drawTopCards(Number(button.dataset.count)));
+    if(action==='reveal')return run(()=>controller.revealTopCard());
+    if(action==='shuffle')return run(()=>controller.resetPai());
+    if(action==='expand')return openSort();
+    if(action==='all-discard'){renderDiscardDialog();discardDialog.showModal();}
+  });
+  discardDialog.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.hasAttribute('data-dialog-close'))discardDialog.close();else if(button.dataset.takeDiscard)run(()=>controller.takeDiscardCards([button.dataset.takeDiscard]));});
+  sortDialog.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||button.disabled)return;
+    if(button.hasAttribute('data-dialog-close')){sortDialog.close();draft=null;return;}
+    if(button.hasAttribute('data-sort-reset')){draft.top=draft.initial.slice();draft.bottom=[];draft.draw=[];renderSort();return;}
+    if(button.hasAttribute('data-sort-commit')){const payload={top:draft.top.map(x=>x.path),bottom:draft.bottom.map(x=>x.path),draw:draft.draw.map(x=>x.path)};return run(async()=>{await controller.rearrangeDeck(payload);sortDialog.close();draft=null;});}
+    const index=Number(button.dataset.index),action=button.dataset.sortAction,item=draft.top[index];if(!item)return;
+    if(action==='view')draft.viewed.add(item.path);
+    else if(action==='up')[draft.top[index-1],draft.top[index]]=[draft.top[index],draft.top[index-1]];
+    else if(action==='down')[draft.top[index+1],draft.top[index]]=[draft.top[index],draft.top[index+1]];
+    else if(action==='bottom')draft.bottom.push(...draft.top.splice(index,1));
+    else if(action==='draw')draft.draw.push(...draft.top.splice(index,1));
+    renderSort();
+  });
+  sortDialog.addEventListener('cancel',()=>{draft=null;});
+  const closeDraw=event=>{if(!event.composedPath().includes(drawSplit))setDrawOpen(false);};document.addEventListener('click',closeDraw);
+  const refreshPlayer=()=>{renderDeck();renderDiscard();};table.addEventListener('player-seat-changed',refreshPlayer);
+  const subscriptions=[
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db,`${prefix}/tableDecks/pai/cards`),snapshot=>{deckTop=snapshot.val()||{};renderDeck();}),
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db,`${prefix}/tableDecks/paiBottom/cards`),snapshot=>{deckBottom=snapshot.val()||{};renderDeck();}),
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db,`${prefix}/runtime/a`),snapshot=>{const hint=(0,_localActionLog_mjs__WEBPACK_IMPORTED_MODULE_2__.decodeActionHint)(snapshot.val());if(!hintInitialized){hintInitialized=true;lastHint=hint;lastHintNonce=hint?.nonce||null;}else lastHint=hint;classifyPending();}),
+    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(db,`${prefix}/tableDecks/discard/cards`),snapshot=>{
+      const next=snapshot.val()||{},keys=new Set(Object.keys(next));
+      if(previousDiscardKeys!==null)keys.forEach(key=>{if(!previousDiscardKeys.has(key))pendingDiscardKeys.add(key);});
+      previousDiscardKeys=keys;discard=next;[...sourceByKey.keys()].forEach(key=>{if(!keys.has(key))sourceByKey.delete(key);});renderDiscard();classifyPending();
+    }),
+  ];
+  renderDeck();renderDiscard();
+  return()=>{subscriptions.forEach(unsubscribe=>unsubscribe());document.removeEventListener('click',closeDraw);table.removeEventListener('player-seat-changed',refreshPlayer);discardDialog.remove();sortDialog.remove();};
 }
 
 
@@ -2634,8 +3203,10 @@ class SgArea extends HTMLElement {
       this.cardArea.setAttribute('part', 'card-area');
       this.expandButton.setAttribute('aria-expanded', 'false');
       this.cardArea.scrollTop = 0;
-      this.cardArea.scrollLeft = this.savedScrollLeft;
-      this.updateOverflow();
+      requestAnimationFrame(() => {
+        this.cardArea.scrollLeft = this.savedScrollLeft;
+        this.updateOverflow();
+      });
       this.expandButton.focus({preventScroll: true});
     });
     this.overflowObserver = new ResizeObserver(this.updateOverflow);
@@ -2664,9 +3235,15 @@ class SgArea extends HTMLElement {
 
   disconnectedCallback() {
     this.overflowObserver?.disconnect();
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.unSub?.();
+        this.unSub = null;
+      }
+    });
   }
 
-  init(deckRef, gameController) {
+  init(deckRef, gameController, options = {}) {
     this.deckRef = deckRef;
     this.dbPathStr = deckRef.toString();
     this.cardsRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards");
@@ -2680,7 +3257,9 @@ class SgArea extends HTMLElement {
       this.classList.add("table-area");
     }
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(this.cardsRef, snapshot => {
+    this.subscribeCards = () => {
+      if (this.unSub) return;
+      this.unSub = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(this.cardsRef, snapshot => {
       const entries = (0,_cardOrder_mjs__WEBPACK_IMPORTED_MODULE_4__.orderedEntries)(snapshot.val() || {}, this.areaType === 'pan-area');
       const keys = new Set(entries.map(item => item.key));
       Object.entries(this.cards).forEach(([key, card]) => {
@@ -2692,16 +3271,20 @@ class SgArea extends HTMLElement {
           card = document.createElement('sg-card');
           card.className = this.areaType + '-card';
           if (this.classList.contains('current-player')) card.classList.add('current-player');
-          card.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(this.cardsRef, key), value, this.gameController);
+          card.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(this.cardsRef, key), value, this.gameController, {subscribe:false});
           this.cards[key] = card;
           this.cardArea.append(card);
         }
+        card.cardData = value;
+        card.renderCard();
         card.style.order = index;
       });
       this.cardCount = entries.length;
       this.classList.toggle('has-cards', this.cardCount > 0);
       this.dispatchEvent(new CustomEvent('cards-updated', {bubbles: true, composed: true}));
-    });
+      });
+    };
+    if (options.subscribe !== false) this.subscribeCards();
     this.addEventListener("drop", (e) => {
       e.preventDefault();
       console.log("areaDrop");
@@ -2732,6 +3315,13 @@ class SgArea extends HTMLElement {
     this.addEventListener("dragover", (e) => {
       e.preventDefault();
     });
+  }
+
+  stopCardsSubscription() {
+    this.unSub?.();
+    this.unSub = null;
+    Object.values(this.cards).forEach(card => card.remove());
+    this.cards = {};
   }
 
   visibilityCheck() {
@@ -2842,17 +3432,19 @@ class SgCard extends HTMLElement {
     }
   }
 
-  init(cardRef, cardData, gameController) {
+  init(cardRef, cardData, gameController, options = {}) {
     this.cardRef = cardRef;
     this.cardData = cardData;
     this.gameController = gameController;
 
-    this.unSub = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(this.cardRef, (snapshot) => {
-      if (snapshot.exists()) {
-        this.cardData = snapshot.val();
-        this.renderCard();
-      }
-    });
+    if (options.subscribe !== false) {
+      this.unSub = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(this.cardRef, (snapshot) => {
+        if (snapshot.exists()) {
+          this.cardData = snapshot.val();
+          this.renderCard();
+        }
+      });
+    }
 
     const cardPathUrl = this.cardRef.toString();
     const dbPathUrl = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.gameController.db).toString();
@@ -2946,10 +3538,12 @@ class SgCard extends HTMLElement {
   }
 
   disconnectedCallback() {
-    // CSS ordering keeps live cards mounted; moving an area/popover must not unsubscribe them.
-    if (this.isConnected) return;
-    this.gameController.removeSelectedCard(this);
-    this.unSub();
+    queueMicrotask(() => {
+      if (this.isConnected) return;
+      this.gameController.removeSelectedCard(this);
+      this.unSub?.();
+      this.unSub = null;
+    });
   }
 
   getPlayerAreaLi(playerKey) {
@@ -3091,13 +3685,22 @@ class sgHpBar extends HTMLElement {
       });
 
     // add HP change listener.
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(hpRef, (snapshot) => {
+    this.unSub = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(hpRef, (snapshot) => {
       if (snapshot.exists()) {
         const hpVal = snapshot.val();
         const splits = hpVal.split("/");
         this.cur = Number(splits[0]);
         this.max = Number(splits[1]);
         this.renderHp();
+      }
+    });
+  }
+
+  disconnectedCallback() {
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.unSub?.();
+        this.unSub = null;
       }
     });
   }
@@ -3130,7 +3733,7 @@ class sgHpBar extends HTMLElement {
     if (i < 0) {
       i = 0;
     }
-    this.gameController.setValue(this.hpRef, `${i}/${this.max}`);
+    return this.gameController.setScalarValue(this.hpRef, `${i}/${this.max}`);
   }
 
   openMaxPicker() {
@@ -3149,7 +3752,7 @@ class sgHpBar extends HTMLElement {
   setMax(value) {
     const newMax = Math.max(1, Math.min(15, Number(value)));
     const newCur = Math.min(this.cur, newMax);
-    this.gameController.setValue(this.hpRef, `${newCur}/${newMax}`);
+    return this.gameController.setScalarValue(this.hpRef, `${newCur}/${newMax}`);
   }
 }
 
@@ -3274,17 +3877,19 @@ class SgJiang extends HTMLElement {
     }
   }
 
-  init(cardRef, cardData, gameController) {
+  init(cardRef, cardData, gameController, options = {}) {
     this.cardRef = cardRef;
     this.cardData = cardData;
     this.gameController = gameController;
 
-    this.unSub = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(this.cardRef, (snapshot) => {
-      if (snapshot.exists()) {
-        this.cardData = snapshot.val();
-        this.renderCard();
-      }
-    });
+    if (options.subscribe !== false) {
+      this.unSub = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(this.cardRef, (snapshot) => {
+        if (snapshot.exists()) {
+          this.cardData = snapshot.val();
+          this.renderCard();
+        }
+      });
+    }
 
     const cardPathUrl = this.cardRef.toString();
     const dbPathUrl = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.gameController.db).toString();
@@ -3453,7 +4058,12 @@ class SgJiang extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.unSub();
+    queueMicrotask(() => {
+      if (!this.isConnected) {
+        this.unSub?.();
+        this.unSub = null;
+      }
+    });
   }
 }
 
@@ -3480,6 +4090,7 @@ __webpack_require__.r(__webpack_exports__);
 class SgJiangArea extends _sgArea_js__WEBPACK_IMPORTED_MODULE_1__.SgArea {
   selectedGenerals = [];
   selectionLocked = false;
+  childSubs = [];
   constructor() {
     super();
   }
@@ -3500,7 +4111,7 @@ class SgJiangArea extends _sgArea_js__WEBPACK_IMPORTED_MODULE_1__.SgArea {
       this.recycleBtn.classList.add("hide");
     }
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildAdded)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards"), (snapshot) => {
+    this.childSubs.push((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildAdded)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;
       const value = snapshot.val();
       const cardWc = document.createElement("sg-jiang");
@@ -3517,14 +4128,15 @@ class SgJiangArea extends _sgArea_js__WEBPACK_IMPORTED_MODULE_1__.SgArea {
         });
       }
       this.cards[key] = cardWc;
-      cardWc.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards/" + key), value, this.gameController);
+      cardWc.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards/" + key), value, this.gameController, {subscribe:false});
+      cardWc.renderCard();
       cardWc.setGeneralLocked(this.selectionLocked);
       this.cardArea.prepend(cardWc);
       this.updateSelectionAvailability();
 
       this.lockJiangArea();
-    });
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildRemoved)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards"), (snapshot) => {
+    }));
+    this.childSubs.push((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildRemoved)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;
       const value = snapshot.val();
       // console.log(`on child removed: ${key}`);
@@ -3538,7 +4150,14 @@ class SgJiangArea extends _sgArea_js__WEBPACK_IMPORTED_MODULE_1__.SgArea {
       this.cardArea.removeChild(cardWc);
       delete this.cards[key];
       this.lockJiangArea();
-    });
+    }));
+    this.childSubs.push((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildChanged)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(deckRef, "/cards"), (snapshot) => {
+      const cardWc = this.cards[snapshot.key];
+      if (cardWc) {
+        cardWc.cardData = snapshot.val();
+        cardWc.renderCard();
+      }
+    }));
 
     this.addEventListener("drop", (e) => {
       e.preventDefault();
@@ -3607,31 +4226,24 @@ class SgJiangArea extends _sgArea_js__WEBPACK_IMPORTED_MODULE_1__.SgArea {
     });
   }
 
+  connectedCallback() {
+    this.overflowObserver?.observe(this.cardArea);
+  }
+
+  disconnectedCallback() {
+    this.overflowObserver?.disconnect();
+    queueMicrotask(() => {
+      if (!this.isConnected) this.childSubs.splice(0).forEach(unsubscribe => unsubscribe());
+    });
+  }
+
   async lockInSelected() {
     const playerKey = this.gameController.currentPlayer;
     if (!playerKey || this.selectionLocked || this.selectedGenerals.length != 2) {
       return false;
     }
 
-    const snapshots = await Promise.all(
-      this.selectedGenerals.map((card) => (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)(card.cardRef))
-    );
-    if (snapshots.some((snapshot) => !snapshot.exists())) return false;
-
-    const rootRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.gameController.db);
-    const rootUrl = rootRef.toString();
-    const updates = {};
-    this.selectedGenerals.forEach((card, index) => {
-      const snapshot = snapshots[index];
-      const sourcePath = card.cardRef.toString().replace(rootUrl, "");
-      updates[sourcePath] = null;
-      updates[
-        `game/${this.gameController.gameId}/${playerKey}/jiang${index + 1}/cards/${snapshot.key}`
-      ] = snapshot.val();
-    });
-    updates[`game/${this.gameController.gameId}/${playerKey}/jiangLocked`] = true;
-    await this.gameController.writePatch(updates, "确认选将");
-    return true;
+    return this.gameController.lockSelectedGenerals(this.selectedGenerals.map(card=>card.cardRef),playerKey);
   }
 
   setLocked(locked) {
@@ -3647,74 +4259,6 @@ class SgJiangArea extends _sgArea_js__WEBPACK_IMPORTED_MODULE_1__.SgArea {
 }
 
 customElements.define("sg-jiangarea", SgJiangArea);
-
-
-/***/ }),
-
-/***/ "./src/wc/sgPaiArea.js":
-/*!*****************************!*\
-  !*** ./src/wc/sgPaiArea.js ***!
-  \*****************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   SgPaiArea: () => (/* binding */ SgPaiArea)
-/* harmony export */ });
-/* harmony import */ var firebase_database__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/database */ "./docs/sango-design-memory.cjs");
-/* harmony import */ var _sgCard_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sgCard.js */ "./src/wc/sgCard.js");
-/* harmony import */ var _sgArea_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sgArea.js */ "./src/wc/sgArea.js");
-/* harmony import */ var _css_sgPaiArea_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./css/sgPaiArea.css */ "./src/wc/css/sgPaiArea.css");
-
-
-
-
-
-
-class SgPaiArea extends _sgArea_js__WEBPACK_IMPORTED_MODULE_2__.SgArea {
-  constructor() {
-    super();
-
-    this.style.append(_css_sgPaiArea_css__WEBPACK_IMPORTED_MODULE_3__["default"]);
-  }
-  init(deckRef, gameController) {
-    super.init(deckRef, gameController);
-
-    const paiBottomCardsPath = this.gameController.paiBottomCardsPath;
-    const paiBottomCardsRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.gameController.db, paiBottomCardsPath);
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildAdded)(paiBottomCardsRef, (snapshot) => {
-      const key = snapshot.key;
-      const value = snapshot.val();
-      const cardWc = document.createElement("sg-card");
-      cardWc.className = this.areaType + "-card";
-      this.bottomCards ??= {};
-      this.bottomCards[key] = cardWc;
-      cardWc.style.order = 1000000 + Object.keys(this.bottomCards).length;
-      cardWc.init(
-        (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.gameController.db, `${paiBottomCardsPath}/${key}`),
-        value,
-        this.gameController
-      );
-      cardWc.setAttribute("exportparts", "card-widget");
-      this.cardArea.appendChild(cardWc);
-      this.dispatchEvent(new CustomEvent('cards-updated', {bubbles:true, composed:true}));
-    });
-
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onChildRemoved)(paiBottomCardsRef, (snapshot) => {
-      const key = snapshot.key;
-      const value = snapshot.val();
-      const cardWc = this.bottomCards?.[key];
-      cardWc?.remove();
-      if (this.bottomCards) delete this.bottomCards[key];
-      this.dispatchEvent(new CustomEvent('cards-updated', {bubbles:true, composed:true}));
-    });
-
-  }
-}
-
-
-customElements.define("sg-paiarea", SgPaiArea);
 
 
 /***/ }),
@@ -3805,6 +4349,7 @@ class SgPlayer extends HTMLElement {
   gameController;
   shadowRoot;
   debuff = "00";
+  subs = [];
   constructor() {
     super();
 
@@ -3942,6 +4487,12 @@ class SgPlayer extends HTMLElement {
     paiInfo.append(areaActions);
     paiInfo.addEventListener("dragstart", () => {
       if (paiInfo.matches(":popover-open")) paiInfo.hidePopover();
+    });
+    paiInfo.addEventListener('toggle', event => {
+      if (event.newState === 'closed' && this.inspectedArea && !this.classList.contains('current-player')) {
+        this.inspectedArea.stopCardsSubscription();
+        this.inspectedArea = null;
+      }
     });
     generalSlots.append(this.jiang1Area);
     generalSlots.append(this.jiang2Area);
@@ -4090,8 +4641,9 @@ class SgPlayer extends HTMLElement {
     const playerRoleSpan = this.shadowRoot.querySelector(".player-role");
     const playerNameItem = this.shadowRoot.querySelector(".player-name");
     playerKeySpan.innerHTML = this.playerRef.key;
+    const subscribe = (target, callback) => this.subs.push((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)(target, callback));
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, "/name"), (snapshot) => {
+    subscribe((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, "/name"), (snapshot) => {
       if (snapshot.exists()) {
         const playerName = snapshot.val();
         playerNameItem.textContent = playerName;
@@ -4102,7 +4654,7 @@ class SgPlayer extends HTMLElement {
       }
     });
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, "/role"), (snapshot) => {
+    subscribe((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, "/role"), (snapshot) => {
       if (snapshot.exists()) {
         const playerRole = snapshot.val();
         if (playerRole == "主" || playerRole == "内") {
@@ -4122,7 +4674,7 @@ class SgPlayer extends HTMLElement {
       );
     };
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, "/debuff"), (snapshot) => {
+    subscribe((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, "/debuff"), (snapshot) => {
       if (snapshot.exists()) {
         const debuff = snapshot.val();
         for (let i = 0; i < debuff.length; i++) {
@@ -4149,8 +4701,7 @@ class SgPlayer extends HTMLElement {
         .querySelector(`[data-debuff="${i}"]`)
         .addEventListener("click", () => {
           if (!this.classList.contains("current-player")) return;
-          this.debuff = this.debuff.replaceAt(i, this.debuff[i] == "0" ? "1" : "0");
-          this.gameController.setValue((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, "/debuff"), this.debuff);
+          this.gameController.togglePlayerStatus(playerRef, i);
         });
     }
 
@@ -4177,40 +4728,45 @@ class SgPlayer extends HTMLElement {
     this.area1CountSpan = this.shadowRoot.querySelector(`.area1-count > span`);
     this.area2CountSpan = this.shadowRoot.querySelector(`.area2-count > span`);
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/hand`), (snapshot) => {
-      const count = snapshot.exists() && snapshot.val().cards
-        ? Object.keys(snapshot.val().cards).length
-        : 0;
-      this.handCountSpan.textContent = count;
-      this.handArea.dataset.count = count;
+    const isLocalPlayer = playerRef.key === this.gameController.currentPlayer;
+    const bindAreaCount = (area, span) => area.addEventListener('cards-updated', () => {
+      const count = area.cardCount || 0;
+      span.textContent = count;
+      area.dataset.count = count;
     });
+    if (isLocalPlayer) {
+      bindAreaCount(this.handArea, this.handCountSpan);
+      bindAreaCount(this.other1Area, this.area1CountSpan);
+      bindAreaCount(this.other2Area, this.area2CountSpan);
+    } else {
+      [['hand',this.handArea,this.handCountSpan],['other1',this.other1Area,this.area1CountSpan],['other2',this.other2Area,this.area2CountSpan]]
+        .forEach(([name,area,span]) => {
+          const countRef = (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/areaCounts/${name}`);
+          subscribe(countRef, async snapshot => {
+          let count = Number(snapshot.val() || 0);
+          if (!snapshot.exists()) {
+            const legacySnapshot = await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.get)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/${name}/cards`));
+            count = Object.keys(legacySnapshot.val() || {}).length;
+            await (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.set)(countRef, count);
+          }
+          span.textContent = count;
+          area.dataset.count = count;
+          });
+        });
+    }
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/other1`), (snapshot) => {
-      const count = snapshot.exists() && snapshot.val().cards
-        ? Object.keys(snapshot.val().cards).length
-        : 0;
-      this.area1CountSpan.textContent = count;
-      this.other1Area.dataset.count = count;
-    });
-
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/other2`), (snapshot) => {
-      const count = snapshot.exists() && snapshot.val().cards
-        ? Object.keys(snapshot.val().cards).length
-        : 0;
-      this.area2CountSpan.textContent = count;
-      this.other2Area.dataset.count = count;
-    });
-
-    this.handArea.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/hand`), this.gameController);
-    this.jiangArea.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/jiang`), this.gameController);
+    this.handArea.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/hand`), this.gameController, {subscribe:isLocalPlayer});
+    if (isLocalPlayer) {
+      this.jiangArea.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/jiang`), this.gameController);
+    }
     this.jiang1Area.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/jiang1`), this.gameController);
     this.zhuangArea.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/zhuang`), this.gameController);
     this.panArea.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/pan`), this.gameController);
-    this.other1Area.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/other1`), this.gameController);
-    this.other2Area.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/other2`), this.gameController);
+    this.other1Area.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/other1`), this.gameController, {subscribe:isLocalPlayer});
+    this.other2Area.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/other2`), this.gameController, {subscribe:isLocalPlayer});
     this.jiang2Area.init((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/jiang2`), this.gameController);
 
-    (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.onValue)((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/jiangLocked`), (snapshot) => {
+    subscribe((0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.child)(playerRef, `/jiangLocked`), (snapshot) => {
       const locked = snapshot.exists() && snapshot.val() === true;
       this.jiangArea.setLocked(locked);
       this.jiang1Area.setLocked(locked);
@@ -4218,8 +4774,15 @@ class SgPlayer extends HTMLElement {
     });
   }
 
+  disconnectedCallback() {
+    queueMicrotask(() => {
+      if (!this.isConnected) this.subs.splice(0).forEach(unsubscribe => unsubscribe());
+    });
+  }
+
   openAreaPanel(area, label) {
     if (this.classList.contains("current-player")) return;
+    area.subscribeCards();
     this.inspectedArea = area;
     const panel = this.shadowRoot.querySelector(".pai-info");
     panel.setAttribute("popover", "auto");
@@ -4282,10 +4845,6 @@ class SgPlayer extends HTMLElement {
     this.dropBusy = true;
     this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = true; });
     try {
-      if (!(await this.gameController.targetHasCapacity(target, paths.length))) {
-        this.dropPicker.querySelector(".drop-error").textContent = "装备区最多放四张牌，请选择其他区域或取消。";
-        return;
-      }
       if (paths.length) await this.gameController.moveOrderedCards(paths, target, null, effects || {});
       this.dropCommitted = true;
       this.dropPicker.close();
@@ -4323,15 +4882,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gameController_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../gameController.js */ "./src/gameController.js");
 /* harmony import */ var _css_common_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./css/common.css */ "./src/wc/css/common.css");
 /* harmony import */ var _css_sgTable_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./css/sgTable.css */ "./src/wc/css/sgTable.css");
-/* harmony import */ var _sgArea_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sgArea.js */ "./src/wc/sgArea.js");
-/* harmony import */ var _sgPlayer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sgPlayer.js */ "./src/wc/sgPlayer.js");
-/* harmony import */ var _sgPaiArea_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sgPaiArea.js */ "./src/wc/sgPaiArea.js");
-/* harmony import */ var _sgJiangArea_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./sgJiangArea.js */ "./src/wc/sgJiangArea.js");
-/* harmony import */ var _cardDrag_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../cardDrag.js */ "./src/cardDrag.js");
-/* harmony import */ var _actionLogPanel_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./actionLogPanel.js */ "./src/wc/actionLogPanel.js");
+/* harmony import */ var _sgPlayer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sgPlayer.js */ "./src/wc/sgPlayer.js");
+/* harmony import */ var _sgJiangArea_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sgJiangArea.js */ "./src/wc/sgJiangArea.js");
+/* harmony import */ var _cardDrag_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../cardDrag.js */ "./src/cardDrag.js");
+/* harmony import */ var _actionLogPanel_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./actionLogPanel.js */ "./src/wc/actionLogPanel.js");
+/* harmony import */ var _publicTablePanel_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./publicTablePanel.js */ "./src/wc/publicTablePanel.js");
 //This file will be the web component
 //It only needs to run, not be imported by main.js
-
 
 
 
@@ -4405,8 +4962,8 @@ class SgTable extends HTMLElement {
     this.shadowRoot.appendChild(container);
 
     this.initGame();
-    this.disposeDrag = (0,_cardDrag_js__WEBPACK_IMPORTED_MODULE_8__.installCardDrag)(this);
-    this.disposeLog = (0,_actionLogPanel_js__WEBPACK_IMPORTED_MODULE_9__.installActionLog)(this);
+    this.disposeDrag = (0,_cardDrag_js__WEBPACK_IMPORTED_MODULE_6__.installCardDrag)(this);
+    this.disposeLog = (0,_actionLogPanel_js__WEBPACK_IMPORTED_MODULE_7__.installActionLog)(this);
   }
 
   getRoundMenu() {
@@ -4460,7 +5017,7 @@ class SgTable extends HTMLElement {
   }
 
   disconnectedCallback() {
-    queueMicrotask(() => { if (!this.isConnected) {this.disposeDrag?.(); this.disposeLog?.();} });
+    queueMicrotask(() => { if (!this.isConnected) {this.disposeDrag?.(); this.disposeLog?.();this.disposePublicPanel?.();} });
   }
 
   getCurrentPlayerDom() {
@@ -4489,12 +5046,12 @@ class SgTable extends HTMLElement {
     const playButton = document.createElement("button");
     playButton.innerHTML = "出";
     playButton.addEventListener("click", () => {
-      this.gameController.discardSelectedCards().catch(error => window.alert(error.message || '移动失败，请重试')); 
+      this.gameController.playSelectedCards().catch(error => window.alert(error.message || '移动失败，请重试')); 
     });
     const showButton = document.createElement("button");
     showButton.innerHTML = "亮";
     showButton.addEventListener("click", () => {
-      this.gameController.showSelectedCards();
+      this.gameController.showSelectedCards().catch(error => window.alert(error.message || '更新失败，请重试'));
     });
 
     const cancelButton = document.createElement("button");
@@ -4530,7 +5087,7 @@ class SgTable extends HTMLElement {
     container.appendChild(opponentRail);
     this.opponentRail = opponentRail;
     for (let i = 0; i < this.playerCount; i++) {
-      const sgPlayer = new _sgPlayer_js__WEBPACK_IMPORTED_MODULE_5__.SgPlayer();
+      const sgPlayer = new _sgPlayer_js__WEBPACK_IMPORTED_MODULE_4__.SgPlayer();
       sgPlayer.dataset.key = `p${i + 1}`;
       opponentRail.appendChild(sgPlayer);
       this.playerDoms.push(sgPlayer);
@@ -4545,32 +5102,7 @@ class SgTable extends HTMLElement {
       );
     }
 
-    this.paiArea = new _sgPaiArea_js__WEBPACK_IMPORTED_MODULE_6__.SgPaiArea();
-    this.paiArea.init(
-      (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, `game/${this.gameController.gameId}/tableDecks/pai`),
-      this.gameController
-    );
-    const pilePanel = document.createElement("section");
-    pilePanel.className = "deck-panel";
-    pilePanel.innerHTML = "<header><strong>牌堆</strong><span class='pile-count'>0 张</span></header>";
-    pilePanel.appendChild(this.paiArea);
-    tableDeckWidget.appendChild(pilePanel);
-
-    this.discardArea = document.createElement("sg-area");
-    this.discardArea.init(
-      (0,firebase_database__WEBPACK_IMPORTED_MODULE_0__.ref)(this.db, `game/${this.gameController.gameId}/tableDecks/discard`),
-      this.gameController
-    );
-    const discardPanel = document.createElement("section");
-    discardPanel.className = "public-cards-panel";
-    discardPanel.innerHTML =
-      "<header><strong>公共区 · 弃牌与结算</strong><span class='pool-count'>0 张</span></header>";
-    discardPanel.append(this.cardMenu, this.discardArea);
-    tableDeckWidget.appendChild(discardPanel);
-    this.addEventListener('cards-updated', () => {
-      pilePanel.querySelector('.pile-count').textContent = `${this.paiArea.cardArea.children.length} 张`;
-      discardPanel.querySelector('.pool-count').textContent = `${this.discardArea.cardArea.children.length} 张`;
-    });
+    this.disposePublicPanel=(0,_publicTablePanel_js__WEBPACK_IMPORTED_MODULE_8__.installPublicTablePanel)(this,tableDeckWidget,this.cardMenu);
   }
 
   lockPlayerSelection() {
@@ -4599,6 +5131,7 @@ class SgTable extends HTMLElement {
       `sg-player[data-key="${mainPlayer}"]`
     );
     this.shadowRoot.querySelector(".table-container").appendChild(currentPlayerDom);
+    this.dispatchEvent(new CustomEvent('player-seat-changed'));
   }
 
   hideCardMenu() {
@@ -4910,7 +5443,7 @@ function orderedMovePatch(targetPath, targetCards, sources, beforeKey, newKey, e
       if (!judgment) delete item.value.judgmentEffect;
       if (targetPath.includes('/pan/')) item.value.panOrder = Date.now() + index;
       patch[path] = {...item.value, order};
-    } else patch[`${path}/order`] = order;
+    } else if (item.value.order !== order) patch[`${path}/order`] = order;
   });
   return patch;
 }
@@ -4918,29 +5451,166 @@ function orderedMovePatch(targetPath, targetCards, sources, beforeKey, newKey, e
 
 /***/ }),
 
-/***/ "./src/roomTransaction.mjs":
-/*!*********************************!*\
-  !*** ./src/roomTransaction.mjs ***!
-  \*********************************/
+/***/ "./src/databaseLocks.mjs":
+/*!*******************************!*\
+  !*** ./src/databaseLocks.mjs ***!
+  \*******************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   runLoadedTransaction: () => (/* binding */ runLoadedTransaction)
+/* harmony export */   acquireLocks: () => (/* binding */ acquireLocks)
 /* harmony export */ });
-// Keep the complete room cached until the transaction (including retries) ends.
-// A one-shot get() removes its listener before the transaction starts.
-async function runLoadedTransaction(roomRef, update, api) {
-  let unsubscribe;
+function lockKey(resource) {
+  return btoa(resource).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+}
+
+async function acquireLocks(resources, context) {
+  const unique = [...new Set(resources)].sort();
+  const token = context.newToken();
+  const acquired = [];
+  const expiresAt = Date.now() + context.ttlMs;
   try {
-    await new Promise((resolve, reject) => {
-      unsubscribe = api.onValue(roomRef, resolve, reject);
-    });
-    return await api.runTransaction(roomRef, update, {applyLocally: false});
-  } finally {
-    unsubscribe?.();
+    for (const resource of unique) {
+      const lockPath = `${context.lockRootPath}/${lockKey(resource)}`;
+      const lockRef = context.makeRef(lockPath);
+      const result = await context.runTransaction(lockRef, current => {
+        if (current?.expiresAt > Date.now() && current.token !== token) return undefined;
+        return {token, expiresAt};
+      }, {applyLocally: false});
+      if (!result.committed || result.snapshot.val()?.token !== token) throw Error('该区域正在被其他玩家操作，请重试');
+      acquired.push(lockPath);
+    }
+    return {
+      token,
+      releasePatch: () => Object.fromEntries(acquired.map(path => [path, null])),
+      release: () => acquired.length ? context.updateRoot(Object.fromEntries(acquired.map(path => [path, null]))) : Promise.resolve(),
+    };
+  } catch (error) {
+    if (acquired.length) await context.updateRoot(Object.fromEntries(acquired.map(path => [path, null])));
+    throw error;
   }
+}
+
+
+/***/ }),
+
+/***/ "./src/localActionLog.mjs":
+/*!********************************!*\
+  !*** ./src/localActionLog.mjs ***!
+  \********************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ACTION_HINT_OPCODE: () => (/* binding */ ACTION_HINT_OPCODE),
+/* harmony export */   createActionNonce: () => (/* binding */ createActionNonce),
+/* harmony export */   createLocalLogEntry: () => (/* binding */ createLocalLogEntry),
+/* harmony export */   decodeActionHint: () => (/* binding */ decodeActionHint),
+/* harmony export */   encodeActionHint: () => (/* binding */ encodeActionHint)
+/* harmony export */ });
+/* harmony import */ var _actionLog_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./actionLog.mjs */ "./src/actionLog.mjs");
+
+
+// Stable protocol codes must never be reassigned to a different meaning.
+// They are enums rather than hashes so decoding is collision-free and debuggable.
+const ACTION_HINT_OPCODE = Object.freeze({
+  DISCARD_OTHER:'d', DRAW_FOR_OTHER:'m', TRANSFER_CARD:'t', MOVE_OTHER:'o',
+  DEAL_CARDS:'c', DEAL_GENERALS:'j', ASSIGN_ROLES:'i', SHUFFLE:'s',
+  RESET_DECK:'r', RESET_TABLE:'x',
+  PLAY:'p', DISCARD:'e', DRAW:'w', REVEAL_JUDGMENT:'v',
+  TAKE_DISCARD:'k', REARRANGE_DECK:'u',
+});
+
+const VALID_OPCODES = new Set(Object.values(ACTION_HINT_OPCODE));
+const NONCE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const AREA_NAMES = {hand:'手牌',zhuang:'装备区',pan:'判定区',other1:'区1',other2:'区2',jiang:'选将区',jiang1:'主将',jiang2:'副将',pai:'牌堆',paiBottom:'牌堆底部',discard:'公共区'};
+
+function createActionNonce() {
+  const bytes = new Uint8Array(4);
+  if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
+  else for (let i=0;i<bytes.length;i++) bytes[i]=Math.floor(Math.random()*256);
+  return [...bytes].map(value=>NONCE_CHARS[value&63]).join('');
+}
+
+// Protocol v1 is "version|opcode|actor|...args|nonce". Target, count and card
+// details are intentionally omitted when the atomic state diff can infer them.
+// The nonce makes consecutive identical actions observable; it is not a history ID.
+function encodeActionHint(opcode, actorSeat, args=[], nonce=createActionNonce()) {
+  if (!VALID_OPCODES.has(opcode)) throw Error('未知的日志操作码');
+  const match=String(actorSeat||'').match(/^p(\d+)$/);
+  const fields=['1',opcode,match?Number(match[1]).toString(36):'0',...args.map(String),nonce];
+  if(fields.some(value=>!value||value.includes('|')))throw Error('无效的日志提示参数');
+  return fields.join('|');
+}
+
+// Unknown protocol data safely falls back to an ordinary state-diff log.
+function decodeActionHint(value) {
+  if(typeof value!=='string')return null;
+  const fields=value.split('|'),actor=Number.parseInt(fields[2],36),nonce=fields.at(-1);
+  if(fields.length<4||fields[0]!=='1'||!VALID_OPCODES.has(fields[1])||!Number.isInteger(actor)||actor<0||!/^[A-Za-z0-9_-]{4}$/.test(nonce))return null;
+  return {opcode:fields[1],actorSeat:actor?`p${actor}`:null,args:fields.slice(3,-1),nonce};
+}
+
+function playerName(room,seat){const name=room?.[seat]?.name;return name&&name!=='empty'?name:seat;}
+function areaName(room,path){const [owner,area]=path.split('/');return owner==='tableDecks'?(AREA_NAMES[area]||area):`${playerName(room,owner)} 的${AREA_NAMES[area]||area}`;}
+function areas(room){
+  const result={};
+  for(const [owner,data] of Object.entries(room||{})){
+    if(owner!=='tableDecks'&&!/^p\d+$/.test(owner))continue;
+    for(const [area,value] of Object.entries(data||{}))if(AREA_NAMES[area])result[`${owner}/${area}`]=value?.cards||{};
+  }
+  return result;
+}
+function moves(before,after){
+  const oldAreas=areas(before),newAreas=areas(after),removed=new Map(),added=new Map(),groups=new Map();
+  const add=(map,id,item)=>map.set(id,[...(map.get(id)||[]),item]);
+  for(const path of new Set([...Object.keys(oldAreas),...Object.keys(newAreas)])){
+    const old=oldAreas[path]||{},next=newAreas[path]||{};
+    Object.keys(old).filter(key=>!next[key]||next[key].id!==old[key].id).forEach(key=>add(removed,old[key].id,{path,key}));
+    Object.keys(next).filter(key=>!old[key]||old[key].id!==next[key].id).forEach(key=>add(added,next[key].id,{path,key}));
+  }
+  for(const [id,sources] of removed){
+    const targets=added.get(id)||[];
+    for(let i=0;i<Math.min(sources.length,targets.length);i++){
+      if(sources[i].path===targets[i].path)continue;
+      const key=`${sources[i].path}|${targets[i].path}`;
+      const group=groups.get(key)||{source:sources[i].path,target:targets[i].path,count:0};group.count++;groups.set(key,group);
+    }
+  }
+  return [...groups.values()];
+}
+
+function hintedChanges(hint,before,after){
+  const moved=moves(before,after);
+  switch(hint.opcode){
+    case ACTION_HINT_OPCODE.DISCARD_OTHER:return moved.filter(x=>/^p\d+\//.test(x.source)&&x.target==='tableDecks/discard').map(x=>`弃置了 ${playerName(after,x.source.split('/')[0])} 的 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.DRAW_FOR_OTHER:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&/^p\d+\/hand$/.test(x.target)).map(x=>`让 ${playerName(after,x.target.split('/')[0])} 摸了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.TRANSFER_CARD:return moved.filter(x=>/^p\d+\//.test(x.source)&&/^p\d+\//.test(x.target)).map(x=>`将 ${x.count} 张牌交给 ${playerName(after,x.target.split('/')[0])}`);
+    case ACTION_HINT_OPCODE.MOVE_OTHER:return moved.map(x=>`将 ${x.count} 张牌从 ${areaName(after,x.source)} 移到 ${areaName(after,x.target)}`);
+    case ACTION_HINT_OPCODE.DEAL_CARDS:return ['为所有玩家发牌'];
+    case ACTION_HINT_OPCODE.DEAL_GENERALS:return ['为所有玩家发将'];
+    case ACTION_HINT_OPCODE.ASSIGN_ROLES:return ['重新分配了身份'];
+    case ACTION_HINT_OPCODE.SHUFFLE:{const names={p:'牌堆',b:'牌堆底部',d:'公共区',h:'手牌',z:'装备区',n:'判定区',o:'卡牌区',j:'选将区'};return [`洗混了${names[hint.args[0]]||'卡牌'}`];}
+    case ACTION_HINT_OPCODE.RESET_DECK:return ['重置并洗混了牌堆'];
+    case ACTION_HINT_OPCODE.RESET_TABLE:return ['清空了桌面'];
+    case ACTION_HINT_OPCODE.PLAY:return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`打出了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.DISCARD:return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`弃置了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.DRAW:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&/^p\d+\/hand$/.test(x.target)).map(x=>`摸了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.REVEAL_JUDGMENT:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&x.target==='tableDecks/discard').map(x=>`展示／判定了牌堆顶 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.TAKE_DISCARD:return moved.filter(x=>x.source==='tableDecks/discard'&&/^p\d+\/hand$/.test(x.target)).map(x=>`从弃牌堆收入了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.REARRANGE_DECK:return ['调整了牌堆顺序'];
+    default:return [];
+  }
+}
+
+function createLocalLogEntry(before,after,timestamp=Date.now()){
+  const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
+  if(hint){const changes=hintedChanges(hint,before,after);if(changes.length)return {actor:hint.actorSeat?playerName(after,hint.actorSeat):'玩家',timestamp,changes};}
+  const changes=(0,_actionLog_mjs__WEBPACK_IMPORTED_MODULE_0__.describeChanges)(before,after);
+  return changes.length?{actor:null,timestamp,changes}:null;
 }
 
 
@@ -5078,7 +5748,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_wc_sgTable_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../src/wc/sgTable.js */ "./src/wc/sgTable.js");
 /* harmony import */ var _src_data_pai_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../src/data/pai.json */ "./src/data/pai.json");
 /* harmony import */ var _sango_public_v3_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sango-public-v3.css */ "./docs/sango-public-v3.css");
-/* harmony import */ var _sango_public_v3_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sango-public-v3.js */ "./docs/sango-public-v3.js");
+/* harmony import */ var _sango_public_polish_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sango-public-polish.css */ "./docs/sango-public-polish.css");
+/* harmony import */ var _sango_public_v3_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sango-public-v3.js */ "./docs/sango-public-v3.js");
+
 
 
 
@@ -5098,6 +5770,7 @@ dialogStyles.textContent=_sango_public_v3_css__WEBPACK_IMPORTED_MODULE_4__["defa
 .v3-dialog .v3-sort.three-lanes{grid-template-columns:repeat(3,minmax(250px,1fr));overflow-x:auto}
 .v3-dialog .v3-record button{font-size:12px;padding:4px}
 `;
+dialogStyles.textContent+=_sango_public_polish_css__WEBPACK_IMPORTED_MODULE_5__["default"];
 document.head.append(dialogStyles);
 
 // Reuse production components against an isolated, in-memory room.
@@ -5118,6 +5791,7 @@ const styles=document.createElement('style');styles.textContent=_sango_public_v3
 .card-menu button{font-size:13px;padding:5px 12px}.selection-label{font-size:13px}
 @media(max-width:900px){.design-public{position:relative;inset:auto;grid-area:2/1;width:100%}.design-public .v3-shell{grid-template-columns:170px minmax(0,1fr) 130px;gap:10px}}
 `;
+styles.textContent+=_sango_public_polish_css__WEBPACK_IMPORTED_MODULE_5__["default"];
 table.shadowRoot.append(styles);
 if(document.body.dataset.compact==='true'){
   styles.textContent+=`.table-container{width:1100px;height:650px;min-height:650px;margin:0 auto;transform:none}.opponent-rail,.table-topbar,.action-log{display:none}.design-public{left:20px;top:40px;width:1060px}:host(.player-seated) .slot0{left:20px;top:375px;width:924px;height:230px}`;
@@ -5125,7 +5799,7 @@ if(document.body.dataset.compact==='true'){
 const publicRoot=document.createElement('section');publicRoot.className='design-public';
 table.shadowRoot.querySelector('.table-container').append(publicRoot,table.cardMenu);
 const symbols={spade:'♠',heart:'♥',club:'♣',diamond:'♦'};let serial=1000;
-const publicDesign=(0,_sango_public_v3_js__WEBPACK_IMPORTED_MODULE_5__.mountPublicDesign)(publicRoot,{
+const publicDesign=(0,_sango_public_v3_js__WEBPACK_IMPORTED_MODULE_6__.mountPublicDesign)(publicRoot,{
   async simulateOther(action){
     if(sending)return;
     const entry=Object.entries((0,_sango_design_memory_cjs__WEBPACK_IMPORTED_MODULE_0__.read)('game/6/p2/hand/cards')||{}).sort((a,b)=>a[1].order-b[1].order)[0];

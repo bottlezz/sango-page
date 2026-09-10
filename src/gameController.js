@@ -94,8 +94,12 @@ class gameController {
     if (!this.currentPlayer) return null;
     const playerArea = path => path.match(/^game\/[^/]+\/(p\d+)\/([^/]+)\/cards(?:\/[^/]+)?$/);
     const sources = paths.map(playerArea).filter(Boolean), target = playerArea(targetPath);
+    if (/\/tableDecks\/discard\/cards$/.test(targetPath) && sources.length) {
+      return sources.some(match=>match[1]!==this.currentPlayer) ? ACTION_HINT_OPCODE.DISCARD_OTHER : ACTION_HINT_OPCODE.DISCARD;
+    }
+    if(target?.[2]==='hand'&&target[1]===this.currentPlayer&&paths.some(path=>/\/tableDecks\/(pai|paiBottom)\/cards\//.test(path)))return ACTION_HINT_OPCODE.DRAW;
+    if(target?.[2]==='hand'&&target[1]===this.currentPlayer&&paths.some(path=>/\/tableDecks\/discard\/cards\//.test(path)))return ACTION_HINT_OPCODE.TAKE_DISCARD;
     if (!sources.some(match=>match[1]!==this.currentPlayer) && !(target&&target[1]!==this.currentPlayer)) return null;
-    if (/\/tableDecks\/discard\/cards$/.test(targetPath) && sources.some(match=>match[1]!==this.currentPlayer)) return ACTION_HINT_OPCODE.DISCARD_OTHER;
     if (target?.[2]==='hand' && target[1]!==this.currentPlayer && paths.some(path=>/\/tableDecks\/(pai|paiBottom)\/cards\//.test(path))) return ACTION_HINT_OPCODE.DRAW_FOR_OTHER;
     if (target && sources.some(match=>match[1]!==target[1])) return ACTION_HINT_OPCODE.TRANSFER_CARD;
     return ACTION_HINT_OPCODE.MOVE_OTHER;
@@ -150,7 +154,7 @@ class gameController {
     }
   }
 
-  async moveOrderedCards(paths, targetRef, beforeKey = null, effects = {}) {
+  async moveOrderedCards(paths, targetRef, beforeKey = null, effects = {}, actionOpcode = null) {
     const base = ref(this.db).toString();
     const targetPath = targetRef.toString().replace(base, '');
     const prefix = `game/${this.gameId}/`;
@@ -190,7 +194,7 @@ class gameController {
         }
         patch[info.countPath]=Math.max(0,currentCount-movedCount);
       }
-      const hintOpcode=this.moveActionOpcode(unique,targetPath);
+      const hintOpcode=actionOpcode||this.moveActionOpcode(unique,targetPath);
       if(hintOpcode)Object.assign(patch,this.actionHintPatch(hintOpcode));
       Object.assign(patch, locks.releasePatch());
       await update(ref(this.db), patch);
@@ -405,10 +409,14 @@ class gameController {
   }
 
   async discardSelectedCards(cards = [...this.selectedCards]) {
-    return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`);
+    return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`, ACTION_HINT_OPCODE.DISCARD);
   }
 
-  async moveSelectedCards(cards, targetPath) {
+  async playSelectedCards(cards = [...this.selectedCards]) {
+    return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`, ACTION_HINT_OPCODE.PLAY);
+  }
+
+  async moveSelectedCards(cards, targetPath, actionOpcode = null) {
     if (this.selectionMoveBusy) return;
     const base = ref(this.db).toString();
     const paths = [...new Set(cards.map(card => card.cardRef.toString().replace(base, '')))]
@@ -416,10 +424,70 @@ class gameController {
     if (!paths.length) return;
     this.selectionMoveBusy = true;
     try {
-      return await this.moveOrderedCards(paths, ref(this.db, targetPath));
+      const ownOnly=paths.every(path=>path.includes(`/${this.currentPlayer}/`));
+      return await this.moveOrderedCards(paths, ref(this.db, targetPath), null, {}, ownOnly?actionOpcode:null);
     } finally {
       this.selectionMoveBusy = false;
     }
+  }
+
+  async topDeckPaths(count = 1) {
+    const prefix=`game/${this.gameId}/tableDecks`;
+    const areas=['pai','paiBottom'];
+    const snapshots=await Promise.all(areas.map(area=>get(ref(this.db,`${prefix}/${area}/cards`))));
+    const cards=areas.flatMap((area,index)=>orderedEntries(snapshots[index].val()||{}).map(({key})=>`${prefix}/${area}/cards/${key}`));
+    if(cards.length<count)throw Error(`牌堆不足，需要 ${count} 张牌`);
+    return cards.slice(0,count);
+  }
+
+  async drawTopCards(count = 1) {
+    if(!this.currentPlayer)throw Error('请先入座');
+    const paths=await this.topDeckPaths(count);
+    return this.moveOrderedCards(paths,ref(this.db,`game/${this.gameId}/${this.currentPlayer}/hand/cards`),null,{},ACTION_HINT_OPCODE.DRAW);
+  }
+
+  async revealTopCard() {
+    const paths=await this.topDeckPaths(1);
+    return this.moveOrderedCards(paths,ref(this.db,`game/${this.gameId}/tableDecks/discard/cards`),null,{},ACTION_HINT_OPCODE.REVEAL_JUDGMENT);
+  }
+
+  async takeDiscardCards(paths) {
+    if(!this.currentPlayer)throw Error('请先入座');
+    return this.moveOrderedCards(paths,ref(this.db,`game/${this.gameId}/${this.currentPlayer}/hand/cards`),null,{},ACTION_HINT_OPCODE.TAKE_DISCARD);
+  }
+
+  async rearrangeDeck({top=[],bottom=[],draw=[]}) {
+    if(!this.currentPlayer)throw Error('请先入座');
+    const prefix=`game/${this.gameId}`,topPath=`${prefix}/tableDecks/pai/cards`,bottomPath=`${prefix}/tableDecks/paiBottom/cards`;
+    const handPath=`${prefix}/${this.currentPlayer}/hand/cards`,areaPaths=[topPath,bottomPath,handPath];
+    const locks=await this.acquireGameLocks(areaPaths.map(path=>`area:${path}`));
+    let released=false;
+    try{
+      const [topSnapshot,bottomSnapshot,handSnapshot]=await Promise.all(areaPaths.map(path=>get(ref(this.db,path))));
+      const deckItems=[...orderedEntries(topSnapshot.val()||{}).map(item=>({...item,path:topPath})),...orderedEntries(bottomSnapshot.val()||{}).map(item=>({...item,path:bottomPath}))];
+      const byPath=new Map(deckItems.map(item=>[`${item.path}/${item.key}`,item.value]));
+      const requested=[...top,...bottom,...draw];
+      if(requested.length!==byPath.size||new Set(requested).size!==requested.length||requested.some(path=>!byPath.has(path)))throw Error('牌堆已变化，请重新展开');
+      const patch=locks.releasePatch();
+      requested.forEach(path=>{patch[path]=null;});
+      const place=(paths,targetPath)=>paths.forEach((sourcePath,index)=>{
+        const sameArea=sourcePath.slice(0,sourcePath.lastIndexOf('/'))===targetPath;
+        const key=sameArea?sourcePath.split('/').pop():push(ref(this.db,targetPath)).key;
+        const card={...byPath.get(sourcePath),show:'0',order:index*1024};delete card.panOrder;delete card.judgmentEffect;
+        patch[`${targetPath}/${key}`]=card;
+      });
+      place(top,topPath);place(bottom,bottomPath);
+      const existingHand=orderedEntries(handSnapshot.val()||{});
+      existingHand.forEach((item,index)=>{patch[`${handPath}/${item.key}/order`]=(index+draw.length)*1024;});
+      let handOrder=-1024;
+      draw.forEach(sourcePath=>{
+        const key=push(ref(this.db,handPath)).key,card={...byPath.get(sourcePath),show:'0',order:handOrder+=1024};delete card.panOrder;delete card.judgmentEffect;
+        patch[`${handPath}/${key}`]=card;
+      });
+      patch[`${prefix}/${this.currentPlayer}/areaCounts/hand`]=Object.keys(handSnapshot.val()||{}).length+draw.length;
+      Object.assign(patch,this.actionHintPatch(ACTION_HINT_OPCODE.REARRANGE_DECK));
+      await update(ref(this.db),patch);released=true;return true;
+    }finally{if(!released)await locks.release();}
   }
 
   async showSelectedCards(cards = [...this.selectedCards]) {

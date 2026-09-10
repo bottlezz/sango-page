@@ -3,6 +3,7 @@ import {gameController} from '../src/gameController.js';
 import {SgTable} from '../src/wc/sgTable.js';
 import cards from '../src/data/pai.json';
 import publicCss from './sango-public-v3.css';
+import publicPolishCss from './sango-public-polish.css';
 import {mountPublicDesign} from './sango-public-v3.js';
 
 document.querySelector('.design-heading p').textContent='打出／弃置计入本批结算，亮牌留在原区 · 本地演示，刷新重置';
@@ -17,6 +18,7 @@ dialogStyles.textContent=publicCss+`
 .v3-dialog .v3-sort.three-lanes{grid-template-columns:repeat(3,minmax(250px,1fr));overflow-x:auto}
 .v3-dialog .v3-record button{font-size:12px;padding:4px}
 `;
+dialogStyles.textContent+=publicPolishCss;
 document.head.append(dialogStyles);
 
 // Reuse production components against an isolated, in-memory room.
@@ -37,6 +39,7 @@ const styles=document.createElement('style');styles.textContent=publicCss+`
 .card-menu button{font-size:13px;padding:5px 12px}.selection-label{font-size:13px}
 @media(max-width:900px){.design-public{position:relative;inset:auto;grid-area:2/1;width:100%}.design-public .v3-shell{grid-template-columns:170px minmax(0,1fr) 130px;gap:10px}}
 `;
+styles.textContent+=publicPolishCss;
 table.shadowRoot.append(styles);
 if(document.body.dataset.compact==='true'){
   styles.textContent+=`.table-container{width:1100px;height:650px;min-height:650px;margin:0 auto;transform:none}.opponent-rail,.table-topbar,.action-log{display:none}.design-public{left:20px;top:40px;width:1060px}:host(.player-seated) .slot0{left:20px;top:375px;width:924px;height:230px}`;

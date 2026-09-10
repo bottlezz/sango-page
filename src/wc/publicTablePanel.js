@@ -2,7 +2,7 @@ import {onValue, ref} from 'firebase/database';
 import {orderedEntries} from '../cardOrder.mjs';
 import {ACTION_HINT_OPCODE, decodeActionHint} from '../localActionLog.mjs';
 import './sgCard.js';
-import {captureCardPositions, animateCardInsertions} from './cardInsertionAnimation.js';
+import {captureCardPositions, animateCardLayoutChanges} from './cardInsertionAnimation.js';
 
 const RECENT_LIMIT=8;
 
@@ -81,7 +81,7 @@ export function installPublicTablePanel(table,host,cardMenu){
     });
     if(!entries.length){const empty=document.createElement('div');empty.className='public-empty';empty.innerHTML='<b>暂无弃牌</b><small>打出、弃置或展示／判定的牌会显示在这里</small>';recentList.append(empty);}
     host.querySelector('.discard-count').textContent=entries.length;
-    if(animate)animateCardInsertions(recentList.querySelectorAll('.recent-discard-card'),previous,keyFor);
+    if(animate)animateCardLayoutChanges(recentList.querySelectorAll('.recent-discard-card'),previous,keyFor);
     if(discardDialog.open)renderDiscardDialog(entries);
   }
   function renderDiscardDialog(entries=orderedEntries(discard).reverse()){
@@ -150,7 +150,7 @@ export function installPublicTablePanel(table,host,cardMenu){
     if(!button.closest('.draw-options'))setDrawOpen(false);
     if(button.dataset.takeDiscard)return run(()=>controller.takeDiscardCards([button.dataset.takeDiscard]));
     const action=button.dataset.publicAction;
-    if(action==='draw')return run(()=>controller.drawTopCards(Number(button.dataset.count)));
+    if(action==='draw'){setDrawOpen(false);return run(()=>controller.drawTopCards(Number(button.dataset.count)));}
     if(action==='reveal')return run(()=>controller.revealTopCard());
     if(action==='shuffle')return run(()=>controller.resetPai());
     if(action==='expand')return openSort();
@@ -182,9 +182,9 @@ export function installPublicTablePanel(table,host,cardMenu){
     onValue(ref(db,`${prefix}/runtime/a`),snapshot=>{const hint=decodeActionHint(snapshot.val());if(!hintInitialized){hintInitialized=true;lastHint=hint;lastHintNonce=hint?.nonce||null;}else lastHint=hint;classifyPending();}),
     onValue(ref(db,`${prefix}/tableDecks/discard/cards`),snapshot=>{
       const next=snapshot.val()||{},keys=new Set(Object.keys(next));
-      const added=previousDiscardKeys!==null&&[...keys].some(key=>!previousDiscardKeys.has(key));
+      const changed=previousDiscardKeys!==null&&(keys.size!==previousDiscardKeys.size||[...keys].some(key=>!previousDiscardKeys.has(key)));
       if(previousDiscardKeys!==null)keys.forEach(key=>{if(!previousDiscardKeys.has(key))pendingDiscardKeys.add(key);});
-      previousDiscardKeys=keys;discard=next;[...sourceByKey.keys()].forEach(key=>{if(!keys.has(key))sourceByKey.delete(key);});renderDiscard(added);classifyPending();
+      previousDiscardKeys=keys;discard=next;[...sourceByKey.keys()].forEach(key=>{if(!keys.has(key))sourceByKey.delete(key);});renderDiscard(changed);classifyPending();
     }),
   ];
   renderDeck();renderDiscard();

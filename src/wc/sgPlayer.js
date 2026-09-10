@@ -150,7 +150,11 @@ class SgPlayer extends HTMLElement {
       const generals = this.jiangArea.selectedGenerals.map(card =>
         card.shadowRoot.querySelector(".jiang-name")?.textContent || "未选择"
       );
-      this.selectionStatus.textContent = `主将：${generals[0] || "未选择"}　/　副将：${generals[1] || "未选择"}`;
+      this.selectionStatus.textContent = locked
+        ? "武将选择已锁定"
+        : generals.length
+          ? `已选择：${generals.join("、")}`
+          : "请选择两名武将";
       this.selectionLockButton.textContent = locked
         ? "武将已锁定"
         : `锁定武将 ${count}/2`;
@@ -161,7 +165,7 @@ class SgPlayer extends HTMLElement {
     const selectionFooter = document.createElement("footer");
     this.selectionStatus = document.createElement("span");
     this.selectionStatus.className = "selection-status";
-    this.selectionStatus.textContent = "主将：未选择　/　副将：未选择";
+    this.selectionStatus.textContent = "请选择两名武将";
     selectionFooter.append(this.selectionStatus, this.selectionLockButton);
     this.generalSelectionDialog.append(selectionHeader, this.jiangArea, selectionFooter);
 
@@ -602,6 +606,11 @@ class SgPlayer extends HTMLElement {
     const selected = Object.values(this.inspectedArea?.cards || {})
       .filter(card => this.gameController?.selectedCards.includes(card));
     this.areaActions.hidden = selected.length === 0;
+    const currentPlayer = this.gameController?.currentPlayer;
+    const hasOnlyOwnHandSelection = Boolean(currentPlayer) && selected.length > 0 && selected.every(card =>
+      card.dataset.path?.includes(`/${currentPlayer}/hand/cards/`));
+    const takeButton = this.areaActions.querySelector('[data-area-action="drawPai"]');
+    if (takeButton) takeButton.hidden = hasOnlyOwnHandSelection;
     const showButton = this.areaActions.querySelector('[data-area-action="showPai"]');
     if (showButton && selected.length) {
       const showStates = new Set(selected.map(card => String(card.cardData?.show || '0') === '1'));

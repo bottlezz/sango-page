@@ -6,9 +6,7 @@
   user-select: none;
   -webkit-user-drag: none;
   touch-action: none;
-  transition: translate .14s ease-out;
 }
-:host(.insert-left) { translate: -6px 0; }
 :host(.drag-source) { opacity: .22; }
 .card-block {
   position: relative;
@@ -83,19 +81,20 @@
   transform: translateY(-0.45rem);
   filter: drop-shadow(0 0 0.25rem #e2b84b);
 }
-.card-block.selected .card-widget { border: 2px solid #e2b84b; }
+.card-block.selected .card-widget { border-color: #e2b84b; box-shadow: inset 0 0 0 1px #e2b84b; }
 /* Equipment uses the same lift animation as other selected cards. */
 :host(.zhuang-area-card) .card-block { cursor: pointer; }
-:host(.zhuang-area-card) .card-block.selected .card-widget { border: 2px solid #e2b84b; box-shadow: inset 0 0 0 1px #735415; }
+:host(.zhuang-area-card) .card-block.selected .card-widget { border-color: #e2b84b; box-shadow: inset 0 0 0 1px #e2b84b; }
 .card-block.show-front .card-widget {
   border-color: #5c8cad;
   background: #eef8f4;
 }
 .card-block.show-front .card-front { background: #eef8f4; }
-span.club::before { content: "♣"; }
-span.heart::before { content: "♥"; color: #bd342d; }
-span.diamond::before { content: "♦"; color: #bd342d; }
-span.spade::before { content: "♠"; }
+.card-suit.club .suit-mark::before { content: "♣"; }
+.card-suit.heart .suit-mark::before { content: "♥"; }
+.card-suit.diamond .suit-mark::before { content: "♦"; }
+.card-suit.spade .suit-mark::before { content: "♠"; }
+.card-suit.heart,.card-suit.diamond { color: #bd342d; }
 :host(.current-player) .card-back,
 :host(.discard-area-card) .card-back,
 :host(.pan-area-card) .card-back,
@@ -357,6 +356,7 @@ span.spade::before { content: "♠"; }
 :host(.pan-area-card) .info-line { min-width: 0; max-height: 100%; overflow: hidden; }
 :host(.pan-area-card) .pai-name { display: block; width: auto; max-height: 100%; margin: 0; overflow: hidden; writing-mode: vertical-rl; text-orientation: upright; font-size: 0.62rem; font-weight: 800; line-height: 1; letter-spacing: 0.03rem; white-space: nowrap; }
 @media (max-width: 620px) {
+  :host { touch-action: auto; }
   :host(.current-player) .card-widget,
   :host(.discard-area-card) .card-widget {
     width: 3.8rem;
@@ -552,6 +552,57 @@ span.spade::before { content: "♠"; }
   font: 900 0.68rem/1 Georgia, "STKaiti", serif;
 }
 
+/* Suit, rank, and the small card descriptor share the center axis of the index column. */
+:host(.zhuang-area-card) .card-suit,
+:host(.hand-area-card) .card-suit,
+:host(.other1-area-card) .card-suit,
+:host(.other2-area-card) .card-suit,
+:host(.pan-area-card) .card-suit,
+:host(.zhuang-area-card.inspection-tile) .card-suit {
+  align-self: stretch;
+  justify-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(0.08rem);
+}
+:host(.zhuang-area-card) .card-suit > span,
+:host(.hand-area-card) .card-suit > span,
+:host(.other1-area-card) .card-suit > span,
+:host(.other2-area-card) .card-suit > span,
+:host(.pan-area-card) .card-suit > span,
+:host(.zhuang-area-card.inspection-tile) .card-suit > span {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  flex: none;
+  text-align: center;
+}
+:host(.zhuang-area-card.has-desc) .pai-desc,
+:host(.hand-area-card.has-desc) .pai-desc,
+:host(.other1-area-card.has-desc) .pai-desc,
+:host(.other2-area-card.has-desc) .pai-desc,
+:host(.pan-area-card.has-desc) .pai-desc,
+:host(.zhuang-area-card.inspection-tile.has-desc) .pai-desc { margin-top: auto; }
+:host(.discard-area-card) .card-suit,
+:host(.pai-area-card) .card-suit {
+  align-self: stretch;
+  justify-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(0.08rem);
+}
+:host(.discard-area-card) .card-suit > span,
+:host(.pai-area-card) .card-suit > span {
+  display: block;
+  flex: none;
+  width: 100%;
+  text-align: center;
+}
+:host(.discard-area-card.has-desc) .pai-desc,
+:host(.pai-area-card.has-desc) .pai-desc { margin-top: auto; }
+
 /* Opponents' private areas stay face-down unless the card has been revealed. */
 :host(.hand-area-card:not(.current-player)) .card-front,
 :host(.other1-area-card:not(.current-player)) .card-front,
@@ -590,12 +641,12 @@ span.spade::before { content: "♠"; }
 :host(.discard-area-card) .card-block.show-front .card-front {
   background: linear-gradient(145deg, #fff8e5, #dfc891);
 }
-:host(.discard-area-card) .card-suit .heart,
-:host(.discard-area-card) .card-suit .diamond {
+:host(.discard-area-card) .card-suit.heart,
+:host(.discard-area-card) .card-suit.diamond {
   color: #b3342a;
 }
-:host(.discard-area-card) .card-suit .spade,
-:host(.discard-area-card) .card-suit .club {
+:host(.discard-area-card) .card-suit.spade,
+:host(.discard-area-card) .card-suit.club {
   color: #172820;
 }
 
@@ -607,18 +658,47 @@ span.spade::before { content: "♠"; }
   box-sizing:border-box; display:grid; grid-template-columns:1.15rem minmax(0,1fr);
   align-items:center; justify-items:center; width:100%; height:100%; padding:.3rem .22rem;
 }
-:host(.recent-public-card) .card-suit { align-self:start; justify-self:start; font:800 .88rem/1 Georgia,serif; }
-:host(.recent-public-card) .card-suit > span { display:flex; flex-direction:column; align-items:center; gap:.08rem; }
+:host(.recent-public-card) .card-suit { align-self:stretch; justify-self:start; display:flex; flex-direction:column; align-items:center; font:800 .88rem/1 Georgia,serif; }
+:host(.recent-public-card) .card-suit > span { box-sizing:border-box; display:block; flex:none; width:100%; text-align:center; }
 :host(.recent-public-card) .info-line { min-width:0; max-height:100%; overflow:hidden; }
 :host(.recent-public-card) .pai-name {
   display:block; width:auto; max-height:100%; margin:0; overflow:hidden;
   writing-mode:vertical-rl; text-orientation:upright; font-size:.72rem; font-weight:800;
   line-height:1; letter-spacing:.035rem; white-space:nowrap;
 }
-:host(.recent-public-card.has-desc) .desc-line { display:none; }
+:host(.recent-public-card.has-desc) .pai-desc { margin-top:auto; }
 @media (max-width:620px) {
   :host(.recent-public-card) { flex-basis:40px; width:40px; height:54px; }
   :host(.recent-public-card) .card-front { grid-template-columns:12px minmax(0,1fr); padding:3px 2px; }
   :host(.recent-public-card) .card-suit { font-size:10px; }
   :host(.recent-public-card) .pai-name { font-size:9px; letter-spacing:0; }
+}
+
+/* The card title occupies the second column, stays vertical, and starts at the top edge. */
+:host(.zhuang-area-card) .info-line,
+:host(.hand-area-card) .info-line,
+:host(.other1-area-card) .info-line,
+:host(.other2-area-card) .info-line,
+:host(.pan-area-card) .info-line,
+:host(.discard-area-card) .info-line,
+:host(.pai-area-card) .info-line,
+:host(.zhuang-area-card.inspection-tile) .info-line,
+:host(.recent-public-card) .info-line {
+  align-self: start;
+  justify-self: end;
+  transform: translateX(-0.08rem);
+}
+:host(.zhuang-area-card) .pai-name,
+:host(.hand-area-card) .pai-name,
+:host(.other1-area-card) .pai-name,
+:host(.other2-area-card) .pai-name,
+:host(.pan-area-card) .pai-name,
+:host(.discard-area-card) .pai-name,
+:host(.pai-area-card) .pai-name,
+:host(.zhuang-area-card.inspection-tile) .pai-name,
+:host(.recent-public-card) .pai-name {
+  margin: 0;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  text-align: start;
 }

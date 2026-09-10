@@ -81,6 +81,8 @@ class gameController {
       } else {
         patch[`${cardPath}/show`] = '1';
       }
+      const generalName=jiangKu[sourceCards[cardKey].id]?.name||'未知武将';
+      Object.assign(patch,this.actionHintPatch(ACTION_HINT_OPCODE.REVEAL_GENERAL,[generalName]));
       await update(ref(this.db), patch);
       released = true;
       return true;

@@ -107,9 +107,7 @@ class SgJiangArea extends SgArea {
     } else if (this.selectedGenerals.length < 2) {
       this.selectedGenerals.push(cardWc);
     }
-    this.selectedGenerals.forEach((card, selectedIndex) =>
-      card.setSelectedForLockIn(true, selectedIndex === 0 ? "主将" : "副将")
-    );
+    this.selectedGenerals.forEach(card => card.setSelectedForLockIn(true));
     this.dispatchSelectionChange();
   }
 
@@ -132,7 +130,7 @@ class SgJiangArea extends SgArea {
     Object.values(this.cards).forEach((card) => {
       card.classList.toggle(
         "selection-unavailable",
-        selectionFull && !this.selectedGenerals.includes(card)
+        this.selectionLocked || (selectionFull && !this.selectedGenerals.includes(card))
       );
     });
   }

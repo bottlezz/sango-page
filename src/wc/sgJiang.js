@@ -268,10 +268,9 @@ class SgJiang extends HTMLElement {
     if (dialog.open) dialog.close();
   }
 
-  setSelectedForLockIn(selected, position = "") {
+  setSelectedForLockIn(selected) {
     const block = this.shadowRoot.querySelector(".card-block");
     block.classList.toggle("selected-general", selected);
-    block.dataset.selectionLabel = selected ? position : "";
     this.shadowRoot.querySelector(`button[name="select-btn"]`).textContent =
       selected ? "取消" : "选择";
   }

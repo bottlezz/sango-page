@@ -8,7 +8,7 @@ export const ACTION_HINT_OPCODE = Object.freeze({
   RESET_DECK:'r', RESET_TABLE:'x',
   PLAY:'p', DISCARD:'e', DRAW:'w', REVEAL_JUDGMENT:'v',
   TAKE_DISCARD:'k', REARRANGE_DECK:'u', REVEAL_CARDS:'l', VIEW_CARDS:'q',
-  LOCK_GENERALS:'g',
+  LOCK_GENERALS:'g', REVEAL_GENERAL:'h',
 });
 
 const VALID_OPCODES = new Set(Object.values(ACTION_HINT_OPCODE));
@@ -44,6 +44,7 @@ export function decodeActionHint(value) {
 
 function playerName(room,seat){const name=room?.[seat]?.name;return name&&name!=='empty'?name:seat;}
 function areaName(room,path){const [owner,area]=path.split('/');return owner==='tableDecks'?(AREA_NAMES[area]||area):`${playerName(room,owner)} 的${AREA_NAMES[area]||area}`;}
+function suitIcon(suit){return {heart:'♡',diamond:'♢',spade:'♠',club:'♣'}[suit]||suit;}
 function areas(room){
   const result={};
   for(const [owner,data] of Object.entries(room||{})){
@@ -137,7 +138,7 @@ function hintedChanges(hint,before,after){
     case ACTION_HINT_OPCODE.REARRANGE_DECK:return ['调整了牌堆顺序'];
     case ACTION_HINT_OPCODE.REVEAL_CARDS:{
       const cards=revealedCardsFromHint(hint);
-      return cards.length?[`亮出了 ${cards.map(card=>`${card.suit} ${card.rank} ${card.name}`).join('、')}`]:[];
+      return cards.length?[`亮出了 ${cards.map(card=>`${suitIcon(card.suit)} ${card.rank} ${card.name}`).join('、')}`]:[];
     }
     case ACTION_HINT_OPCODE.VIEW_CARDS:{
       const counts=new Map();
@@ -145,6 +146,7 @@ function hintedChanges(hint,before,after){
       return [...counts].map(([path,count])=>`观看了 ${areaName(after,path)} ${count} 张牌`);
     }
     case ACTION_HINT_OPCODE.LOCK_GENERALS:return ['锁定了武将'];
+    case ACTION_HINT_OPCODE.REVEAL_GENERAL:return [`亮将 ${hint.args[0]||'未知武将'}`];
     default:return [];
   }
 }

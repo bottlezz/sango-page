@@ -186,18 +186,22 @@
   box-shadow: inset 0 0 0 3px #e2b84b, 0 0 1rem rgba(226, 184, 75, 0.42);
 }
 .card-block.selected-general::after {
-  content: attr(data-selection-label);
+  content: "✓";
   position: absolute;
   top: 0.25rem;
-  left: 50%;
+  right: 0.25rem;
   z-index: 6;
-  transform: translateX(-50%);
-  padding: 0.16rem 0.38rem;
-  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 1px solid rgba(255,245,210,.72);
+  border-radius: 50%;
   color: #241800;
   background: #e2b84b;
-  font-size: 0.62rem;
-  font-weight: 800;
+  box-shadow: 0 0.2rem 0.55rem rgba(0,0,0,.5);
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 :host(.selection-card) .select-ctrl:disabled {
   color: #a9a18d;

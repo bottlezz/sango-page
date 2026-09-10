@@ -3,6 +3,18 @@ import {createCardReveals, createCardTransfers, createLocalLogEntry} from '../lo
 
 const LOCAL_LOG_LIMIT = 500;
 
+function appendLogText(target,value){
+  const parts=String(value).split(/([♡♢♠♣])/);
+  parts.forEach(part=>{
+    if(!/^[♡♢♠♣]$/.test(part)){if(part)target.append(document.createTextNode(part));return;}
+    const icon=document.createElement('span');
+    icon.className='log-suit';
+    icon.textContent=part;
+    icon.setAttribute('aria-label',({'♡':'红桃','♢':'方片','♠':'黑桃','♣':'梅花'})[part]);
+    target.append(icon);
+  });
+}
+
 export function installActionLog(table) {
   const panel = document.createElement('section');
   panel.className = 'action-log';
@@ -39,9 +51,10 @@ export function installActionLog(table) {
     time.textContent=date.toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
     time.title=date.toLocaleString('zh-CN');time.dateTime=date.toISOString();
     const text=row.querySelector('p'),message=`${entry.changes.join('；')}。`;
-    if(entry.actor){const actor=document.createElement('b');actor.textContent=`${entry.actor} `;text.replaceChildren(actor,document.createTextNode(message));}
-    else text.textContent=message;
-    panel.querySelector('.log-latest').textContent=`${entry.actor?`${entry.actor} `:''}${message}`;
+    if(entry.actor){const actor=document.createElement('b');actor.textContent=`${entry.actor} `;text.append(actor);}
+    appendLogText(text,message);
+    const latest=panel.querySelector('.log-latest');latest.replaceChildren();
+    appendLogText(latest,`${entry.actor?`${entry.actor} `:''}${message}`);
     list.append(row);
     while(list.children.length>LOCAL_LOG_LIMIT)list.firstElementChild.remove();
     count.textContent=`本地记录 · ${list.children.length} 条`;

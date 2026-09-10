@@ -1,11 +1,14 @@
-// Capture visual positions before rendering; only additions trigger this effect.
+// Capture visual positions before rendering so surviving cards can animate into
+// their new slots after either an insertion or a removal.
 export function captureCardPositions(nodes, keyFor) {
   return new Map([...nodes].map(node => [keyFor(node), node.getBoundingClientRect()]));
 }
 
-export function animateCardInsertions(nodes, previous, keyFor) {
+export function animateCardLayoutChanges(nodes, previous, keyFor) {
   const cards=[...nodes];
-  if(!cards.some(node=>!previous.has(keyFor(node)))||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const keys=new Set(cards.map(keyFor));
+  const membershipChanged=keys.size!==previous.size||cards.some(node=>!previous.has(keyFor(node)));
+  if(!membershipChanged||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   cards.forEach(node=>{
     const rect=node.getBoundingClientRect();
     if(!rect.width||!rect.height)return;

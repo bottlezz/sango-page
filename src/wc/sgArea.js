@@ -15,7 +15,7 @@ import "./sgCard.js";
 import commonCss from "./css/common.css";
 import areaCss from "./css/sgArea.css";
 import { orderedEntries } from "../cardOrder.mjs";
-import {captureCardPositions, animateCardInsertions} from './cardInsertionAnimation.js';
+import {captureCardPositions, animateCardLayoutChanges} from './cardInsertionAnimation.js';
 
 class SgArea extends HTMLElement {
   deckRef;
@@ -195,7 +195,7 @@ class SgArea extends HTMLElement {
       if (this.unSub) return;
       let initialized=false;
       this.unSub = onValue(this.cardsRef, snapshot => {
-      const animate=initialized&&this.classList.contains('current-player')&&['hand-area','other1-area','other2-area'].includes(this.areaType);
+      const animate=initialized&&['hand-area','other1-area','other2-area','zhuang-area','pan-area'].includes(this.areaType);
       const keyFor=card=>card.cardRef.key;
       const previous=animate?captureCardPositions(Object.values(this.cards),keyFor):null;
       const entries = orderedEntries(snapshot.val() || {}, this.areaType === 'pan-area');
@@ -219,7 +219,7 @@ class SgArea extends HTMLElement {
       });
       this.cardCount = entries.length;
       initialized=true;
-      if(previous)animateCardInsertions(Object.values(this.cards),previous,keyFor);
+      if(previous)animateCardLayoutChanges(Object.values(this.cards),previous,keyFor);
       this.classList.toggle('has-cards', this.cardCount > 0);
       this.dispatchEvent(new CustomEvent('cards-updated', {bubbles: true, composed: true}));
       });

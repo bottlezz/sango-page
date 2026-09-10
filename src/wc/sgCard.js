@@ -27,9 +27,8 @@ ${css}
 <div name="widget" class="card-block">
   <div class="card-widget" part="card-widget">
     <div class="card-front" part="card-front">
-      <div class="card-suit"><span name="pai-rank"></span></div>
+      <div class="card-suit"><span class="suit-mark" aria-hidden="true"></span><span name="pai-rank"></span><span class="pai-desc"></span></div>
       <div class ="info-line"><span class="pai-name"></span></div>
-      <div class="info-line desc-line"><span class="pai-desc"></span></div>
     </div>
     <div class="card-back" part="card-back"></div>
   </div>
@@ -124,10 +123,10 @@ class SgCard extends HTMLElement {
     const rankSpan = this.shadowRoot.querySelector(`span[name="pai-rank"]`);
     const descSpan = this.shadowRoot.querySelector(".pai-desc");
     const nameSpan = this.shadowRoot.querySelector(".pai-name");
+    const suitColumn = this.shadowRoot.querySelector(".card-suit");
 
-    rankSpan.innerHTML = itemRank;
-
-    rankSpan.className = itemSuit;
+    rankSpan.textContent = itemRank;
+    suitColumn.className = `card-suit ${itemSuit}`;
     nameSpan.innerHTML = itemName;
     if (itemDesc) {
       descSpan.innerHTML = itemDesc;

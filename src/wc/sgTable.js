@@ -219,12 +219,11 @@ class SgTable extends HTMLElement {
     moveButton.textContent='移动';
     moveButton.addEventListener('click',()=>this.openMovePlayerPicker());
 
-    cardMenu.appendChild(drawButton);
-    cardMenu.appendChild(discardButton);
-
     cardMenu.appendChild(playButton);
+    cardMenu.appendChild(drawButton);
     cardMenu.appendChild(showButton);
     cardMenu.appendChild(moveButton);
+    cardMenu.appendChild(discardButton);
     cardMenu.appendChild(cancelButton);
     // cardMenu.appendChild(peakButton);
     return cardMenu;
@@ -310,6 +309,8 @@ class SgTable extends HTMLElement {
       && selected.every(card => card.dataset.path?.includes(`/${currentPlayer}/`));
     const isDiscardSelection = selected.length > 0
       && selected.every(card => card.dataset.path?.includes('/tableDecks/discard/cards/'));
+    const hasOnlyOwnHandSelection = Boolean(currentPlayer) && selected.length > 0 && selected.every(card =>
+      card.dataset.path?.includes(`/${currentPlayer}/hand/cards/`));
     const remoteAreaPanelOpen = this.playerDoms.some(player =>
       !player.classList.contains('current-player')
       && player.shadowRoot?.querySelector('.pai-info:popover-open'));
@@ -323,7 +324,8 @@ class SgTable extends HTMLElement {
       this.cardMenu.querySelector(".selection-label").textContent = `${source} · ${selected.length} 张`;
       this.cardMenu.querySelectorAll('[data-selection-action]').forEach(button => {
         const action = button.dataset.selectionAction;
-        button.hidden = isDiscardSelection && !['take', 'cancel'].includes(action);
+        button.hidden = (isDiscardSelection && !['take', 'cancel'].includes(action))
+          || (action === 'take' && hasOnlyOwnHandSelection);
       });
       const showButton = this.cardMenu.querySelector('[data-selection-action="show"]');
       if (showButton && !showButton.hidden) {

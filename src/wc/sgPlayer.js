@@ -15,12 +15,15 @@ import commonCss from "./css/common.css";
 import sgPlayerCss from "./css/sgPlayer.css";
 import paiKu from "../data/pai.json";
 import { judgmentEffects } from "../cardOrder.mjs";
+import mobilePlayerCss from "./css/mobilePlayer.css";
+import { installMobilePlayerView } from "./mobilePlayerView.js";
 
 const template = document.createElement("template");
 template.innerHTML = `
 <style>
 ${commonCss}
 ${sgPlayerCss}
+${mobilePlayerCss}
 </style>
 <div name="widget" class="widget">
   <div name="player-game-area">
@@ -200,9 +203,10 @@ class SgPlayer extends HTMLElement {
     areaActions.className = "area-panel-actions";
     areaActions.hidden = true;
     this.areaActions = areaActions;
-    for (const [label, action] of [["收入手牌", "drawPai"], ["弃置", "discardPai"], ["观看", "viewPai"], ["亮牌 / 暗置", "showPai"], ["取消选择", "unselectCard"]]) {
+    for (const [label, action] of [["收入手牌", "drawPai"], ["弃置", "discardPai"], ["观看", "viewPai"], ["亮牌", "showPai"], ["取消选择", "unselectCard"]]) {
       const button = document.createElement("button");
       button.type = "button";
+      button.dataset.areaAction = action;
       button.textContent = label;
       button.addEventListener("click", async () => {
         const cards = Object.values(this.inspectedArea?.cards || {});
@@ -324,6 +328,8 @@ class SgPlayer extends HTMLElement {
         this.hpWc.updateCurHp(Number(this.hpWc.cur) - 1);
       });
 
+    installMobilePlayerView(this);
+
     // this.addEventListener("pointerenter", (e) => {
     //   console.log("touchoverpalyer");
     // });
@@ -367,6 +373,7 @@ class SgPlayer extends HTMLElement {
     this.gameController.lockPlayerSelection();
     this.playerGameArea.appendChild(this.zhuangArea);
     this.widget.appendChild(this.playerGameArea);
+    if (this.classList.contains("mobile-presentation")) this.setPresentationMode?.(true);
   }
 
   renderJiang() {}
@@ -392,6 +399,7 @@ class SgPlayer extends HTMLElement {
     this.hpWc = hpWc;
     hpSpan.append(hpWc);
     hpWc.init(child(playerRef, "/hp"), gameController);
+    hpWc.addEventListener('hp-updated', () => this.updateMobileView?.());
 
     const playerKeySpan = this.shadowRoot.querySelector(".player-key");
     const playerRoleSpan = this.shadowRoot.querySelector(".player-role");
@@ -404,6 +412,7 @@ class SgPlayer extends HTMLElement {
         const playerName = snapshot.val();
         playerNameItem.textContent = playerName;
         playerNameItem.title = playerName;
+        this.updateMobileView?.();
         if (this.gameController.userName == playerName) {
           this.assginAsCurrentPlayer();
         }
@@ -417,6 +426,7 @@ class SgPlayer extends HTMLElement {
         playerRoleSpan.classList.remove('role-lord','role-renegade','role-loyal','role-rebel');
         if(roleClass)playerRoleSpan.classList.add(roleClass);
         playerRoleSpan.textContent = playerRole;
+        this.updateMobileView?.();
       }
     });
 
@@ -447,6 +457,7 @@ class SgPlayer extends HTMLElement {
             .classList.toggle("active", debuff[i] != "0");
         }
         console.log(this.debuff);
+        this.updateMobileView?.();
       }
     });
 
@@ -498,6 +509,7 @@ class SgPlayer extends HTMLElement {
       const count = area.cardCount || 0;
       span.textContent = count;
       area.dataset.count = count;
+      this.updateMobileView?.();
     });
     if (isLocalPlayer) {
       bindAreaCount(this.handArea, this.handCountSpan);
@@ -516,6 +528,7 @@ class SgPlayer extends HTMLElement {
           }
           span.textContent = count;
           area.dataset.count = count;
+          this.updateMobileView?.();
           });
         });
     }
@@ -527,6 +540,10 @@ class SgPlayer extends HTMLElement {
     this.jiang1Area.init(child(playerRef, `/jiang1`), this.gameController);
     this.zhuangArea.init(child(playerRef, `/zhuang`), this.gameController);
     this.panArea.init(child(playerRef, `/pan`), this.gameController);
+    this.zhuangArea.addEventListener('cards-updated', () => this.updateMobileView?.());
+    this.panArea.addEventListener('cards-updated', () => this.updateMobileView?.());
+    this.jiang1Area.addEventListener('cards-updated', () => this.updateMobileView?.());
+    this.jiang2Area.addEventListener('cards-updated', () => this.updateMobileView?.());
     this.other1Area.init(child(playerRef, `/other1`), this.gameController, {subscribe:isLocalPlayer});
     this.other2Area.init(child(playerRef, `/other2`), this.gameController, {subscribe:isLocalPlayer});
     this.jiang2Area.init(child(playerRef, `/jiang2`), this.gameController);
@@ -557,6 +574,7 @@ class SgPlayer extends HTMLElement {
     panel.setAttribute("aria-label", `${label}区域操作`);
     const name = this.shadowRoot.querySelector(".player-name").textContent || this.playerRef.key;
     panel.querySelector("strong").textContent = `${name} · ${label}`;
+    this.updateMobileInspectionTabs?.(area);
     const panelAreas = [this.handArea, this.other1Area, this.other2Area];
     if (!panelAreas.includes(area)) {
       this.inspectedAreaRestore = {
@@ -584,6 +602,14 @@ class SgPlayer extends HTMLElement {
     const selected = Object.values(this.inspectedArea?.cards || {})
       .filter(card => this.gameController?.selectedCards.includes(card));
     this.areaActions.hidden = selected.length === 0;
+    const showButton = this.areaActions.querySelector('[data-area-action="showPai"]');
+    if (showButton && selected.length) {
+      const showStates = new Set(selected.map(card => String(card.cardData?.show || '0') === '1'));
+      const mixed = showStates.size > 1;
+      showButton.textContent = showStates.has(true) && !mixed ? '暗置' : '亮牌';
+      showButton.disabled = mixed;
+      showButton.title = mixed ? '请选择亮出状态相同的牌' : '';
+    }
   }
 
   updateInspectionCardTiles() {

@@ -5,12 +5,14 @@ import { ref } from "firebase/database";
 import { gameController } from "../gameController.js";
 import commonCss from "./css/common.css";
 import tableCss from "./css/sgTable.css";
+import mobileBoardCss from "./css/mobileBoard.css";
 import { SgPlayer } from "./sgPlayer.js";
 import "./sgJiangArea.js";
 import { installCardDrag } from "../cardDrag.js";
 import { installActionLog } from './actionLogPanel.js';
 import { installPublicTablePanel } from './publicTablePanel.js';
 import { installCardTransferAnimation } from './cardTransferAnimation.js';
+import { installMobileBoardLayout } from './mobileBoardLayout.js';
 
 class SgTable extends HTMLElement {
   db;
@@ -31,6 +33,7 @@ class SgTable extends HTMLElement {
     const style = document.createElement("style");
     style.append(commonCss);
     style.append(tableCss);
+    style.append(mobileBoardCss);
     const container = document.createElement("div");
     container.className = "table-container";
 
@@ -77,6 +80,7 @@ class SgTable extends HTMLElement {
     this.disposeDrag = installCardDrag(this);
     this.disposeTransferAnimation = installCardTransferAnimation(this);
     this.disposeLog = installActionLog(this);
+    this.disposeMobileLayout = installMobileBoardLayout(this);
   }
 
   getRoundMenu() {
@@ -130,7 +134,7 @@ class SgTable extends HTMLElement {
   }
 
   disconnectedCallback() {
-    queueMicrotask(() => { if (!this.isConnected) {this.disposeDrag?.();this.disposeTransferAnimation?.();this.disposeLog?.();this.disposePublicPanel?.();} });
+    queueMicrotask(() => { if (!this.isConnected) {this.disposeMobileLayout?.();this.disposeDrag?.();this.disposeTransferAnimation?.();this.disposeLog?.();this.disposePublicPanel?.();} });
   }
 
   getCurrentPlayerDom() {
@@ -200,7 +204,7 @@ class SgTable extends HTMLElement {
     });
     const showButton = document.createElement("button");
     showButton.dataset.selectionAction = "show";
-    showButton.innerHTML = "亮牌 / 暗置";
+    showButton.innerHTML = "亮牌";
     showButton.addEventListener("click", () => {
       this.gameController.showSelectedCards().catch(error => window.alert(error.message || '更新失败，请重试'));
     });
@@ -230,6 +234,7 @@ class SgTable extends HTMLElement {
     const container = this.shadowRoot.querySelector(".table-container");
     const tableDeckWidget = document.createElement("div");
     tableDeckWidget.classList.add("table-public");
+    this.tableDeckWidget = tableDeckWidget;
 
 
     const cardMenu = this.getCardMenu();
@@ -310,6 +315,8 @@ class SgTable extends HTMLElement {
       && player.shadowRoot?.querySelector('.pai-info:popover-open'));
     const showMainMenu = (isOwnSelection || isDiscardSelection) && !remoteAreaPanelOpen;
 
+    this.classList.toggle('has-card-selection', selected.length > 0);
+
     this.cardMenu.classList.toggle("hide", !showMainMenu);
     if (showMainMenu) {
       const source = isDiscardSelection ? "弃牌堆" : "自己的牌";
@@ -318,6 +325,14 @@ class SgTable extends HTMLElement {
         const action = button.dataset.selectionAction;
         button.hidden = isDiscardSelection && !['take', 'cancel'].includes(action);
       });
+      const showButton = this.cardMenu.querySelector('[data-selection-action="show"]');
+      if (showButton && !showButton.hidden) {
+        const showStates = new Set(selected.map(card => String(card.cardData?.show || '0') === '1'));
+        const mixed = showStates.size > 1;
+        showButton.textContent = showStates.has(true) && !mixed ? '暗置' : '亮牌';
+        showButton.disabled = mixed;
+        showButton.title = mixed ? '请选择亮出状态相同的牌' : '';
+      }
     }
 
     this.playerDoms.forEach(player => player.updateAreaActions?.());

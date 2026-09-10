@@ -600,19 +600,25 @@ span.spade::before { content: "♠"; }
 }
 
 /* Large public discard card: same two-column language as local narrow cards. */
-:host(.recent-public-card) { display:block; flex:0 0 5.25rem; width:5.25rem; height:6.125rem; }
+:host(.recent-public-card) { display:block; flex:0 0 4rem; width:4rem; height:5.25rem; }
 :host(.recent-public-card) .card-block,
 :host(.recent-public-card) .card-widget { display:block; width:100%; height:100%; }
 :host(.recent-public-card) .card-front {
-  box-sizing:border-box; display:grid; grid-template-columns:1.5rem minmax(0,1fr);
-  align-items:center; justify-items:center; width:100%; height:100%; padding:.38rem .3rem;
+  box-sizing:border-box; display:grid; grid-template-columns:1.15rem minmax(0,1fr);
+  align-items:center; justify-items:center; width:100%; height:100%; padding:.3rem .22rem;
 }
-:host(.recent-public-card) .card-suit { align-self:start; justify-self:start; font:800 1.1rem/1 Georgia,serif; }
+:host(.recent-public-card) .card-suit { align-self:start; justify-self:start; font:800 .88rem/1 Georgia,serif; }
 :host(.recent-public-card) .card-suit > span { display:flex; flex-direction:column; align-items:center; gap:.08rem; }
 :host(.recent-public-card) .info-line { min-width:0; max-height:100%; overflow:hidden; }
 :host(.recent-public-card) .pai-name {
   display:block; width:auto; max-height:100%; margin:0; overflow:hidden;
-  writing-mode:vertical-rl; text-orientation:upright; font-size:.86rem; font-weight:800;
-  line-height:1; letter-spacing:.06rem; white-space:nowrap;
+  writing-mode:vertical-rl; text-orientation:upright; font-size:.72rem; font-weight:800;
+  line-height:1; letter-spacing:.035rem; white-space:nowrap;
 }
 :host(.recent-public-card.has-desc) .desc-line { display:none; }
+@media (max-width:620px) {
+  :host(.recent-public-card) { flex-basis:40px; width:40px; height:54px; }
+  :host(.recent-public-card) .card-front { grid-template-columns:12px minmax(0,1fr); padding:3px 2px; }
+  :host(.recent-public-card) .card-suit { font-size:10px; }
+  :host(.recent-public-card) .pai-name { font-size:9px; letter-spacing:0; }
+}

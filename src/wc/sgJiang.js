@@ -107,11 +107,8 @@ class SgJiang extends HTMLElement {
   }
 
   showJiang() {
-    if (this.cardData.show != "1") {
-      this.gameController.showCard(this.cardRef);
-    } else {
-      this.gameController.resetCard(this.cardRef);
-    }
+    if (this.cardData.show == "1") return Promise.resolve(false);
+    return this.gameController.revealGeneral(this.cardRef);
   }
 
   init(cardRef, cardData, gameController, options = {}) {
@@ -207,12 +204,10 @@ class SgJiang extends HTMLElement {
     );
     const revealed = this.cardData.show == "1";
     showButton.classList.toggle("revealed", revealed);
-    showButton.title = revealed ? "暗置" : "亮将";
-    showButton.querySelector(".sr-only").textContent = revealed ? "暗置" : "亮将";
-    showButton.setAttribute(
-      "aria-label",
-      revealed ? "将此武将暗置" : "亮将给其他玩家查看"
-    );
+    showButton.hidden = revealed;
+    showButton.title = "亮将";
+    showButton.querySelector(".sr-only").textContent = "亮将";
+    showButton.setAttribute("aria-label", "亮将给其他玩家查看");
   }
 
   initControls() {
@@ -239,9 +234,13 @@ class SgJiang extends HTMLElement {
         if (event.target === event.currentTarget) this.closeDetails();
       });
     const showButton = this.shadowRoot.querySelector(`button[name="show-btn"]`);
-    showButton.addEventListener("click", (event) => {
+    showButton.addEventListener("click", async (event) => {
       event.stopPropagation();
-      this.showJiang();
+      try {
+        await this.showJiang();
+      } catch (error) {
+        window.alert(error.message || "亮将失败，请重试");
+      }
     });
     this.shadowRoot
       .querySelector(`button[name="select-btn"]`)

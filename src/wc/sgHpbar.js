@@ -128,6 +128,7 @@ class sgHpBar extends HTMLElement {
     count.className = "heart-count";
     count.textContent = `${this.cur} / ${this.max}`;
     hpBarSpan.append(heart, count);
+    this.dispatchEvent(new CustomEvent('hp-updated', {bubbles:true, composed:true, detail:{cur:this.cur,max:this.max}}));
   }
 
   updateCurHp(i) {

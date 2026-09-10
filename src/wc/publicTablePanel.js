@@ -4,7 +4,7 @@ import {ACTION_HINT_OPCODE, decodeActionHint} from '../localActionLog.mjs';
 import './sgCard.js';
 import {captureCardPositions, animateCardInsertions} from './cardInsertionAnimation.js';
 
-const RECENT_LIMIT=6;
+const RECENT_LIMIT=8;
 
 export function installPublicTablePanel(table,host,cardMenu){
   const controller=table.gameController,db=controller.db,prefix=`game/${controller.gameId}`;
@@ -111,6 +111,13 @@ export function installPublicTablePanel(table,host,cardMenu){
   function openSort(){
     const cards=deckEntries();draft={initial:cards.slice(),top:cards.slice(),bottom:[],draw:[],viewed:new Set()};renderSort();sortDialog.showModal();
   }
+  table.publicPanelApi={
+    draw:count=>run(()=>controller.drawTopCards(count)),
+    reveal:()=>run(()=>controller.revealTopCard()),
+    shuffle:()=>run(()=>controller.resetPai()),
+    openDeck:openSort,
+    openDiscard:()=>{renderDiscardDialog();discardDialog.showModal();},
+  };
   function sortLane(key,title){
     const section=document.createElement('section');section.className=`sort-lane sort-${key}`;section.innerHTML=`<h3>${title}</h3>`;
     if(!draft[key].length)section.insertAdjacentHTML('beforeend','<p class="muted">暂无卡牌</p>');
@@ -131,7 +138,7 @@ export function installPublicTablePanel(table,host,cardMenu){
     sortDialog.replaceChildren();
     const header=document.createElement('header');header.innerHTML='<h2>展开牌堆 · 调整顺序</h2><button data-dialog-close>关闭 ×</button>';
     const intro=document.createElement('p');intro.innerHTML='<span class="privacy">仅你可见</span> 在牌顶列观看、排序或分配卡牌，确认后一次生效。';
-    const lanes=document.createElement('div');lanes.className='deck-sort-lanes';lanes.append(sortLane('top','牌顶列 · 从上到下'),sortLane('bottom','牌底列'),sortLane('draw','确认摸牌列'));
+    const lanes=document.createElement('div');lanes.className='deck-sort-lanes';lanes.append(sortLane('top','牌顶 · 当前顺序'),sortLane('bottom','牌底'),sortLane('draw','摸牌'));
     const note=document.createElement('p');note.className='muted';note.textContent='牌底列和确认摸牌列为结果区；放错时可重置排列。';
     const footer=document.createElement('footer');footer.innerHTML=`<button data-sort-reset>重置排列</button><span></span><button data-dialog-close>取消</button><button class="primary" data-sort-commit>确认顺序并摸牌${draft.draw.length?`（${draft.draw.length}）`:''}</button>`;
     sortDialog.append(header,intro,lanes,note,footer);
@@ -181,5 +188,5 @@ export function installPublicTablePanel(table,host,cardMenu){
     }),
   ];
   renderDeck();renderDiscard();
-  return()=>{subscriptions.forEach(unsubscribe=>unsubscribe());document.removeEventListener('click',closeDraw);table.removeEventListener('player-seat-changed',refreshPlayer);discardDialog.remove();sortDialog.remove();};
+  return()=>{subscriptions.forEach(unsubscribe=>unsubscribe());document.removeEventListener('click',closeDraw);table.removeEventListener('player-seat-changed',refreshPlayer);discardDialog.remove();sortDialog.remove();table.publicPanelApi=null;};
 }

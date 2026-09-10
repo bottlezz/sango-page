@@ -48,6 +48,47 @@ class gameController {
     return this.setScalarValue(child(cardRef, "/show"), "1");
   }
 
+  async revealGeneral(cardRef) {
+    const base = ref(this.db).toString();
+    const cardPath = cardRef.toString().replace(base, '');
+    const match = cardPath.match(/^game\/([^/]+)\/(p\d+)\/(jiang1|jiang2)\/cards\/([^/]+)$/);
+    if (!match || match[1] !== String(this.gameId)) return this.showCard(cardRef);
+    const [, , playerKey, sourceArea, cardKey] = match;
+    const playerPath = `game/${this.gameId}/${playerKey}`;
+    const mainPath = `${playerPath}/jiang1/cards`;
+    const vicePath = `${playerPath}/jiang2/cards`;
+    const locks = await this.acquireGameLocks([
+      `area:${mainPath}`,
+      `area:${vicePath}`,
+      `card:${cardPath}`,
+    ]);
+    let released = false;
+    try {
+      const [mainSnapshot, viceSnapshot] = await Promise.all([
+        get(ref(this.db, mainPath)),
+        get(ref(this.db, vicePath)),
+      ]);
+      const mainCards = mainSnapshot.val() || {};
+      const viceCards = viceSnapshot.val() || {};
+      const sourceCards = sourceArea === 'jiang1' ? mainCards : viceCards;
+      if (!sourceCards[cardKey]) throw Error('武将位置已改变，请重试');
+      const hasRevealed = [...Object.values(mainCards), ...Object.values(viceCards)]
+        .some(card => card?.show === '1');
+      const patch = locks.releasePatch();
+      if (!hasRevealed && sourceArea === 'jiang2') {
+        patch[mainPath] = {...viceCards, [cardKey]: {...viceCards[cardKey], show:'1'}};
+        patch[vicePath] = mainCards;
+      } else {
+        patch[`${cardPath}/show`] = '1';
+      }
+      await update(ref(this.db), patch);
+      released = true;
+      return true;
+    } finally {
+      if (!released) await locks.release();
+    }
+  }
+
   resetCard(cardRef) {
     return this.setScalarValue(child(cardRef, "/show"), "0");
   }
@@ -229,6 +270,7 @@ class gameController {
       const patch=locks.releasePatch();
       snapshots.forEach((snapshot,index)=>{patch[sources[index]]=null;patch[`${targetPaths[index]}/${snapshot.key}`]=snapshot.val();});
       patch[`${playerPath}/jiangLocked`]=true;
+      Object.assign(patch,this.actionHintPatch(ACTION_HINT_OPCODE.LOCK_GENERALS));
       await update(ref(this.db),patch);released=true;return true;
     } finally {if(!released)await locks.release();}
   }
@@ -493,12 +535,14 @@ class gameController {
   async showSelectedCards(cards = [...this.selectedCards]) {
     const uniqueCards = [...new Set(cards)];
     if (!uniqueCards.length) return;
+    const showStates = new Set(uniqueCards.map(card => String(card.cardData?.show || '0') === '1'));
+    if (showStates.size > 1) throw Error('请选择亮出状态相同的牌');
+    const willReveal = !showStates.has(true);
     const base = ref(this.db).toString();
     const updates = {};
     const revealed = [];
     uniqueCards.forEach(card => {
       const path = card.cardRef.toString().replace(base, '');
-      const willReveal = card.cardData.show !== '1';
       updates[`${path}/show`] = willReveal ? '1' : '0';
       if (willReveal) {
         const data = paiKu[card.cardData.id];

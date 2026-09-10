@@ -29,6 +29,7 @@ function changesBetween(old, next) {
 function describeMoves(before, after, oldAreas, newAreas) {
   const removals = new Map(), additions = new Map(), moved = new Map(), groups = new Map();
   const add = (index, id, value) => index.set(id, [...(index.get(id) || []), value]);
+  const isGeneralArea = path => /^p\d+\/(jiang|jiang1|jiang2)$/.test(path);
   for (const path of new Set([...Object.keys(oldAreas), ...Object.keys(newAreas)])) {
     const old = oldAreas[path] || {}, next = newAreas[path] || {}, {removed, added} = changesBetween(old, next);
     removed.forEach(key => add(removals, old[key].id, {path, key}));
@@ -47,8 +48,9 @@ function describeMoves(before, after, oldAreas, newAreas) {
   }
   const moves = [...groups].map(([paths, count]) => {
     const [source, target] = paths.split('|');
+    if (isGeneralArea(source) && isGeneralArea(target)) return null;
     return `从 ${areaLabel(after, source)} 移除 ${count} 张牌，置入 ${areaLabel(after, target)}`;
-  });
+  }).filter(Boolean);
   return {moves, moved};
 }
 function detectDraw(before, after) {

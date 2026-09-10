@@ -26,6 +26,11 @@ export function installCardTransferAnimation(table){
     if(owner==='tableDecks')return areaHost(path);
     const player=/^p\d+$/.test(owner)?table.shadowRoot.querySelector(`sg-player[data-key="${owner}"]`):null;
     if(!player)return null;
+    if(owner===table.gameController.currentPlayer){
+      const generalSlots=player.shadowRoot?.querySelector(player.classList.contains('mobile-presentation')?'.mobile-general-slots':'.general-slots');
+      const generalRect=generalSlots?.getBoundingClientRect();
+      if(generalRect?.width&&generalRect?.height)return generalSlots;
+    }
     const property={hand:'handArea',zhuang:'zhuangArea',pan:'panArea',other1:'other1Area',other2:'other2Area'}[area];
     const candidate=property?player[property]:null,rect=candidate?.getBoundingClientRect();
     return rect?.width&&rect?.height?candidate:player;
@@ -74,7 +79,11 @@ export function installCardTransferAnimation(table){
     const group=document.createElement('div');group.className='card-reveal-group';
     const halfWidth=Math.min(240,Math.max(34,cards.length*35));
     group.style.left=`${Math.min(window.innerWidth-halfWidth-16,Math.max(halfWidth+16,rect.left+rect.width/2))}px`;
-    group.style.top=`${Math.min(window.innerHeight-54,Math.max(54,rect.top+rect.height/2))}px`;
+    const owner=String(target||'').split('/')[0],isLocalPlayer=owner===table.gameController.currentPlayer;
+    const centerY=isLocalPlayer
+      ? (rect.top>=128?rect.top-64:rect.bottom+64)
+      : rect.top+rect.height/2;
+    group.style.top=`${Math.min(window.innerHeight-64,Math.max(64,centerY))}px`;
     const label=document.createElement('span');label.className='card-reveal-heading';label.textContent='亮牌';
     const list=document.createElement('div');list.className='card-reveal-list';
     const suitMarks={heart:'♥',diamond:'♦',spade:'♠',club:'♣'};

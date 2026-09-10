@@ -8,6 +8,7 @@ export const ACTION_HINT_OPCODE = Object.freeze({
   RESET_DECK:'r', RESET_TABLE:'x',
   PLAY:'p', DISCARD:'e', DRAW:'w', REVEAL_JUDGMENT:'v',
   TAKE_DISCARD:'k', REARRANGE_DECK:'u', REVEAL_CARDS:'l', VIEW_CARDS:'q',
+  LOCK_GENERALS:'g',
 });
 
 const VALID_OPCODES = new Set(Object.values(ACTION_HINT_OPCODE));
@@ -143,6 +144,7 @@ function hintedChanges(hint,before,after){
       hint.args.forEach(path=>counts.set(path,(counts.get(path)||0)+1));
       return [...counts].map(([path,count])=>`观看了 ${areaName(after,path)} ${count} 张牌`);
     }
+    case ACTION_HINT_OPCODE.LOCK_GENERALS:return ['锁定了武将'];
     default:return [];
   }
 }

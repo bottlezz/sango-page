@@ -130,6 +130,10 @@ export function installCardDrag(table) {
   table.addEventListener('pointerdown',e=>{
     const card=e.composedPath().find(node=>node.localName==='sg-card');
     if(!card||e.button!==0||drag)return;
+    const area=areaOf(card),player=area?.getRootNode()?.host;
+    if(player?.localName==='sg-player'
+      && player.dataset.key!==controller.currentPlayer
+      && ['zhuang-area','pan-area'].includes(area?.areaType))return;
     drag={card,id:e.pointerId,startX:e.clientX,startY:e.clientY};
   },options);
   document.addEventListener('pointermove',e=>{

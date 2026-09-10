@@ -181,32 +181,37 @@ class SgTable extends HTMLElement {
     cardMenu.append(selectionLabel);
 
     const drawButton = document.createElement("button");
-    drawButton.innerHTML = "摸";
+    drawButton.dataset.selectionAction = "take";
+    drawButton.innerHTML = "收入手牌";
     drawButton.addEventListener("click", () => {
       this.gameController.drawSelectedCards().catch(error => window.alert(error.message || '移动失败，请重试')); 
     });
     const discardButton = document.createElement("button");
-    discardButton.innerHTML = "弃";
+    discardButton.dataset.selectionAction = "discard";
+    discardButton.innerHTML = "弃置";
     discardButton.addEventListener("click", () => {
       this.gameController.discardSelectedCards().catch(error => window.alert(error.message || '移动失败，请重试')); 
     });
     const playButton = document.createElement("button");
-    playButton.innerHTML = "出";
+    playButton.dataset.selectionAction = "play";
+    playButton.innerHTML = "打出";
     playButton.addEventListener("click", () => {
       this.gameController.playSelectedCards().catch(error => window.alert(error.message || '移动失败，请重试')); 
     });
     const showButton = document.createElement("button");
-    showButton.innerHTML = "亮";
+    showButton.dataset.selectionAction = "show";
+    showButton.innerHTML = "亮牌 / 暗置";
     showButton.addEventListener("click", () => {
       this.gameController.showSelectedCards().catch(error => window.alert(error.message || '更新失败，请重试'));
     });
-
     const cancelButton = document.createElement("button");
+    cancelButton.dataset.selectionAction = "cancel";
     cancelButton.textContent = "取消选择";
     cancelButton.addEventListener("click", () => {
       [...this.gameController.selectedCards].forEach(card => card.unselectCard());
     });
     const moveButton=document.createElement('button');
+    moveButton.dataset.selectionAction='move';
     moveButton.textContent='移动';
     moveButton.addEventListener('click',()=>this.openMovePlayerPicker());
 
@@ -286,14 +291,36 @@ class SgTable extends HTMLElement {
   }
 
   hideCardMenu() {
-    if (!this.classList.contains("hide")) {
-      this.cardMenu.classList.add("hide");
-    }
+    this.syncSelectionMenus();
   }
 
   showCardMenu() {
-    this.cardMenu.querySelector(".selection-label").textContent = `已选 ${this.gameController.selectedCards.length} 张`;
-    this.cardMenu.classList.remove("hide");
+    this.syncSelectionMenus();
+  }
+
+  syncSelectionMenus() {
+    const selected = [...this.gameController.selectedCards].filter(card => card.isConnected);
+    const currentPlayer = this.gameController.currentPlayer;
+    const isOwnSelection = Boolean(currentPlayer) && selected.length > 0
+      && selected.every(card => card.dataset.path?.includes(`/${currentPlayer}/`));
+    const isDiscardSelection = selected.length > 0
+      && selected.every(card => card.dataset.path?.includes('/tableDecks/discard/cards/'));
+    const remoteAreaPanelOpen = this.playerDoms.some(player =>
+      !player.classList.contains('current-player')
+      && player.shadowRoot?.querySelector('.pai-info:popover-open'));
+    const showMainMenu = (isOwnSelection || isDiscardSelection) && !remoteAreaPanelOpen;
+
+    this.cardMenu.classList.toggle("hide", !showMainMenu);
+    if (showMainMenu) {
+      const source = isDiscardSelection ? "弃牌堆" : "自己的牌";
+      this.cardMenu.querySelector(".selection-label").textContent = `${source} · ${selected.length} 张`;
+      this.cardMenu.querySelectorAll('[data-selection-action]').forEach(button => {
+        const action = button.dataset.selectionAction;
+        button.hidden = isDiscardSelection && !['take', 'cancel'].includes(action);
+      });
+    }
+
+    this.playerDoms.forEach(player => player.updateAreaActions?.());
   }
 }
 

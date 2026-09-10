@@ -19,10 +19,14 @@ div[name="player-game-area"], .open-info { position: relative; width: 100%; heig
 .player-role { display: none; }
 .player-info { gap: 0; padding-right: 1.65rem; overflow: visible; border-bottom: 0; }
 .player-info::after { content: ""; position: absolute; right: 0; bottom: -0.5rem; left: -0.3rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(232,207,139,.34) 8%, rgba(232,207,139,.34) 92%, transparent); }
-.player-role, .player-role-marker { width: 1.25rem; max-width: 1.25rem; padding: 0; border-radius: 50%; font-size: 0.625rem; line-height: 1; }
+.player-role, .player-role-marker { width: 1.5rem; max-width: 1.5rem; height: 1.4rem; padding: 0; border-radius: 50%; font-size: 0.82rem; line-height: 1; font-weight: 800; }
 :host(.current-player) .player-info::after { display: none; }
-.player-role.king, :host(.current-player) .player-role { display: grid; color: #ffe0a0; border-color: #c98b39; background: rgba(181, 76, 31, 0.22); }
-:host(.current-player) .player-role-marker, .player-role.king ~ .player-role-marker { display: none; }
+.player-role-marker { display: none; }
+.player-role.role-lord, .player-role.role-renegade, :host(.current-player) .player-role { display: grid; }
+.player-role.role-lord { color: #ffd7d0; border-color: #d96158; background: rgba(151, 43, 37, 0.58); }
+.player-role.role-renegade { color: #d8e8ff; border-color: #5b8fdb; background: rgba(37, 79, 146, 0.62); }
+.player-role.role-loyal { color: #ffe6a8; border-color: #d8ae4e; background: rgba(112, 78, 21, 0.62); }
+.player-role.role-rebel { color: #cdf2d8; border-color: #57ad75; background: rgba(26, 88, 59, 0.65); }
 .hp-holder { position: absolute; top: 2rem; right: 0; left: 11.75rem; display: flex; align-items: center; height: 1.5rem; min-width: 0; }
 
 .decks { position: absolute; inset: 0; display: grid; grid-template-columns: 11rem minmax(0, 1fr); grid-template-rows: 4.35rem repeat(3, minmax(0, 1fr)); gap: 0.3rem 0.45rem; min-width: 0; min-height: 0; pointer-events: none; }
@@ -91,14 +95,19 @@ div[name="drag-on-view"].drag-over div { display: grid; place-items: center; bor
 :host(.current-player) .hand-area::part(card-area), :host(.current-player) .other1-area::part(card-area), :host(.current-player) .other2-area::part(card-area) { height: 100%; padding: 0.75rem 0.3rem 0.3rem 3.45rem; overflow-x: auto; overflow-y: hidden; }
 .area-panel-heading, .area-panel-actions { display: none; }
 :host(.current-player) .overflow-controls::before { display: none; }
-.pai-info:popover-open { position: fixed; inset: 0; margin: auto; display: flex; flex-direction: column; gap: 0.75rem; width: min(38rem, calc(100vw - 2rem)); height: max-content; max-height: calc(100vh - 2rem); padding: 1rem; overflow: auto; border: 1px solid #c7a75a; border-radius: 0.8rem; color: #f4ead2; background: #0b3027; box-shadow: 0 1rem 4rem #0009; }
+.pai-info:popover-open { position: fixed; inset: 0; margin: auto; display: flex; flex-direction: column; gap: 0.75rem; width: min(38rem, calc(100vw - 2rem)); height: max-content; max-height: calc(100vh - 6rem); padding: 1rem; overflow: visible; border: 1px solid #c7a75a; border-radius: 0.8rem; color: #f4ead2; background: #0b3027; box-shadow: 0 1rem 4rem #0009; }
 .pai-info:popover-open .area-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.pai-info:popover-open .area-panel-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.pai-info:popover-open .area-panel-actions { position: absolute; top: calc(100% + .65rem); left: 50%; z-index: 2; display: flex; align-items: center; flex-wrap: nowrap; gap: .38rem; width: max-content; max-width: calc(100vw - 2rem); padding: .42rem; overflow-x: auto; transform: translateX(-50%); border: 1px solid rgba(226,184,75,.58); border-radius: .85rem; background: linear-gradient(145deg,rgba(16,57,47,.98),rgba(5,29,24,.98)); box-shadow: 0 .9rem 2.2rem #0008,inset 0 1px #ffffff0a; backdrop-filter: blur(12px); }
+.pai-info:popover-open .area-panel-actions[hidden] { display: none; }
 .pai-info:popover-open button { min-height: 2rem; padding: 0.3rem 0.65rem; border: 1px solid #e8cf8b55; border-radius: 0.4rem; color: #f4ead2; background: #ffffff0c; cursor: pointer; }
 .pai-info:popover-open > sg-area { display: block; flex: none; width: 100%; height: 8rem; }
 .pai-info:popover-open > sg-area::part(card-area) { height: 100%; padding: 0.85rem 0.4rem 0.4rem; align-items: stretch; }
 .pai-info:popover-open > sg-area:not(.has-cards)::after { content: "暂无卡牌"; position: absolute; inset: 0; display: grid; place-items: center; color: #aebeb6; pointer-events: none; }
 .pai-info:popover-open > sg-area { position: relative; }
+.pai-info:popover-open .area-panel-actions button { flex: none; min-width: 3.4rem; min-height: 1.9rem; height: 1.9rem; padding: 0 .62rem; border: 1px solid rgba(232,207,139,.24); border-radius: .48rem; color: #f4ead2; background: rgba(255,255,255,.06); font-size: .68rem; white-space: nowrap; }
+.pai-info:popover-open .area-panel-actions button:first-child { color: #241b0e; border-color: #e2b84b; background: linear-gradient(#edc760,#cf9837); font-weight: 800; }
+.pai-info:popover-open .area-panel-actions button:last-child { color: #9fb6aa; border-color: transparent; background: transparent; }
+:host(:not(.current-player)) .zhuang-area, :host(:not(.current-player)) .pan-area { cursor: pointer; }
 :host(.current-player) .player-toolbar { position: absolute; top: 0.55rem; bottom: 0.55rem; left: -4.6rem; z-index: 15; display: flex; flex-direction: column; gap: 0.25rem; width: 4rem; padding: 0.38rem; border: 1px solid rgba(232, 207, 139, 0.27); border-radius: 0.7rem; background: linear-gradient(180deg, rgba(12, 50, 42, 0.98), rgba(5, 28, 24, 0.98)); box-shadow: 0 0.9rem 2rem rgba(0, 0, 0, 0.3); }
 .player-toolbar button { display: grid; place-items: center; width: 100%; height: 1.75rem; padding: 0; border: 1px solid rgba(232, 207, 139, 0.32); border-radius: 0.42rem; color: #e8eee9; background: rgba(255, 255, 255, 0.065); font-size: 0.68rem; font-weight: 800; cursor: pointer; }
 .player-toolbar button:hover, .player-toolbar button.active { color: #192019; border-color: #e2b84b; background: #e2b84b; }

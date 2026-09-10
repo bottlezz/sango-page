@@ -21,6 +21,16 @@ export function installCardTransferAnimation(table){
     return null;
   }
 
+  function revealHost(path){
+    const [owner,area]=String(path||'').split('/');
+    if(owner==='tableDecks')return areaHost(path);
+    const player=/^p\d+$/.test(owner)?table.shadowRoot.querySelector(`sg-player[data-key="${owner}"]`):null;
+    if(!player)return null;
+    const property={hand:'handArea',zhuang:'zhuangArea',pan:'panArea',other1:'other1Area',other2:'other2Area'}[area];
+    const candidate=property?player[property]:null,rect=candidate?.getBoundingClientRect();
+    return rect?.width&&rect?.height?candidate:player;
+  }
+
   function play({source,target,count,label}){
     const from=areaHost(source),to=areaHost(target);
     if(!from||!to||from===to||!from.isConnected||!to.isConnected)return;
@@ -55,7 +65,42 @@ export function installCardTransferAnimation(table){
     window.setTimeout(()=>group.remove(),trailDuration+20);
   }
 
+
+  function playReveal({target,cards}){
+    const host=revealHost(target);
+    if(!host||!host.isConnected||!cards?.length)return;
+    const rect=host.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    const group=document.createElement('div');group.className='card-reveal-group';
+    const halfWidth=Math.min(240,Math.max(34,cards.length*35));
+    group.style.left=`${Math.min(window.innerWidth-halfWidth-16,Math.max(halfWidth+16,rect.left+rect.width/2))}px`;
+    group.style.top=`${Math.min(window.innerHeight-54,Math.max(54,rect.top+rect.height/2))}px`;
+    const label=document.createElement('span');label.className='card-reveal-heading';label.textContent='亮牌';
+    const list=document.createElement('div');list.className='card-reveal-list';
+    const suitMarks={heart:'♥',diamond:'♦',spade:'♠',club:'♣'};
+    cards.forEach(({suit,rank,name})=>{
+      const tile=document.createElement('div');tile.className='card-reveal-tile';
+      const index=document.createElement('span');index.className=`card-reveal-index ${suit}`;
+      const mark=document.createElement('b');mark.textContent=suitMarks[suit]||suit;
+      const number=document.createElement('em');number.textContent=rank;
+      const title=document.createElement('strong');title.textContent=name;
+      index.append(mark,number);tile.append(index,title);list.append(tile);
+    });
+    group.append(label,list);layer.append(group);
+    const duration=reduced.matches?900:1900;
+    group.animate([
+      {opacity:0,transform:'translate(-50%,-42%) scale(.9)'},
+      {opacity:1,transform:'translate(-50%,-50%) scale(1)',offset:.12},
+      {opacity:1,transform:'translate(-50%,-50%) scale(1)',offset:.82},
+      {opacity:0,transform:'translate(-50%,-54%) scale(.98)'},
+    ],{duration,easing:'cubic-bezier(.2,.7,.25,1)',fill:'forwards'});
+    host.animate([{filter:'brightness(1)'},{filter:'brightness(1.28)',offset:.35},{filter:'brightness(1)'}],{duration:360});
+    window.setTimeout(()=>group.remove(),duration+30);
+  }
+
   const onTransfers=event=>requestAnimationFrame(()=>event.detail?.transfers?.forEach(play));
+  const onReveals=event=>requestAnimationFrame(()=>event.detail?.reveals?.forEach(playReveal));
   table.addEventListener('card-transfers',onTransfers);
-  return()=>{table.removeEventListener('card-transfers',onTransfers);layer.remove();};
+  table.addEventListener('card-reveals',onReveals);
+  return()=>{table.removeEventListener('card-transfers',onTransfers);table.removeEventListener('card-reveals',onReveals);layer.remove();};
 }

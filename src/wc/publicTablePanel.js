@@ -156,7 +156,10 @@ export function installPublicTablePanel(table,host,cardMenu){
     if(button.hasAttribute('data-sort-reset')){draft.top=draft.initial.slice();draft.bottom=[];draft.draw=[];renderSort();return;}
     if(button.hasAttribute('data-sort-commit')){const payload={top:draft.top.map(x=>x.path),bottom:draft.bottom.map(x=>x.path),draw:draft.draw.map(x=>x.path)};return run(async()=>{await controller.rearrangeDeck(payload);sortDialog.close();draft=null;});}
     const index=Number(button.dataset.index),action=button.dataset.sortAction,item=draft.top[index];if(!item)return;
-    if(action==='view')draft.viewed.add(item.path);
+    if(action==='view'){
+      draft.viewed.add(item.path);
+      controller.recordViewedCardPaths([item.path]).catch(error=>window.alert(error.message||'观看记录失败，请重试'));
+    }
     else if(action==='up')[draft.top[index-1],draft.top[index]]=[draft.top[index],draft.top[index-1]];
     else if(action==='down')[draft.top[index+1],draft.top[index]]=[draft.top[index],draft.top[index+1]];
     else if(action==='bottom')draft.bottom.push(...draft.top.splice(index,1));

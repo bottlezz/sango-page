@@ -103,6 +103,7 @@ class SgPlayer extends HTMLElement {
     );
 
     const paiInfo = this.shadowRoot.querySelector(`.pai-info`);
+    this.paiInfo = paiInfo;
     const openInfo = this.shadowRoot.querySelector(`.open-info`);
     const generalSlots = document.createElement("div");
     generalSlots.className = "general-slots";
@@ -197,7 +198,9 @@ class SgPlayer extends HTMLElement {
     paiInfo.prepend(areaHeading);
     const areaActions = document.createElement("footer");
     areaActions.className = "area-panel-actions";
-    for (const [label, action] of [["拿取所选", "drawPai"], ["弃置所选", "discardPai"], ["亮出/暗置", "showPai"], ["取消选择", "unselectCard"]]) {
+    areaActions.hidden = true;
+    this.areaActions = areaActions;
+    for (const [label, action] of [["收入手牌", "drawPai"], ["弃置", "discardPai"], ["观看", "viewPai"], ["亮牌 / 暗置", "showPai"], ["取消选择", "unselectCard"]]) {
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = label;
@@ -207,19 +210,44 @@ class SgPlayer extends HTMLElement {
         try {
           if (action === 'drawPai') await this.gameController.drawSelectedCards(selected);
           else if (action === 'discardPai') await this.gameController.discardSelectedCards(selected);
+          else if (action === 'viewPai') {
+            selected.forEach(card => card.classList.add('locally-viewed'));
+            await this.gameController.recordViewedCards(selected);
+          }
+          else if (action === 'showPai') await this.gameController.showSelectedCards(selected);
           else selected.forEach(card => card[action]());
         } catch (error) { window.alert(error.message || '移动失败，请重试'); }
       });
       areaActions.append(button);
     }
     paiInfo.append(areaActions);
+    paiInfo.addEventListener('cards-updated', () => this.updateInspectionCardTiles());
     paiInfo.addEventListener("dragstart", () => {
       if (paiInfo.matches(":popover-open")) paiInfo.hidePopover();
     });
     paiInfo.addEventListener('toggle', event => {
       if (event.newState === 'closed' && this.inspectedArea && !this.classList.contains('current-player')) {
-        this.inspectedArea.stopCardsSubscription();
+        const inspectedArea = this.inspectedArea;
+        Object.values(inspectedArea.cards || {})
+          .forEach(card => card.classList.remove('inspection-tile', 'locally-viewed'));
+        Object.values(inspectedArea.cards || {})
+          .filter(card => this.gameController.selectedCards.includes(card))
+          .forEach(card => card.unselectCard());
+        if (this.inspectedAreaRestore) {
+          const { parent, nextSibling, wasHidden } = this.inspectedAreaRestore;
+          parent.insertBefore(inspectedArea, nextSibling?.parentNode === parent ? nextSibling : null);
+          if (['zhuang-area', 'pan-area'].includes(inspectedArea.areaType)) {
+            inspectedArea.classList.remove('hide');
+          } else {
+            inspectedArea.classList.toggle('hide', wasHidden);
+          }
+        }
+        inspectedArea.classList.remove('inspection-panel-area');
+        if (!this.inspectedAreaWasSubscribed) inspectedArea.stopCardsSubscription();
         this.inspectedArea = null;
+        this.inspectedAreaRestore = null;
+        this.inspectedAreaWasSubscribed = false;
+        this.updateAreaActions();
       }
     });
     generalSlots.append(this.jiang1Area);
@@ -385,12 +413,10 @@ class SgPlayer extends HTMLElement {
     subscribe(child(playerRef, "/role"), (snapshot) => {
       if (snapshot.exists()) {
         const playerRole = snapshot.val();
-        if (playerRole == "主" || playerRole == "内") {
-          playerRoleSpan.classList.add("king");
-        } else {
-          playerRoleSpan.classList.remove("king");
-        }
-        playerRoleSpan.innerHTML = playerRole;
+        const roleClass={主:'role-lord',内:'role-renegade',忠:'role-loyal',反:'role-rebel'}[playerRole] || '';
+        playerRoleSpan.classList.remove('role-lord','role-renegade','role-loyal','role-rebel');
+        if(roleClass)playerRoleSpan.classList.add(roleClass);
+        playerRoleSpan.textContent = playerRole;
       }
     });
 
@@ -448,6 +474,17 @@ class SgPlayer extends HTMLElement {
       .addEventListener("click", () => {
         this.openAreaPanel(this.other2Area, "区2");
       });
+
+    const openRemoteVisibleArea = (area, label) => {
+      area.addEventListener('click', event => {
+        if (this.classList.contains('current-player') || area.parentElement === this.paiInfo) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.openAreaPanel(area, label);
+      }, true);
+    };
+    openRemoteVisibleArea(this.zhuangArea, "装备区");
+    openRemoteVisibleArea(this.panArea, "判定区");
 
     // <div class="hand-count"><span>2</span></div>
     // <div class="area1-count"><span>2<span></div>
@@ -510,16 +547,50 @@ class SgPlayer extends HTMLElement {
 
   openAreaPanel(area, label) {
     if (this.classList.contains("current-player")) return;
+    this.inspectedAreaWasSubscribed = Boolean(area.unSub);
     area.subscribeCards();
     this.inspectedArea = area;
+    area.classList.add('inspection-panel-area');
     const panel = this.shadowRoot.querySelector(".pai-info");
     panel.setAttribute("popover", "auto");
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-label", `${label}区域操作`);
     const name = this.shadowRoot.querySelector(".player-name").textContent || this.playerRef.key;
     panel.querySelector("strong").textContent = `${name} · ${label}`;
-    [this.handArea, this.other1Area, this.other2Area].forEach(item => item.classList.toggle("hide", item !== area));
+    const panelAreas = [this.handArea, this.other1Area, this.other2Area];
+    if (!panelAreas.includes(area)) {
+      this.inspectedAreaRestore = {
+        parent: area.parentElement,
+        nextSibling: area.nextSibling,
+        wasHidden: area.classList.contains('hide'),
+      };
+      panel.append(area);
+    } else {
+      this.inspectedAreaRestore = null;
+    }
+    [this.handArea, this.other1Area, this.other2Area]
+      .forEach(item => item.classList.toggle("hide", item !== area));
+    this.zhuangArea.classList.remove('hide');
+    this.panArea.classList.remove('hide');
+    area.classList.remove('hide');
+    this.updateInspectionCardTiles();
+    this.updateAreaActions();
     panel.showPopover();
+    this.gameController.rootComponent?.syncSelectionMenus?.();
+  }
+
+  updateAreaActions() {
+    if (!this.areaActions) return;
+    const selected = Object.values(this.inspectedArea?.cards || {})
+      .filter(card => this.gameController?.selectedCards.includes(card));
+    this.areaActions.hidden = selected.length === 0;
+  }
+
+  updateInspectionCardTiles() {
+    const isEquipmentPopup = this.inspectedArea?.areaType === 'zhuang-area'
+      && this.inspectedArea.parentElement === this.paiInfo;
+    Object.values(this.inspectedArea?.cards || {})
+      .forEach(card => card.classList.toggle('inspection-tile', isEquipmentPopup));
   }
 
   openDropPicker(path, paths = null, done = null) {

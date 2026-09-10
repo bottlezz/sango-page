@@ -495,12 +495,40 @@ class gameController {
     if (!uniqueCards.length) return;
     const base = ref(this.db).toString();
     const updates = {};
+    const revealed = [];
     uniqueCards.forEach(card => {
       const path = card.cardRef.toString().replace(base, '');
-      updates[`${path}/show`] = card.cardData.show === '1' ? '0' : '1';
+      const willReveal = card.cardData.show !== '1';
+      updates[`${path}/show`] = willReveal ? '1' : '0';
+      if (willReveal) {
+        const data = paiKu[card.cardData.id];
+        const target = path
+          .replace(`game/${this.gameId}/`, '')
+          .replace(/\/cards\/[^/]+$/, '');
+        if (data?.suit && data?.rank && data?.name) {
+          revealed.push(target, data.suit, data.rank, data.name);
+        }
+      }
     });
+    if (revealed.length) Object.assign(updates, this.actionHintPatch(ACTION_HINT_OPCODE.REVEAL_CARDS, revealed));
     await update(ref(this.db), updates);
     uniqueCards.forEach(card => card.unselectCard());
+  }
+
+  async recordViewedCardPaths(paths) {
+    if (!this.currentPlayer) throw Error('请先入座');
+    const prefix = `game/${this.gameId}/`;
+    const targets = [...new Set(paths)]
+      .filter(path => path.startsWith(prefix) && /\/cards\/[^/]+$/.test(path))
+      .map(path => path.slice(prefix.length).replace(/\/cards\/[^/]+$/, ''));
+    if (!targets.length) throw Error('没有可观看的牌');
+    return update(ref(this.db), this.actionHintPatch(ACTION_HINT_OPCODE.VIEW_CARDS, targets));
+  }
+
+  recordViewedCards(cards = [...this.selectedCards]) {
+    const base = ref(this.db).toString();
+    const paths = [...new Set(cards.map(card => card.cardRef?.toString().replace(base, '')).filter(Boolean))];
+    return this.recordViewedCardPaths(paths);
   }
 
   async dropSeletedCards(targetCardsRef) {

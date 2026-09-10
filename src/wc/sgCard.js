@@ -70,11 +70,7 @@ class SgCard extends HTMLElement {
 
   showPai() {
     console.log("showPai");
-    if (this.cardData.show != "1") {
-      this.gameController.showCard(this.cardRef);
-    } else {
-      this.gameController.resetCard(this.cardRef);
-    }
+    return this.gameController.showSelectedCards([this]);
   }
 
   init(cardRef, cardData, gameController, options = {}) {

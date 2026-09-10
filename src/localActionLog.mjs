@@ -7,7 +7,7 @@ export const ACTION_HINT_OPCODE = Object.freeze({
   DEAL_CARDS:'c', DEAL_GENERALS:'j', ASSIGN_ROLES:'i', SHUFFLE:'s',
   RESET_DECK:'r', RESET_TABLE:'x',
   PLAY:'p', DISCARD:'e', DRAW:'w', REVEAL_JUDGMENT:'v',
-  TAKE_DISCARD:'k', REARRANGE_DECK:'u',
+  TAKE_DISCARD:'k', REARRANGE_DECK:'u', REVEAL_CARDS:'l', VIEW_CARDS:'q',
 });
 
 const VALID_OPCODES = new Set(Object.values(ACTION_HINT_OPCODE));
@@ -21,8 +21,9 @@ export function createActionNonce() {
   return [...bytes].map(value=>NONCE_CHARS[value&63]).join('');
 }
 
-// Protocol v1 is "version|opcode|actor|...args|nonce". Target, count and card
-// details are intentionally omitted when the atomic state diff can infer them.
+// Protocol v1 is "version|opcode|actor|...args|nonce". Target and count are
+// omitted when the atomic state diff can infer them. A reveal includes its public
+// card faces so every client can render the same short-lived reveal and log text.
 // The nonce makes consecutive identical actions observable; it is not a history ID.
 export function encodeActionHint(opcode, actorSeat, args=[], nonce=createActionNonce()) {
   if (!VALID_OPCODES.has(opcode)) throw Error('未知的日志操作码');
@@ -92,6 +93,28 @@ export function createCardTransfers(before,after) {
   return moves(before,after).map(move=>({...move,label:transferLabel(hint,move.source,move.target)}));
 }
 
+function revealedCardsFromHint(hint) {
+  if(hint?.opcode!==ACTION_HINT_OPCODE.REVEAL_CARDS||hint.args.length%4!==0)return [];
+  const cards=[];
+  for(let index=0;index<hint.args.length;index+=4){
+    const [target,suit,rank,name]=hint.args.slice(index,index+4);
+    if(!target||!suit||!rank||!name)continue;
+    cards.push({target,suit,rank,name});
+  }
+  return cards;
+}
+
+export function createCardReveals(before,after) {
+  const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
+  const groups=new Map();
+  for(const card of revealedCardsFromHint(hint)){
+    const group=groups.get(card.target)||{target:card.target,cards:[]};
+    group.cards.push({suit:card.suit,rank:card.rank,name:card.name});
+    groups.set(card.target,group);
+  }
+  return [...groups.values()];
+}
+
 function hintedChanges(hint,before,after){
   const moved=moves(before,after);
   switch(hint.opcode){
@@ -111,6 +134,15 @@ function hintedChanges(hint,before,after){
     case ACTION_HINT_OPCODE.REVEAL_JUDGMENT:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&x.target==='tableDecks/discard').map(x=>`展示／判定了牌堆顶 ${x.count} 张牌`);
     case ACTION_HINT_OPCODE.TAKE_DISCARD:return moved.filter(x=>x.source==='tableDecks/discard'&&/^p\d+\/hand$/.test(x.target)).map(x=>`从弃牌堆收入了 ${x.count} 张牌`);
     case ACTION_HINT_OPCODE.REARRANGE_DECK:return ['调整了牌堆顺序'];
+    case ACTION_HINT_OPCODE.REVEAL_CARDS:{
+      const cards=revealedCardsFromHint(hint);
+      return cards.length?[`亮出了 ${cards.map(card=>`${card.suit} ${card.rank} ${card.name}`).join('、')}`]:[];
+    }
+    case ACTION_HINT_OPCODE.VIEW_CARDS:{
+      const counts=new Map();
+      hint.args.forEach(path=>counts.set(path,(counts.get(path)||0)+1));
+      return [...counts].map(([path,count])=>`观看了 ${areaName(after,path)} ${count} 张牌`);
+    }
     default:return [];
   }
 }

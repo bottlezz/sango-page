@@ -1,5 +1,6 @@
 import {ref, onValue} from 'firebase/database';
 import {createCardReveals, createCardTransfers, createLocalLogEntry, mergeLocalLogEntries} from '../localActionLog.mjs';
+import paiKu from '../data/pai.json';
 
 const LOCAL_LOG_LIMIT = 500;
 
@@ -39,9 +40,9 @@ export function installActionLog(table) {
     // First snapshot is baseline only: never replay state or a hint that existed
     // before this client entered the room.
     if(previousRoom===null){previousRoom=room;return;}
-    const transfers=createCardTransfers(previousRoom,room);
+    const transfers=createCardTransfers(previousRoom,room,paiKu);
     const reveals=createCardReveals(previousRoom,room);
-    const entry=createLocalLogEntry(previousRoom,room);previousRoom=room;
+    const entry=createLocalLogEntry(previousRoom,room,Date.now(),paiKu);previousRoom=room;
     if(transfers.length)table.dispatchEvent(new CustomEvent('card-transfers',{detail:{transfers}}));
     if(reveals.length)table.dispatchEvent(new CustomEvent('card-reveals',{detail:{reveals}}));
     if(!entry)return;

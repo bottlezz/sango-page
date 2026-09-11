@@ -693,6 +693,7 @@
 :host(.recent-public-card.has-desc) .pai-desc { margin-top:auto; }
 @media (max-width:620px) {
   :host(.recent-public-card) { flex-basis:40px; width:40px; height:54px; }
+  :host(.recent-public-card) .card-block.selected { transform:translateY(-.15rem); }
   :host(.recent-public-card) .card-front { grid-template-columns:12px minmax(0,1fr); padding:3px 2px; }
   :host(.recent-public-card) .card-suit { font-size:10px; }
   :host(.recent-public-card) .pai-name { font-size:9px; letter-spacing:0; }

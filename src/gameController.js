@@ -239,9 +239,11 @@ class gameController {
       }
       const hintOpcode=actionOpcode||this.moveActionOpcode(unique,targetPath);
       if(hintOpcode){
-        const hintArgs=hintOpcode===ACTION_HINT_OPCODE.PLAY
-          ? sources.map(source=>paiKu[source.value.id]?.name||'未知牌')
-          : [];
+        const includesPublicFaces=[ACTION_HINT_OPCODE.PLAY,ACTION_HINT_OPCODE.DISCARD,ACTION_HINT_OPCODE.DISCARD_OTHER,ACTION_HINT_OPCODE.TAKE_DISCARD].includes(hintOpcode);
+        const hintArgs=includesPublicFaces?['i',...sources.flatMap(source=>{
+          const sourceArea=source.path.slice(prefix.length).replace(/\/cards\/[^/]+$/,'');
+          return [sourceArea,source.value.id];
+        })]:[];
         Object.assign(patch,this.actionHintPatch(hintOpcode,hintArgs));
       }
       Object.assign(patch, locks.releasePatch());

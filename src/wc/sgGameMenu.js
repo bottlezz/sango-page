@@ -9,6 +9,7 @@ import {
   onChildAdded,
   onChildChanged,
   onChildRemoved,
+  runTransaction,
 } from "firebase/database";
 
 import commonCss from "./css/common.css";
@@ -169,10 +170,13 @@ class SgGameMenu extends HTMLElement {
         if (pName != "empty") {
           seatDom.textContent = `${i + 1} 号座位：${pName} 已入座`;
         } else {
+          seatDom.replaceChildren(`${i + 1} 号座位：`);
           const joinButton = document.createElement("button");
           joinButton.innerText = "入座";
-          joinButton.addEventListener("click", () => {
-            this.joinSeat(key);
+          joinButton.addEventListener("click", async () => {
+            joinButton.disabled = true;
+            const joined = await this.joinSeat(key);
+            if (!joined && joinButton.isConnected) joinButton.disabled = false;
           });
           seatDom.appendChild(joinButton);
         }
@@ -193,12 +197,25 @@ class SgGameMenu extends HTMLElement {
     });
   }
 
-  joinSeat(key) {
-    this.gameController.currentPlayer = key;
+  async joinSeat(key) {
     const playerNameRef = ref(this.db, `game/${this.gameId}/${key}/name`);
-    set(playerNameRef, this.userName);
-    this.renderTable();
-    this.removeSelf();
+    try {
+      const result = await runTransaction(playerNameRef, currentName => {
+        if (currentName === "empty" || currentName == null || currentName === this.userName) return this.userName;
+        return undefined;
+      }, { applyLocally: false });
+      if (!result.committed) {
+        window.alert("该座位刚刚已被其他玩家占用，请选择其他座位。");
+        return false;
+      }
+      this.gameController.currentPlayer = key;
+      this.renderTable();
+      this.removeSelf();
+      return true;
+    } catch (error) {
+      window.alert(error?.message || "入座失败，请稍后重试。");
+      return false;
+    }
   }
 
   removeSelf() {

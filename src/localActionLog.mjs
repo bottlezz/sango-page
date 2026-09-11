@@ -88,11 +88,22 @@ function transferLabel(hint, source, target) {
   return '移动';
 }
 
+function actionCardsFromHint(hint,cardCatalog={}) {
+  if(![ACTION_HINT_OPCODE.PLAY,ACTION_HINT_OPCODE.DISCARD,ACTION_HINT_OPCODE.DISCARD_OTHER,ACTION_HINT_OPCODE.TAKE_DISCARD].includes(hint?.opcode)||hint.args[0]!=='i'||(hint.args.length-1)%2!==0)return [];
+  const cards=[];
+  for(let index=1;index<hint.args.length;index+=2){
+    const [source,id]=hint.args.slice(index,index+2),data=cardCatalog[id];
+    if(source&&id)cards.push({source,id,suit:data?.suit||'unknown',rank:data?.rank||'?',name:data?.name||id});
+  }
+  return cards;
+}
+
 // The local UI can animate real card movement from the same room snapshots used
 // by the action log. No persisted animation queue or additional listener is needed.
-export function createCardTransfers(before,after) {
+export function createCardTransfers(before,after,cardCatalog={}) {
   const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
-  return moves(before,after).map(move=>({...move,label:transferLabel(hint,move.source,move.target)}));
+  const cards=actionCardsFromHint(hint,cardCatalog);
+  return moves(before,after).map(move=>({...move,label:transferLabel(hint,move.source,move.target),cards:cards.filter(card=>card.source===move.source)}));
 }
 
 function revealedCardsFromHint(hint) {
@@ -131,7 +142,7 @@ export function createCardReveals(before,after) {
   return [...groups.values()];
 }
 
-function hintedChanges(hint,before,after){
+function hintedChanges(hint,before,after,cardCatalog={}){
   const moved=moves(before,after);
   switch(hint.opcode){
     case ACTION_HINT_OPCODE.DISCARD_OTHER:return moved.filter(x=>/^p\d+\//.test(x.source)&&x.target==='tableDecks/discard').map(x=>`弃置了 ${playerName(after,x.source.split('/')[0])} 的 ${x.count} 张牌`);
@@ -145,13 +156,18 @@ function hintedChanges(hint,before,after){
     case ACTION_HINT_OPCODE.RESET_DECK:return ['重置并洗混了牌堆'];
     case ACTION_HINT_OPCODE.RESET_TABLE:return ['清空了桌面'];
     case ACTION_HINT_OPCODE.PLAY:{
-      if(hint.args.length)return [`打出了 ${hint.args.join('、')}`];
+      const cards=actionCardsFromHint(hint,cardCatalog);
+      if(cards.length)return [`打出了 ${cards.map(card=>card.name).join('、')}`];
       return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`打出了 ${x.count} 张牌`);
     }
     case ACTION_HINT_OPCODE.DISCARD:return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`弃置了 ${x.count} 张牌`);
     case ACTION_HINT_OPCODE.DRAW:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&/^p\d+\/hand$/.test(x.target)).map(x=>`摸了 ${x.count} 张牌`);
     case ACTION_HINT_OPCODE.REVEAL_JUDGMENT:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&x.target==='tableDecks/discard').map(x=>`展示／判定了牌堆顶 ${x.count} 张牌`);
-    case ACTION_HINT_OPCODE.TAKE_DISCARD:return moved.filter(x=>x.source==='tableDecks/discard'&&/^p\d+\/hand$/.test(x.target)).map(x=>`从弃牌堆收入了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.TAKE_DISCARD:{
+      const cards=actionCardsFromHint(hint,cardCatalog);
+      if(cards.length)return [`从弃牌堆收入了 ${cards.map(card=>card.name).join('、')}`];
+      return moved.filter(x=>x.source==='tableDecks/discard'&&/^p\d+\/hand$/.test(x.target)).map(x=>`从弃牌堆收入了 ${x.count} 张牌`);
+    }
     case ACTION_HINT_OPCODE.REARRANGE_DECK:return ['调整了牌堆顺序'];
     case ACTION_HINT_OPCODE.REVEAL_CARDS:{
       const cards=revealedCardsFromHint(hint);
@@ -166,10 +182,10 @@ function hintedChanges(hint,before,after){
   }
 }
 
-export function createLocalLogEntry(before,after,timestamp=Date.now()){
+export function createLocalLogEntry(before,after,timestamp=Date.now(),cardCatalog={}){
   const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
   if(hint){
-    const changes=hintedChanges(hint,before,after);
+    const changes=hintedChanges(hint,before,after,cardCatalog);
     if(changes.length){
       const aggregate=viewedCardsFromHint(hint,after);
       return {actor:hint.actorSeat?playerName(after,hint.actorSeat):'玩家',actorSeat:hint.actorSeat,timestamp,changes,...(aggregate?{aggregate}:{})};

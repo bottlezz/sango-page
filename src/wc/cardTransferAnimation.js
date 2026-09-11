@@ -1,6 +1,7 @@
 const MOVE_DURATION=700;
 const TRAIL_HOLD=500;
 const TRAIL_FADE=150;
+const ACTION_PREVIEW_DURATION=2500;
 
 function center(rect){return{x:rect.left+rect.width/2,y:rect.top+rect.height/2};}
 function edge(rect,toward){
@@ -71,11 +72,11 @@ export function installCardTransferAnimation(table){
   }
 
 
-  function playReveal({target,cards}){
+  function playReveal({target,cards,labelText='亮牌',duration:requestedDuration=1900}){
     const host=revealHost(target);
-    if(!host||!host.isConnected||!cards?.length)return;
+    if(!host||!host.isConnected||!cards?.length)return 0;
     const rect=host.getBoundingClientRect();
-    if(!rect.width||!rect.height)return;
+    if(!rect.width||!rect.height)return 0;
     const group=document.createElement('div');group.className='card-reveal-group';
     const halfWidth=Math.min(240,Math.max(34,cards.length*35));
     group.style.left=`${Math.min(window.innerWidth-halfWidth-16,Math.max(halfWidth+16,rect.left+rect.width/2))}px`;
@@ -84,7 +85,7 @@ export function installCardTransferAnimation(table){
       ? (rect.top>=128?rect.top-64:rect.bottom+64)
       : rect.top+rect.height/2;
     group.style.top=`${Math.min(window.innerHeight-64,Math.max(64,centerY))}px`;
-    const label=document.createElement('span');label.className='card-reveal-heading';label.textContent='亮牌';
+    const label=document.createElement('span');label.className='card-reveal-heading';label.textContent=labelText;
     const list=document.createElement('div');list.className='card-reveal-list';
     const suitMarks={heart:'♥',diamond:'♦',spade:'♠',club:'♣'};
     cards.forEach(({suit,rank,name})=>{
@@ -96,7 +97,7 @@ export function installCardTransferAnimation(table){
       index.append(mark,number);tile.append(index,title);list.append(tile);
     });
     group.append(label,list);layer.append(group);
-    const duration=reduced.matches?900:1900;
+    const duration=reduced.matches?Math.min(500,requestedDuration):requestedDuration;
     group.animate([
       {opacity:0,transform:'translate(-50%,-42%) scale(.9)'},
       {opacity:1,transform:'translate(-50%,-50%) scale(1)',offset:.12},
@@ -105,9 +106,19 @@ export function installCardTransferAnimation(table){
     ],{duration,easing:'cubic-bezier(.2,.7,.25,1)',fill:'forwards'});
     host.animate([{filter:'brightness(1)'},{filter:'brightness(1.28)',offset:.35},{filter:'brightness(1)'}],{duration:360});
     window.setTimeout(()=>group.remove(),duration+30);
+    return duration;
   }
 
-  const onTransfers=event=>requestAnimationFrame(()=>event.detail?.transfers?.forEach(play));
+  function playTransfer(transfer){
+    if((transfer.label==='打出'||transfer.label==='弃置')&&transfer.cards?.length){
+      playReveal({target:transfer.source,cards:transfer.cards,labelText:transfer.label,duration:ACTION_PREVIEW_DURATION});
+      play(transfer);
+      return;
+    }
+    play(transfer);
+  }
+
+  const onTransfers=event=>requestAnimationFrame(()=>event.detail?.transfers?.forEach(playTransfer));
   const onReveals=event=>requestAnimationFrame(()=>event.detail?.reveals?.forEach(playReveal));
   table.addEventListener('card-transfers',onTransfers);
   table.addEventListener('card-reveals',onReveals);

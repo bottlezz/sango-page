@@ -289,8 +289,7 @@
 }
 @media (max-width: 620px) {
   .info-line { right:.15rem; bottom:.15rem; gap:.08rem; width:.9rem; padding:.25rem .05rem .12rem; font-size:0.56rem; }
-  .info-line .jiang-gender,.detail-title .detail-gender { display:none; }
-  .detail-content dl>div:has(.detail-gender-text) { display:none; }
+  .info-line .jiang-gender { display:none; }
   .faction-badge { top:.2rem; left:.2rem; width:1rem; height:1.15rem; border-radius:2px 2px 5px 2px; font-size:.64rem; }
   .show-ctrl { width: 1.35rem; height: 1.35rem; padding: 0; }
   .select-ctrl { font-size: 0.55rem; padding: 0.18rem 0.28rem; }

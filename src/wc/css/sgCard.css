@@ -86,10 +86,30 @@
 :host(.zhuang-area-card) .card-block { cursor: pointer; }
 :host(.zhuang-area-card) .card-block.selected .card-widget { border-color: #e2b84b; box-shadow: inset 0 0 0 1px #e2b84b; }
 .card-block.show-front .card-widget {
-  border-color: #5c8cad;
-  background: #eef8f4;
+  border-color: #c6a24c;
+  background: linear-gradient(145deg, #fff8e5, #d7bf88);
+  box-shadow: inset 0 0 0 1px rgba(226, 184, 75, 0.58), 0 0.2rem 0.55rem rgba(226, 184, 75, 0.2);
 }
-.card-block.show-front .card-front { background: #eef8f4; }
+.card-block.show-front .card-front { background: linear-gradient(145deg, #fff8e5, #dfc891); }
+:host(.current-player) .card-block.show-front::after {
+  content: "亮";
+  position: absolute;
+  bottom: 0.18rem;
+  right: 0.14rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1px solid #e2b84b;
+  border-radius: 50%;
+  color: #fff0bd;
+  background: #8f302a;
+  box-shadow: 0 1px 0.25rem rgba(45, 20, 12, 0.65);
+  font: 800 0.56rem/1 "STKaiti", serif;
+  pointer-events: none;
+}
 .card-suit.club .suit-mark::before { content: "♣"; }
 .card-suit.heart .suit-mark::before { content: "♥"; }
 .card-suit.diamond .suit-mark::before { content: "♦"; }
@@ -564,6 +584,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
   transform: translateX(0.08rem);
 }
 :host(.zhuang-area-card) .card-suit > span,
@@ -584,6 +607,7 @@
 :host(.other2-area-card.has-desc) .pai-desc,
 :host(.pan-area-card.has-desc) .pai-desc,
 :host(.zhuang-area-card.inspection-tile.has-desc) .pai-desc { margin-top: auto; }
+
 :host(.discard-area-card) .card-suit,
 :host(.pai-area-card) .card-suit {
   align-self: stretch;

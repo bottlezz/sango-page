@@ -167,10 +167,21 @@ class SgTable extends HTMLElement {
     this.pendingMenuMove={cards,paths};
     this.movePlayerPicker.querySelector('.move-summary').textContent=`已选择 ${paths.length} 张牌，请选择唯一的目标玩家。`;
     const options=this.movePlayerPicker.querySelector('.move-player-options');options.replaceChildren();
-    this.playerDoms.forEach(player=>{
-      const button=document.createElement('button');button.type='button';button.dataset.player=player.dataset.key;
+    const currentPlayer=this.gameController.currentPlayer;
+    const players=[...this.playerDoms].sort((left,right)=>{
+      const leftIsSelf=left.dataset.key===currentPlayer;
+      const rightIsSelf=right.dataset.key===currentPlayer;
+      if(leftIsSelf!==rightIsSelf)return leftIsSelf?-1:1;
+      return Number(left.dataset.key.slice(1))-Number(right.dataset.key.slice(1));
+    });
+    players.forEach(player=>{
+      const playerKey=player.dataset.key;
+      const isSelf=playerKey===currentPlayer;
+      const button=document.createElement('button');button.type='button';button.dataset.player=playerKey;
       const name=player.shadowRoot.querySelector('.player-name')?.textContent?.trim();
-      button.innerHTML=`<b>${name&&name!=='empty'?name:player.dataset.key}</b><small>${player.dataset.key===this.gameController.currentPlayer?'自己':'玩家'}</small>`;
+      const playerName=document.createElement('b');playerName.textContent=name&&name!=='empty'?name:playerKey;
+      const playerMeta=document.createElement('small');playerMeta.textContent=`${playerKey}${isSelf?' · 自己':''}`;
+      button.append(playerName,playerMeta);
       options.append(button);
     });
     this.movePlayerPicker.showModal();

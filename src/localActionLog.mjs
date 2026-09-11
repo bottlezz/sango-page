@@ -106,6 +106,20 @@ function revealedCardsFromHint(hint) {
   return cards;
 }
 
+function viewedCardsFromHint(hint,room) {
+  if(hint?.opcode!==ACTION_HINT_OPCODE.VIEW_CARDS)return null;
+  const counts=new Map();
+  hint.args.forEach(path=>counts.set(path,(counts.get(path)||0)+1));
+  return {
+    type:'view',
+    areas:[...counts].map(([path,count])=>({path,label:areaName(room,path),count})),
+  };
+}
+
+function viewedCardChanges(aggregate) {
+  return aggregate?.areas?.map(area=>`观看了 ${area.label} ${area.count} 张牌`)||[];
+}
+
 export function createCardReveals(before,after) {
   const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
   const groups=new Map();
@@ -130,7 +144,10 @@ function hintedChanges(hint,before,after){
     case ACTION_HINT_OPCODE.SHUFFLE:{const names={p:'牌堆',b:'牌堆底部',d:'公共区',h:'手牌',z:'装备区',n:'判定区',o:'卡牌区',j:'选将区'};return [`洗混了${names[hint.args[0]]||'卡牌'}`];}
     case ACTION_HINT_OPCODE.RESET_DECK:return ['重置并洗混了牌堆'];
     case ACTION_HINT_OPCODE.RESET_TABLE:return ['清空了桌面'];
-    case ACTION_HINT_OPCODE.PLAY:return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`打出了 ${x.count} 张牌`);
+    case ACTION_HINT_OPCODE.PLAY:{
+      if(hint.args.length)return [`打出了 ${hint.args.join('、')}`];
+      return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`打出了 ${x.count} 张牌`);
+    }
     case ACTION_HINT_OPCODE.DISCARD:return moved.filter(x=>x.target==='tableDecks/discard').map(x=>`弃置了 ${x.count} 张牌`);
     case ACTION_HINT_OPCODE.DRAW:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&/^p\d+\/hand$/.test(x.target)).map(x=>`摸了 ${x.count} 张牌`);
     case ACTION_HINT_OPCODE.REVEAL_JUDGMENT:return moved.filter(x=>/^tableDecks\/(pai|paiBottom)$/.test(x.source)&&x.target==='tableDecks/discard').map(x=>`展示／判定了牌堆顶 ${x.count} 张牌`);
@@ -141,9 +158,7 @@ function hintedChanges(hint,before,after){
       return cards.length?[`亮出了 ${cards.map(card=>`${suitIcon(card.suit)} ${card.rank} ${card.name}`).join('、')}`]:[];
     }
     case ACTION_HINT_OPCODE.VIEW_CARDS:{
-      const counts=new Map();
-      hint.args.forEach(path=>counts.set(path,(counts.get(path)||0)+1));
-      return [...counts].map(([path,count])=>`观看了 ${areaName(after,path)} ${count} 张牌`);
+      return viewedCardChanges(viewedCardsFromHint(hint,after));
     }
     case ACTION_HINT_OPCODE.LOCK_GENERALS:return ['锁定了武将'];
     case ACTION_HINT_OPCODE.REVEAL_GENERAL:return [`亮将 ${hint.args[0]||'未知武将'}`];
@@ -153,7 +168,24 @@ function hintedChanges(hint,before,after){
 
 export function createLocalLogEntry(before,after,timestamp=Date.now()){
   const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
-  if(hint){const changes=hintedChanges(hint,before,after);if(changes.length)return {actor:hint.actorSeat?playerName(after,hint.actorSeat):'玩家',timestamp,changes};}
+  if(hint){
+    const changes=hintedChanges(hint,before,after);
+    if(changes.length){
+      const aggregate=viewedCardsFromHint(hint,after);
+      return {actor:hint.actorSeat?playerName(after,hint.actorSeat):'玩家',actorSeat:hint.actorSeat,timestamp,changes,...(aggregate?{aggregate}:{})};
+    }
+  }
   const changes=describeChanges(before,after);
   return changes.length?{actor:null,timestamp,changes}:null;
+}
+
+export function mergeLocalLogEntries(previous,next){
+  if(previous?.aggregate?.type!=='view'||next?.aggregate?.type!=='view'||previous.actorSeat!==next.actorSeat)return null;
+  const areas=new Map(previous.aggregate.areas.map(area=>[area.path,{...area}]));
+  next.aggregate.areas.forEach(area=>{
+    const current=areas.get(area.path);
+    areas.set(area.path,current?{...area,count:current.count+area.count}:{...area});
+  });
+  const aggregate={type:'view',areas:[...areas.values()]};
+  return {...next,changes:viewedCardChanges(aggregate),aggregate};
 }

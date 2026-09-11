@@ -1,5 +1,5 @@
 import {ref, onValue} from 'firebase/database';
-import {createCardReveals, createCardTransfers, createLocalLogEntry} from '../localActionLog.mjs';
+import {createCardReveals, createCardTransfers, createLocalLogEntry, mergeLocalLogEntries} from '../localActionLog.mjs';
 
 const LOCAL_LOG_LIMIT = 500;
 
@@ -25,6 +25,7 @@ export function installActionLog(table) {
   table.shadowRoot.querySelector('.table-container').append(panel);
   table.actionLogPanel=panel;
   const list = panel.querySelector('.log-list'), count = panel.querySelector('.log-footer span');
+  let latestEntry=null;
   panel.querySelector('button').addEventListener('click', event => {
     const collapsed = panel.classList.toggle('collapsed');
     event.currentTarget.textContent = collapsed ? '+' : '−';
@@ -45,17 +46,20 @@ export function installActionLog(table) {
     if(reveals.length)table.dispatchEvent(new CustomEvent('card-reveals',{detail:{reveals}}));
     if(!entry)return;
     const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 30;
-    const row=document.createElement('li');row.className='log-entry';
-    row.append(document.createElement('time'),document.createElement('p'));
+    const mergedEntry=mergeLocalLogEntries(latestEntry,entry);
+    const displayedEntry=mergedEntry||entry;
+    const row=mergedEntry&&list.lastElementChild?list.lastElementChild:document.createElement('li');
+    if(!mergedEntry){row.className='log-entry';row.append(document.createElement('time'),document.createElement('p'));}
     const time=row.querySelector('time'),date=new Date(entry.timestamp);
     time.textContent=date.toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
     time.title=date.toLocaleString('zh-CN');time.dateTime=date.toISOString();
-    const text=row.querySelector('p'),message=`${entry.changes.join('；')}。`;
-    if(entry.actor){const actor=document.createElement('b');actor.textContent=`${entry.actor} `;text.append(actor);}
+    const text=row.querySelector('p'),message=`${displayedEntry.changes.join('；')}。`;text.replaceChildren();
+    if(displayedEntry.actor){const actor=document.createElement('b');actor.textContent=`${displayedEntry.actor} `;text.append(actor);}
     appendLogText(text,message);
     const latest=panel.querySelector('.log-latest');latest.replaceChildren();
-    appendLogText(latest,`${entry.actor?`${entry.actor} `:''}${message}`);
-    list.append(row);
+    appendLogText(latest,`${displayedEntry.actor?`${displayedEntry.actor} `:''}${message}`);
+    if(!mergedEntry)list.append(row);
+    latestEntry=displayedEntry;
     while(list.children.length>LOCAL_LOG_LIMIT)list.firstElementChild.remove();
     count.textContent=`本地记录 · ${list.children.length} 条`;
     if (atBottom) list.scrollTop = list.scrollHeight;

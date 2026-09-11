@@ -238,7 +238,12 @@ class gameController {
         patch[info.countPath]=Math.max(0,currentCount-movedCount);
       }
       const hintOpcode=actionOpcode||this.moveActionOpcode(unique,targetPath);
-      if(hintOpcode)Object.assign(patch,this.actionHintPatch(hintOpcode));
+      if(hintOpcode){
+        const hintArgs=hintOpcode===ACTION_HINT_OPCODE.PLAY
+          ? sources.map(source=>paiKu[source.value.id]?.name||'未知牌')
+          : [];
+        Object.assign(patch,this.actionHintPatch(hintOpcode,hintArgs));
+      }
       Object.assign(patch, locks.releasePatch());
       await update(ref(this.db), patch);
       released = true;

@@ -12,7 +12,12 @@ export const ACTION_HINT_OPCODE = Object.freeze({
 });
 
 export const USE_CARD_NAMES = Object.freeze([
-  '杀','决斗','过河拆桥','顺手牵羊','南蛮入侵','万箭齐发','五谷丰登','无中生有',
+  '杀','闪','酒','桃',
+  '火杀','雷杀',
+  '顺手牵羊','过河拆桥','决斗','铁索连环','火攻','借刀杀人','无中生有',
+  '无懈可击',
+  '五谷丰登','桃园结义','南蛮入侵','万箭齐发',
+  '乐不思蜀','兵粮寸断','闪电',
 ]);
 
 const VALID_OPCODES = new Set(Object.values(ACTION_HINT_OPCODE));
@@ -57,9 +62,9 @@ function areas(room){
   }
   return result;
 }
-function moves(before,after){
+function cardMoves(before,after){
   const oldAreas=areas(before),newAreas=areas(after),removed=new Map(),added=new Map(),groups=new Map();
-  const add=(map,id,item)=>map.set(id,[...(map.get(id)||[]),item]);
+  const add=(map,id,item)=>map.set(id,[...(map.get(id)||[]),{...item,id}]);
   for(const path of new Set([...Object.keys(oldAreas),...Object.keys(newAreas)])){
     const old=oldAreas[path]||{},next=newAreas[path]||{};
     Object.keys(old).filter(key=>!next[key]||next[key].id!==old[key].id).forEach(key=>add(removed,old[key].id,{path,key}));
@@ -69,9 +74,18 @@ function moves(before,after){
     const targets=added.get(id)||[];
     for(let i=0;i<Math.min(sources.length,targets.length);i++){
       if(sources[i].path===targets[i].path)continue;
-      const key=`${sources[i].path}|${targets[i].path}`;
-      const group=groups.get(key)||{source:sources[i].path,target:targets[i].path,count:0};group.count++;groups.set(key,group);
+      const key=`${sources[i].path}|${targets[i].path}|${id}|${i}`;
+      groups.set(key,{source:sources[i].path,target:targets[i].path,id});
     }
+  }
+  return [...groups.values()];
+}
+
+function moves(before,after){
+  const groups=new Map();
+  for(const card of cardMoves(before,after)){
+    const key=`${card.source}|${card.target}`;
+    const group=groups.get(key)||{source:card.source,target:card.target,count:0};group.count++;groups.set(key,group);
   }
   return [...groups.values()];
 }
@@ -113,8 +127,9 @@ export function createCardTransfers(before,after,cardCatalog={}) {
   const transfers=moves(before,after).map(move=>({...move,label:transferLabel(hint,move.source,move.target),cards:cards.filter(card=>card.source===move.source)}));
   if(hint?.opcode===ACTION_HINT_OPCODE.USE_CARD){
     const [useCardName,useTargetSeat]=hint.args;
+    const useTargetSeats=useTargetSeat&&useTargetSeat!=='-'?useTargetSeat.split(',').filter(seat=>/^p\d+$/.test(seat)):[];
     transfers.forEach((transfer,index)=>Object.assign(transfer,{
-      useCardName,useTargetSeat:useTargetSeat==='-'?null:useTargetSeat,usePrimary:index===0,
+      useCardName,useTargetSeat:useTargetSeats.length===1?useTargetSeats[0]:null,useTargetSeats,usePrimary:index===0,
       useCards:index===0?cards:[],
     }));
   }
@@ -157,12 +172,26 @@ export function createCardReveals(before,after) {
   return [...groups.values()];
 }
 
-function hintedChanges(hint,before,after,cardCatalog={}){
+function hintedChanges(hint,before,after,cardCatalog={},localSeat=null){
   const moved=moves(before,after);
   switch(hint.opcode){
     case ACTION_HINT_OPCODE.DISCARD_OTHER:return moved.filter(x=>/^p\d+\//.test(x.source)&&x.target==='tableDecks/discard').map(x=>`弃置了 ${playerName(after,x.source.split('/')[0])} 的 ${x.count} 张牌`);
     case ACTION_HINT_OPCODE.DRAW_FOR_OTHER:return moved.filter(x=>x.source==='tableDecks/pai'&&/^p\d+\/hand$/.test(x.target)).map(x=>`让 ${playerName(after,x.target.split('/')[0])} 摸了 ${x.count} 张牌`);
-    case ACTION_HINT_OPCODE.TRANSFER_CARD:return moved.filter(x=>/^p\d+\//.test(x.source)&&/^p\d+\//.test(x.target)).map(x=>`将 ${x.count} 张牌交给 ${playerName(after,x.target.split('/')[0])}`);
+    case ACTION_HINT_OPCODE.TRANSFER_CARD:{
+      const transfers=moved.filter(x=>/^p\d+\//.test(x.source)&&/^p\d+\//.test(x.target));
+      const changes=transfers.map(x=>{
+        const sourceSeat=x.source.split('/')[0],targetSeat=x.target.split('/')[0];
+        return targetSeat===hint.actorSeat&&sourceSeat!==hint.actorSeat
+        ? `获取了 ${playerName(after,sourceSeat)} 的 ${x.count} 张牌`
+        : `将 ${x.count} 张牌交给 ${playerName(after,targetSeat)}`;
+      });
+      const lostCards=cardMoves(before,after).filter(card=>{
+        const sourceSeat=card.source.split('/')[0],targetSeat=card.target.split('/')[0];
+        return sourceSeat===localSeat&&targetSeat===hint.actorSeat&&sourceSeat!==hint.actorSeat;
+      }).map(card=>cardCatalog[card.id]).filter(Boolean);
+      if(lostCards.length)changes.push(`你失去了 ${lostCards.map(card=>`${suitIcon(card.suit)} ${card.rank} ${card.name}`).join('、')}`);
+      return changes;
+    }
     case ACTION_HINT_OPCODE.PLACE_JUDGMENT:{
       const [targetSeat,format,...payload]=hint.args;
       if(!/^p\d+$/.test(targetSeat)||format!=='i'||payload.length%2!==0)return [];
@@ -176,10 +205,14 @@ function hintedChanges(hint,before,after,cardCatalog={}){
       return changes;
     }
     case ACTION_HINT_OPCODE.USE_CARD:{
-      const [cardName,targetSeat]=hint.args;
+      const [cardName,targetValue]=hint.args;
       if(!USE_CARD_NAMES.includes(cardName))return [];
-      return targetSeat&&targetSeat!=='-'
-        ? [`对 ${playerName(after,targetSeat)} 使用了 ${cardName}`]
+      const targets=targetValue&&targetValue!=='-'
+        ?targetValue.split(',').filter(seat=>/^p\d+$/.test(seat)).map(seat=>playerName(after,seat))
+        :[];
+      if(cardName==='闪'||(!targets.length&&cardName.endsWith('杀')))return [`打出了 ${cardName}`];
+      return targets.length
+        ? [`对 ${targets.join('、')} 使用了 ${cardName}`]
         : [`使用了 ${cardName}`];
     }
     case ACTION_HINT_OPCODE.MOVE_OTHER:return moved.map(x=>`将 ${x.count} 张牌从 ${areaName(after,x.source)} 移到 ${areaName(after,x.target)}`);
@@ -216,10 +249,10 @@ function hintedChanges(hint,before,after,cardCatalog={}){
   }
 }
 
-export function createLocalLogEntry(before,after,timestamp=Date.now(),cardCatalog={}){
+export function createLocalLogEntry(before,after,timestamp=Date.now(),cardCatalog={},localSeat=null){
   const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
   if(hint){
-    const changes=hintedChanges(hint,before,after,cardCatalog);
+    const changes=hintedChanges(hint,before,after,cardCatalog,localSeat);
     if(changes.length){
       const aggregate=viewedCardsFromHint(hint,after);
       return {actor:hint.actorSeat?playerName(after,hint.actorSeat):'玩家',actorSeat:hint.actorSeat,timestamp,changes,...(aggregate?{aggregate}:{})};

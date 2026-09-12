@@ -42,7 +42,7 @@ export function installActionLog(table) {
     if(previousRoom===null){previousRoom=room;return;}
     const transfers=createCardTransfers(previousRoom,room,paiKu);
     const reveals=createCardReveals(previousRoom,room);
-    const entry=createLocalLogEntry(previousRoom,room,Date.now(),paiKu);previousRoom=room;
+    const entry=createLocalLogEntry(previousRoom,room,Date.now(),paiKu,controller.currentPlayer);previousRoom=room;
     if(transfers.length)table.dispatchEvent(new CustomEvent('card-transfers',{detail:{transfers}}));
     if(reveals.length)table.dispatchEvent(new CustomEvent('card-reveals',{detail:{reveals}}));
     if(!entry)return;

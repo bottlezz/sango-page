@@ -14,7 +14,6 @@ import "./sgHpbar.js";
 import commonCss from "./css/common.css";
 import sgPlayerCss from "./css/sgPlayer.css";
 import paiKu from "../data/pai.json";
-import { judgmentEffects } from "../cardOrder.mjs";
 import mobilePlayerCss from "./css/mobilePlayer.css";
 import { installMobilePlayerView } from "./mobilePlayerView.js";
 
@@ -252,14 +251,7 @@ class SgPlayer extends HTMLElement {
         <button type="button" data-area="zhuangArea">装备</button>
         <button type="button" data-area="other1Area">区1</button>
         <button type="button" data-area="other2Area">区2</button>
-      </div><div class="judgment-options">
-        <p class="judgment-label">判定区：</p>
-        <p class="judgment-summary"></p>
-        <div class="drop-options">
-          <button type="button" data-effect="乐不思蜀">乐不思蜀</button>
-          <button type="button" data-effect="兵粮寸断">兵粮寸断</button>
-          <button type="button" data-effect="闪电">闪电</button>
-        </div>
+        <button type="button" data-area="panArea" hidden>判定区</button>
       </div><p class="drop-error" role="status"></p>
       <button type="button" class="drop-cancel">取消</button>`;
     this.shadowRoot.append(this.dropPicker);
@@ -270,15 +262,6 @@ class SgPlayer extends HTMLElement {
     });
     this.dropPicker.querySelectorAll("[data-area]").forEach(button => {
       button.addEventListener("click", () => this.confirmPlayerDrop(button.dataset.area));
-    });
-    this.dropPicker.querySelectorAll('[data-effect]').forEach(button => {
-      button.addEventListener('click', () => {
-        const path = this.judgmentPaths[Object.keys(this.pendingEffects).length];
-        this.pendingEffects[path] = button.dataset.effect;
-        if (Object.keys(this.pendingEffects).length === this.judgmentPaths.length) {
-          this.confirmPlayerDrop('panArea', this.pendingEffects);
-        } else this.renderJudgmentChoices();
-      });
     });
     // Capture before nested area handlers can move a card immediately.
     this.addEventListener("dragover", (event) => {
@@ -641,60 +624,41 @@ class SgPlayer extends HTMLElement {
       card.cardRef.toString().replace(baseUrl, "")
     );
     this.pendingDrop = [...new Set(paths || (selectedPaths.includes(path) ? selectedPaths : [path]))];
+    const selectedByPath=new Map(this.gameController.selectedCards.map(card=>[
+      card.cardRef.toString().replace(baseUrl,""),card,
+    ]));
+    const lightningCard=this.pendingDrop.length===1?selectedByPath.get(this.pendingDrop[0]):null;
+    const canMoveLightning=Boolean(lightningCard)
+      && /\/pan\/cards\/[^/]+$/.test(this.pendingDrop[0])
+      && (lightningCard.cardData?.judgmentEffect||paiKu[lightningCard.cardData?.id]?.name)==='闪电';
+    this.dropPicker.querySelector('[data-area="panArea"]').hidden=!canMoveLightning;
     this.dropComplete = done; this.dropCommitted = false;
     const name = this.shadowRoot.querySelector(".player-name").textContent || this.playerRef.key;
     this.dropPicker.querySelector(".drop-summary").textContent = `将 ${this.pendingDrop.length} 张牌放入 ${name} 的哪个区域？`;
     this.dropPicker.querySelector(".drop-error").textContent = "";
-    const judgmentPath = child(this.panArea.deckRef, '/cards').toString().replace(baseUrl, '');
-    this.judgmentPaths = this.pendingDrop.filter(path => !path.startsWith(`${judgmentPath}/`));
-    this.pendingEffects = {};
     this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = false; });
-    this.renderJudgmentChoices();
     this.dropPicker.showModal();
   }
 
-  renderJudgmentChoices() {
-    const index = Object.keys(this.pendingEffects).length;
-    this.dropPicker.querySelector('.judgment-summary').textContent = this.judgmentPaths.length > 1
-      ? `第 ${index + 1} / ${this.judgmentPaths.length} 张牌（按拖入顺序选择）` : '';
-    const occupied = [...this.panArea.cardArea.children].map(card => card.cardData?.judgmentEffect || paiKu[card.cardData?.id]?.name);
-    this.dropPicker.querySelectorAll('[data-effect]').forEach(button => {
-      button.disabled = !this.judgmentPaths.length || occupied.length + this.judgmentPaths.length > judgmentEffects.length
-        || occupied.includes(button.dataset.effect) || Object.values(this.pendingEffects).includes(button.dataset.effect);
-    });
-  }
-
-  async confirmPlayerDrop(areaName, effects = null) {
+  async confirmPlayerDrop(areaName) {
     if (!this.pendingDrop || this.dropBusy) return;
     const target = child(this[areaName].deckRef, "/cards");
     const baseUrl = ref(this.gameController.db).toString();
     const targetPath = target.toString().replace(baseUrl, "");
     const paths = this.pendingDrop.filter(path => !path.startsWith(`${targetPath}/`));
-    if (areaName === 'panArea' && paths.length && !effects) {
-      const count = this.panArea.cardArea.children.length;
-      if (count + paths.length > judgmentEffects.length) {
-        this.dropPicker.querySelector('.drop-error').textContent = '判定区每种效果最多一张，总共最多三张，请减少选牌。';
-        return;
-      }
-      this.judgmentPaths = paths;
-      this.pendingEffects = {};
-      this.renderJudgmentChoices();
-      return;
-    }
     this.dropBusy = true;
     this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = true; });
     try {
-      if (paths.length) await this.gameController.moveOrderedCards(paths, target, null, effects || {});
+      const effects=areaName==='panArea'?Object.fromEntries(paths.map(path=>[path,'闪电'])):{};
+      if (paths.length) await this.gameController.moveOrderedCards(paths, target, null, effects);
       this.dropCommitted = true;
       this.dropPicker.close();
     } catch (error) {
       console.error("Unable to move dropped cards", error);
       this.dropPicker.querySelector(".drop-error").textContent = error.message || "移动失败，请重试或取消。";
-      this.pendingEffects = {};
     } finally {
       this.dropBusy = false;
       this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = false; });
-      if (this.dropPicker.open) this.renderJudgmentChoices();
     }
   }
 

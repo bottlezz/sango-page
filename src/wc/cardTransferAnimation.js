@@ -82,7 +82,7 @@ export function installCardTransferAnimation(table){
     window.setTimeout(()=>group.remove(),trailDuration+20);
   }
 
-  function playUse({source,useCardName,useTargetSeat,useCards=[]}){
+  function playUse({source,useCardName,useTargetSeat,useTargetSeats=[],useCards=[]}){
     const host=revealHost(source);
     if(!host||!host.isConnected||!useCardName||!useCards.length)return;
     const rect=host.getBoundingClientRect();
@@ -92,10 +92,14 @@ export function installCardTransferAnimation(table){
     const owner=String(source||'').split('/')[0],isLocalPlayer=owner===table.gameController.currentPlayer;
     const centerY=isLocalPlayer?(rect.top>=120?rect.top-55:rect.bottom+55):rect.top+rect.height/2;
     group.style.top=`${Math.min(window.innerHeight-62,Math.max(62,centerY))}px`;
-    const heading=document.createElement('span');heading.className='card-use-heading';heading.textContent=`作为「${useCardName}」使用`;
     const list=document.createElement('div');list.className='card-reveal-list card-use-list';
     useCards.forEach(card=>list.append(cardFace(card)));
-    group.append(heading,list);layer.append(group);
+    const converted=useCards.some(card=>card.name!==useCardName);
+    if(converted){
+      const heading=document.createElement('span');heading.className='card-use-heading';heading.textContent=`作为「${useCardName}」使用`;
+      group.append(heading);
+    }
+    group.append(list);layer.append(group);
     const duration=reduced.matches?500:ACTION_PREVIEW_DURATION;
     group.animate([
       {opacity:0,transform:'translate(-50%,-22%) scale(.72)'},
@@ -104,9 +108,10 @@ export function installCardTransferAnimation(table){
       {opacity:0,transform:'translate(-50%,-68%) scale(.96)'},
     ],{duration,easing:'cubic-bezier(.18,.72,.25,1)',fill:'forwards'});
     host.animate([{filter:'brightness(1)'},{filter:'brightness(1.3)',offset:.35},{filter:'brightness(1)'}],{duration:360});
-    if(useTargetSeat)play({
-      source,target:`${useTargetSeat}/hand`,count:1,label:`使用 · ${useCardName}`,suppressCards:true,
-    });
+    const targets=useTargetSeats.length?useTargetSeats:(useTargetSeat?[useTargetSeat]:[]);
+    targets.forEach(targetSeat=>play({
+      source,target:`${targetSeat}/hand`,count:1,label:`使用 · ${useCardName}`,suppressCards:true,
+    }));
     window.setTimeout(()=>group.remove(),duration+30);
   }
 

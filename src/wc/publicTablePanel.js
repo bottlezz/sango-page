@@ -1,6 +1,7 @@
 import {onValue, ref} from 'firebase/database';
 import {orderedEntries, recentEntries} from '../cardOrder.mjs';
 import {ACTION_HINT_OPCODE, decodeActionHint} from '../localActionLog.mjs';
+import paiKu from '../data/pai.json' assert {type:'json'};
 import './sgCard.js';
 import {captureCardPositions, animateCardLayoutChanges} from './cardInsertionAnimation.js';
 
@@ -39,18 +40,27 @@ export function installPublicTablePanel(table,host,cardMenu){
     card.init(ref(db,path),{...value,show:show?'1':'0'},controller,{subscribe:false});card.renderCard();
     return card;
   }
-  function hintSource(hint){
+  function hintSource(hint,cardValue){
     if(!hint)return '';
-    if(hint.opcode===ACTION_HINT_OPCODE.PLAY)return '打出';
+    if(hint.opcode===ACTION_HINT_OPCODE.PLAY)return '';
     if(hint.opcode===ACTION_HINT_OPCODE.DISCARD||hint.opcode===ACTION_HINT_OPCODE.DISCARD_OTHER)return '弃置';
-    if(hint.opcode===ACTION_HINT_OPCODE.USE_CARD)return '使用';
+    if(hint.opcode===ACTION_HINT_OPCODE.USE_CARD){
+      const [useCardName,,format,...payload]=hint.args;
+      if(format!=='i'||!cardValue?.id)return '';
+      const usedIds=new Set();
+      for(let index=1;index<payload.length;index+=2)usedIds.add(payload[index]);
+      const physicalName=paiKu[cardValue.id]?.name;
+      return usedIds.has(cardValue.id)&&physicalName&&physicalName!==useCardName?`→ ${useCardName}`:'';
+    }
     if(hint.opcode===ACTION_HINT_OPCODE.REVEAL_JUDGMENT)return '展示／判定';
     return '';
   }
   function classifyPending(){
     if(!pendingDiscardKeys.size||!lastHint||lastHint.nonce===lastHintNonce)return;
-    const source=hintSource(lastHint);
-    pendingDiscardKeys.forEach(key=>{if(source)sourceByKey.set(key,source);});
+    pendingDiscardKeys.forEach(key=>{
+      const source=hintSource(lastHint,discard[key]);
+      if(source)sourceByKey.set(key,source);else sourceByKey.delete(key);
+    });
     pendingDiscardKeys.clear();lastHintNonce=lastHint.nonce;renderDiscard();
   }
   function renderDiscard(animate=false,newFrom='left'){
@@ -65,7 +75,8 @@ export function installPublicTablePanel(table,host,cardMenu){
       if(existing.has(key)){
         const item=existing.get(key);item.querySelector('button').disabled=busy||!controller.currentPlayer;
         const action=sourceByKey.get(key);
-        if(action&&!item.querySelector('.discard-action-indicator')){const badge=document.createElement('small');badge.className='discard-action-indicator';badge.textContent=action;item.append(badge);}
+        let badge=item.querySelector('.discard-action-indicator');
+        if(action){if(!badge){badge=document.createElement('small');badge.className='discard-action-indicator';item.append(badge);}badge.textContent=action;}else badge?.remove();
         item.style.order=entries.findIndex(entry=>entry.key===key);return;
       }
       const item=document.createElement('div');item.className='recent-discard-card';

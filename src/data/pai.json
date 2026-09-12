@@ -2,818 +2,978 @@
   "p1": {
     "suit": "diamond",
     "rank": "A",
-    "name": "决斗"
+    "name": "决斗",
+    "category": "spell"
   },
   "p2": {
     "suit": "diamond",
     "rank": "A",
-    "name": "诸葛连弩"
+    "name": "诸葛连弩",
+    "category": "equipment"
   },
   "p3": {
     "suit": "diamond",
     "rank": "A",
     "name": "朱雀羽扇",
+    "category": "equipment",
     "desc": "4"
   },
   "p4": {
     "suit": "diamond",
     "rank": "2",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p5": {
     "suit": "diamond",
     "rank": "2",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p6": {
     "suit": "diamond",
     "rank": "2",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p7": {
     "suit": "diamond",
     "rank": "3",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p8": {
     "suit": "diamond",
     "rank": "3",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p9": {
     "suit": "diamond",
     "rank": "3",
-    "name": "顺手牵羊"
+    "name": "顺手牵羊",
+    "category": "spell"
   },
   "p10": {
     "suit": "diamond",
     "rank": "4",
-    "name": "火杀"
+    "name": "火杀",
+    "category": "basic"
   },
   "p11": {
     "suit": "diamond",
     "rank": "4",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p12": {
     "suit": "diamond",
     "rank": "4",
-    "name": "顺手牵羊"
+    "name": "顺手牵羊",
+    "category": "spell"
   },
   "p13": {
     "suit": "diamond",
     "rank": "5",
-    "name": "火杀"
+    "name": "火杀",
+    "category": "basic"
   },
   "p14": {
     "suit": "diamond",
     "rank": "5",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p15": {
     "suit": "diamond",
     "rank": "5",
     "name": "贯石斧",
+    "category": "equipment",
     "desc": "3"
   },
   "p16": {
     "suit": "diamond",
     "rank": "6",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p17": {
     "suit": "diamond",
     "rank": "6",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p18": {
     "suit": "diamond",
     "rank": "6",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p19": {
     "suit": "diamond",
     "rank": "7",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p20": {
     "suit": "diamond",
     "rank": "7",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p21": {
     "suit": "diamond",
     "rank": "7",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p22": {
     "suit": "diamond",
     "rank": "8",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p23": {
     "suit": "diamond",
     "rank": "8",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p24": {
     "suit": "diamond",
     "rank": "8",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p25": {
     "suit": "diamond",
     "rank": "9",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p26": {
     "suit": "diamond",
     "rank": "9",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p27": {
     "suit": "diamond",
     "rank": "9",
-    "name": "酒"
+    "name": "酒",
+    "category": "basic"
   },
   "p28": {
     "suit": "diamond",
     "rank": "10",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p29": {
     "suit": "diamond",
     "rank": "10",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p30": {
     "suit": "diamond",
     "rank": "10",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p31": {
     "suit": "diamond",
     "rank": "J",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p32": {
     "suit": "diamond",
     "rank": "J",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p33": {
     "suit": "diamond",
     "rank": "J",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p34": {
     "suit": "diamond",
     "rank": "Q",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p35": {
     "suit": "diamond",
     "rank": "Q",
-    "name": "火攻"
+    "name": "火攻",
+    "category": "spell"
   },
   "p36": {
     "suit": "diamond",
     "rank": "Q",
     "name": "方天画戟",
+    "category": "equipment",
     "desc": "4"
   },
   "p37": {
     "suit": "diamond",
     "rank": "Q",
-    "name": "无懈可击"
+    "name": "无懈可击",
+    "category": "spell"
   },
   "p38": {
     "suit": "diamond",
     "rank": "K",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p39": {
     "suit": "diamond",
     "rank": "K",
     "name": "紫骍",
+    "category": "equipment",
     "desc": "-"
   },
   "p40": {
     "suit": "diamond",
     "rank": "K",
     "name": "骅骝",
+    "category": "equipment",
     "desc": "+"
   },
   "p41": {
     "suit": "club",
     "rank": "A",
-    "name": "决斗"
+    "name": "决斗",
+    "category": "spell"
   },
   "p42": {
     "suit": "club",
     "rank": "A",
-    "name": "诸葛连弩"
+    "name": "诸葛连弩",
+    "category": "equipment"
   },
   "p43": {
     "suit": "club",
     "rank": "A",
-    "name": "白银狮子"
+    "name": "白银狮子",
+    "category": "equipment"
   },
   "p44": {
     "suit": "club",
     "rank": "2",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p45": {
     "suit": "club",
     "rank": "2",
-    "name": "八卦阵"
+    "name": "八卦阵",
+    "category": "equipment"
   },
   "p46": {
     "suit": "club",
     "rank": "2",
-    "name": "藤甲"
+    "name": "藤甲",
+    "category": "equipment"
   },
   "p47": {
     "suit": "club",
     "rank": "2",
-    "name": "仁王盾"
+    "name": "仁王盾",
+    "category": "equipment"
   },
   "p48": {
     "suit": "club",
     "rank": "3",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p49": {
     "suit": "club",
     "rank": "3",
-    "name": "酒"
+    "name": "酒",
+    "category": "basic"
   },
   "p50": {
     "suit": "club",
     "rank": "3",
-    "name": "过河拆桥"
+    "name": "过河拆桥",
+    "category": "spell"
   },
   "p51": {
     "suit": "club",
     "rank": "4",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p52": {
     "suit": "club",
     "rank": "4",
-    "name": "过河拆桥"
+    "name": "过河拆桥",
+    "category": "spell"
   },
   "p53": {
     "suit": "club",
     "rank": "4",
-    "name": "兵粮寸断"
+    "name": "兵粮寸断",
+    "category": "spell"
   },
   "p54": {
     "suit": "club",
     "rank": "5",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p55": {
     "suit": "club",
     "rank": "5",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p56": {
     "suit": "club",
     "rank": "5",
     "name": "的卢",
+    "category": "equipment",
     "desc": "+"
   },
   "p57": {
     "suit": "club",
     "rank": "6",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p58": {
     "suit": "club",
     "rank": "6",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p59": {
     "suit": "club",
     "rank": "6",
-    "name": "乐不思蜀"
+    "name": "乐不思蜀",
+    "category": "spell"
   },
   "p60": {
     "suit": "club",
     "rank": "7",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p61": {
     "suit": "club",
     "rank": "7",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p62": {
     "suit": "club",
     "rank": "7",
-    "name": "南蛮入侵"
+    "name": "南蛮入侵",
+    "category": "spell"
   },
   "p63": {
     "suit": "club",
     "rank": "8",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p64": {
     "suit": "club",
     "rank": "8",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p65": {
     "suit": "club",
     "rank": "8",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p66": {
     "suit": "club",
     "rank": "9",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p67": {
     "suit": "club",
     "rank": "9",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p68": {
     "suit": "club",
     "rank": "9",
-    "name": "酒"
+    "name": "酒",
+    "category": "basic"
   },
   "p69": {
     "suit": "club",
     "rank": "10",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p70": {
     "suit": "club",
     "rank": "10",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p71": {
     "suit": "club",
     "rank": "10",
-    "name": "铁索连环"
+    "name": "铁索连环",
+    "category": "spell"
   },
   "p72": {
     "suit": "club",
     "rank": "J",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p73": {
     "suit": "club",
     "rank": "J",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p74": {
     "suit": "club",
     "rank": "J",
-    "name": "铁索连环"
+    "name": "铁索连环",
+    "category": "spell"
   },
   "p75": {
     "suit": "club",
     "rank": "Q",
-    "name": "借刀杀人"
+    "name": "借刀杀人",
+    "category": "spell"
   },
   "p76": {
     "suit": "club",
     "rank": "Q",
-    "name": "无懈可击"
+    "name": "无懈可击",
+    "category": "spell"
   },
   "p77": {
     "suit": "club",
     "rank": "Q",
-    "name": "铁索连环"
+    "name": "铁索连环",
+    "category": "spell"
   },
   "p78": {
     "suit": "club",
     "rank": "K",
-    "name": "借刀杀人"
+    "name": "借刀杀人",
+    "category": "spell"
   },
   "p79": {
     "suit": "club",
     "rank": "K",
-    "name": "无懈可击"
+    "name": "无懈可击",
+    "category": "spell"
   },
   "p80": {
     "suit": "club",
     "rank": "K",
-    "name": "铁索连环"
+    "name": "铁索连环",
+    "category": "spell"
   },
   "p81": {
     "suit": "heart",
     "rank": "A",
-    "name": "万箭齐发"
+    "name": "万箭齐发",
+    "category": "spell"
   },
   "p82": {
     "suit": "heart",
     "rank": "A",
-    "name": "桃园结义"
+    "name": "桃园结义",
+    "category": "spell"
   },
   "p83": {
     "suit": "heart",
     "rank": "A",
-    "name": "无懈可击"
+    "name": "无懈可击",
+    "category": "spell"
   },
   "p84": {
     "suit": "heart",
     "rank": "2",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p85": {
     "suit": "heart",
     "rank": "2",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p86": {
     "suit": "heart",
     "rank": "2",
-    "name": "火攻"
+    "name": "火攻",
+    "category": "spell"
   },
   "p87": {
     "suit": "heart",
     "rank": "3",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p88": {
     "suit": "heart",
     "rank": "3",
-    "name": "五谷丰登"
+    "name": "五谷丰登",
+    "category": "spell"
   },
   "p89": {
     "suit": "heart",
     "rank": "3",
-    "name": "火杀"
+    "name": "火杀",
+    "category": "basic"
   },
   "p90": {
     "suit": "heart",
     "rank": "4",
-    "name": "火杀"
+    "name": "火杀",
+    "category": "basic"
   },
   "p91": {
     "suit": "heart",
     "rank": "4",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p92": {
     "suit": "heart",
     "rank": "4",
-    "name": "五谷丰登"
+    "name": "五谷丰登",
+    "category": "spell"
   },
   "p93": {
     "suit": "heart",
     "rank": "5",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p94": {
     "suit": "heart",
     "rank": "5",
     "name": "麒麟弓",
+    "category": "equipment",
     "desc": "5"
   },
   "p95": {
     "suit": "heart",
     "rank": "5",
     "name": "赤兔",
+    "category": "equipment",
     "desc": "-"
   },
   "p96": {
     "suit": "heart",
     "rank": "6",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p97": {
     "suit": "heart",
     "rank": "6",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p98": {
     "suit": "heart",
     "rank": "6",
-    "name": "乐不思蜀"
+    "name": "乐不思蜀",
+    "category": "spell"
   },
   "p99": {
     "suit": "heart",
     "rank": "7",
-    "name": "火杀"
+    "name": "火杀",
+    "category": "basic"
   },
   "p100": {
     "suit": "heart",
     "rank": "7",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p101": {
     "suit": "heart",
     "rank": "7",
-    "name": "无中生有"
+    "name": "无中生有",
+    "category": "spell"
   },
   "p102": {
     "suit": "heart",
     "rank": "8",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p103": {
     "suit": "heart",
     "rank": "8",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p104": {
     "suit": "heart",
     "rank": "8",
-    "name": "无中生有"
+    "name": "无中生有",
+    "category": "spell"
   },
   "p105": {
     "suit": "heart",
     "rank": "9",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p106": {
     "suit": "heart",
     "rank": "9",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p107": {
     "suit": "heart",
     "rank": "9",
-    "name": "无中生有"
+    "name": "无中生有",
+    "category": "spell"
   },
   "p108": {
     "suit": "heart",
     "rank": "10",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p109": {
     "suit": "heart",
     "rank": "10",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p110": {
     "suit": "heart",
     "rank": "10",
-    "name": "火杀"
+    "name": "火杀",
+    "category": "basic"
   },
   "p111": {
     "suit": "heart",
     "rank": "J",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p112": {
     "suit": "heart",
     "rank": "J",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p113": {
     "suit": "heart",
     "rank": "J",
-    "name": "无中生有"
+    "name": "无中生有",
+    "category": "spell"
   },
   "p114": {
     "suit": "heart",
     "rank": "Q",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p115": {
     "suit": "heart",
     "rank": "Q",
-    "name": "桃"
+    "name": "桃",
+    "category": "basic"
   },
   "p116": {
     "suit": "heart",
     "rank": "Q",
-    "name": "过河拆桥"
+    "name": "过河拆桥",
+    "category": "spell"
   },
   "p117": {
     "suit": "heart",
     "rank": "Q",
-    "name": "闪电"
+    "name": "闪电",
+    "category": "spell"
   },
   "p118": {
     "suit": "heart",
     "rank": "K",
-    "name": "闪"
+    "name": "闪",
+    "category": "basic"
   },
   "p119": {
     "suit": "heart",
     "rank": "K",
     "name": "爪黄飞电",
+    "category": "equipment",
     "desc": "+"
   },
   "p120": {
     "suit": "heart",
     "rank": "K",
-    "name": "无懈可击"
+    "name": "无懈可击",
+    "category": "spell"
   },
   "p121": {
     "suit": "spade",
     "rank": "A",
-    "name": "决斗"
+    "name": "决斗",
+    "category": "spell"
   },
   "p122": {
     "suit": "spade",
     "rank": "A",
-    "name": "闪电"
+    "name": "闪电",
+    "category": "spell"
   },
   "p123": {
     "suit": "spade",
     "rank": "A",
     "name": "古锭刀",
+    "category": "equipment",
     "desc": "2"
   },
   "p124": {
     "suit": "spade",
     "rank": "2",
     "name": "雌雄双股",
+    "category": "equipment",
     "desc": "2"
   },
   "p125": {
     "suit": "spade",
     "rank": "2",
-    "name": "八卦阵"
+    "name": "八卦阵",
+    "category": "equipment"
   },
   "p126": {
     "suit": "spade",
     "rank": "2",
-    "name": "藤甲"
+    "name": "藤甲",
+    "category": "equipment"
   },
   "p127": {
     "suit": "spade",
     "rank": "2",
     "name": "寒冰剑",
+    "category": "equipment",
     "desc": "2"
   },
   "p128": {
     "suit": "spade",
     "rank": "3",
-    "name": "酒"
+    "name": "酒",
+    "category": "basic"
   },
   "p129": {
     "suit": "spade",
     "rank": "3",
-    "name": "过河拆桥"
+    "name": "过河拆桥",
+    "category": "spell"
   },
   "p130": {
     "suit": "spade",
     "rank": "3",
-    "name": "顺手牵羊"
+    "name": "顺手牵羊",
+    "category": "spell"
   },
   "p131": {
     "suit": "spade",
     "rank": "4",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p132": {
     "suit": "spade",
     "rank": "4",
-    "name": "过河拆桥"
+    "name": "过河拆桥",
+    "category": "spell"
   },
   "p133": {
     "suit": "spade",
     "rank": "4",
-    "name": "顺手牵羊"
+    "name": "顺手牵羊",
+    "category": "spell"
   },
   "p134": {
     "suit": "spade",
     "rank": "5",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p135": {
     "suit": "spade",
     "rank": "5",
     "name": "青龙偃月",
+    "category": "equipment",
     "desc": "3"
   },
   "p136": {
     "suit": "spade",
     "rank": "5",
     "name": "绝影",
+    "category": "equipment",
     "desc": "+"
   },
   "p137": {
     "suit": "spade",
     "rank": "6",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p138": {
     "suit": "spade",
     "rank": "6",
-    "name": "乐不思蜀"
+    "name": "乐不思蜀",
+    "category": "spell"
   },
   "p139": {
     "suit": "spade",
     "rank": "6",
     "name": "青釭剑",
+    "category": "equipment",
     "desc": "2"
   },
   "p140": {
     "suit": "spade",
     "rank": "7",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p141": {
     "suit": "spade",
     "rank": "7",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p142": {
     "suit": "spade",
     "rank": "7",
-    "name": "南蛮入侵"
+    "name": "南蛮入侵",
+    "category": "spell"
   },
   "p143": {
     "suit": "spade",
     "rank": "8",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p144": {
     "suit": "spade",
     "rank": "8",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p145": {
     "suit": "spade",
     "rank": "8",
-    "name": "雷杀"
+    "name": "雷杀",
+    "category": "basic"
   },
   "p146": {
     "suit": "spade",
     "rank": "9",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p147": {
     "suit": "spade",
     "rank": "9",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p148": {
     "suit": "spade",
     "rank": "9",
-    "name": "酒"
+    "name": "酒",
+    "category": "basic"
   },
   "p149": {
     "suit": "spade",
     "rank": "10",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p150": {
     "suit": "spade",
     "rank": "10",
-    "name": "杀"
+    "name": "杀",
+    "category": "basic"
   },
   "p151": {
     "suit": "spade",
     "rank": "10",
-    "name": "兵粮寸断"
+    "name": "兵粮寸断",
+    "category": "spell"
   },
   "p152": {
     "suit": "spade",
     "rank": "J",
-    "name": "顺手牵羊"
+    "name": "顺手牵羊",
+    "category": "spell"
   },
   "p153": {
     "suit": "spade",
     "rank": "J",
-    "name": "无懈可击"
+    "name": "无懈可击",
+    "category": "spell"
   },
   "p154": {
     "suit": "spade",
     "rank": "J",
-    "name": "铁索连环"
+    "name": "铁索连环",
+    "category": "spell"
   },
   "p155": {
     "suit": "spade",
     "rank": "Q",
-    "name": "过河拆桥"
+    "name": "过河拆桥",
+    "category": "spell"
   },
   "p156": {
     "suit": "spade",
     "rank": "Q",
-    "name": "铁索连环"
+    "name": "铁索连环",
+    "category": "spell"
   },
   "p157": {
     "suit": "spade",
     "rank": "Q",
     "name": "丈八蛇矛",
+    "category": "equipment",
     "desc": "3"
   },
   "p158": {
     "suit": "spade",
     "rank": "K",
-    "name": "无懈可击"
+    "name": "无懈可击",
+    "category": "spell"
   },
   "p159": {
     "suit": "spade",
     "rank": "K",
-    "name": "南蛮入侵"
+    "name": "南蛮入侵",
+    "category": "spell"
   },
   "p160": {
     "suit": "spade",
     "rank": "K",
     "name": "大宛",
+    "category": "equipment",
     "desc": "-"
   }
 }

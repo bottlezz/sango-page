@@ -471,10 +471,13 @@ class gameController {
 
   async useSelectedCards(cardName, targetSeat = null, cards = [...this.selectedCards]) {
     if (!USE_CARD_NAMES.includes(cardName)) throw Error('无效的使用牌名');
-    if (targetSeat && !/^p\d+$/.test(targetSeat)) throw Error('无效的目标玩家');
-    const needsTarget = ['杀','决斗','过河拆桥','顺手牵羊'].includes(cardName);
-    if (needsTarget && !targetSeat) throw Error(`${cardName}需要选择目标`);
-    if (!needsTarget && targetSeat) throw Error(`${cardName}不需要选择目标`);
+    const targetSeats=targetSeat==null?[]:[...new Set(Array.isArray(targetSeat)?targetSeat:String(targetSeat).split(','))];
+    if (targetSeats.some(seat=>!/^p\d+$/.test(seat))) throw Error('无效的目标玩家');
+    if (['乐不思蜀','兵粮寸断','闪电'].includes(cardName)) throw Error('延迟锦囊需要放入目标玩家的判定区');
+    const allowsTarget = ['杀','火杀','雷杀','桃','无懈可击','无中生有','决斗','过河拆桥','顺手牵羊','铁索连环','火攻','借刀杀人'].includes(cardName);
+    const requiresTarget = allowsTarget && !['杀','火杀','雷杀'].includes(cardName);
+    if (requiresTarget && !targetSeats.length) throw Error(`${cardName}需要选择目标`);
+    if (!allowsTarget && targetSeats.length) throw Error(`${cardName}不需要选择目标`);
     const base = ref(this.db).toString(), prefix = `game/${this.gameId}/`;
     const paths = cards.map(card => card.cardRef.toString().replace(base, ''));
     if (!paths.length || paths.some(path => !path.includes(`/${this.currentPlayer}/`))) throw Error('只能使用自己区域的牌');
@@ -485,7 +488,18 @@ class gameController {
     });
     if (payload.some(value => !value)) throw Error('无法读取所选牌');
     return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`,
-      ACTION_HINT_OPCODE.USE_CARD, [cardName, targetSeat || '-', 'i', ...payload]);
+      ACTION_HINT_OPCODE.USE_CARD, [cardName, targetSeats.join(',') || '-', 'i', ...payload]);
+  }
+
+  async placeDelayedTrick(cardName, targetSeat, cards = [...this.selectedCards]) {
+    if (!['乐不思蜀','兵粮寸断','闪电'].includes(cardName)) throw Error('无效的延迟锦囊');
+    if (!/^p\d+$/.test(targetSeat || '')) throw Error(`${cardName}需要选择目标玩家`);
+    if (cards.length !== 1) throw Error('延迟锦囊每次只能选择一张牌');
+    const base=ref(this.db).toString();
+    const paths=cards.map(card=>card.cardRef.toString().replace(base,''));
+    if (paths.some(path=>!path.includes(`/${this.currentPlayer}/`))) throw Error('只能使用自己区域的牌');
+    const effects=Object.fromEntries(paths.map(path=>[path,cardName]));
+    return this.moveOrderedCards(paths,ref(this.db,`game/${this.gameId}/${targetSeat}/pan/cards`),null,effects,ACTION_HINT_OPCODE.PLACE_JUDGMENT);
   }
 
   async moveSelectedCards(cards, targetPath, actionOpcode = null, actionArgs = null) {

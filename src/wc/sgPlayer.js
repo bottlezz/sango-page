@@ -235,27 +235,7 @@ class SgPlayer extends HTMLElement {
     });
     paiInfo.addEventListener('toggle', event => {
       if (event.newState === 'closed' && this.inspectedArea && !this.classList.contains('current-player')) {
-        const inspectedArea = this.inspectedArea;
-        Object.values(inspectedArea.cards || {})
-          .forEach(card => card.classList.remove('inspection-tile', 'locally-viewed'));
-        Object.values(inspectedArea.cards || {})
-          .filter(card => this.gameController.selectedCards.includes(card))
-          .forEach(card => card.unselectCard());
-        if (this.inspectedAreaRestore) {
-          const { parent, nextSibling, wasHidden } = this.inspectedAreaRestore;
-          parent.insertBefore(inspectedArea, nextSibling?.parentNode === parent ? nextSibling : null);
-          if (['zhuang-area', 'pan-area'].includes(inspectedArea.areaType)) {
-            inspectedArea.classList.remove('hide');
-          } else {
-            inspectedArea.classList.toggle('hide', wasHidden);
-          }
-        }
-        inspectedArea.classList.remove('inspection-panel-area');
-        if (!this.inspectedAreaWasSubscribed) inspectedArea.stopCardsSubscription();
-        this.inspectedArea = null;
-        this.inspectedAreaRestore = null;
-        this.inspectedAreaWasSubscribed = false;
-        this.updateAreaActions();
+        this.releaseInspectedArea();
       }
     });
     generalSlots.append(this.jiang1Area);
@@ -566,13 +546,38 @@ class SgPlayer extends HTMLElement {
     });
   }
 
+  releaseInspectedArea() {
+    const inspectedArea = this.inspectedArea;
+    if (!inspectedArea) return;
+    Object.values(inspectedArea.cards || {})
+      .forEach(card => card.classList.remove('inspection-tile', 'locally-viewed'));
+    Object.values(inspectedArea.cards || {})
+      .filter(card => this.gameController.selectedCards.includes(card))
+      .forEach(card => card.unselectCard());
+    if (this.inspectedAreaRestore) {
+      const { parent, nextSibling, wasHidden } = this.inspectedAreaRestore;
+      parent.insertBefore(inspectedArea, nextSibling?.parentNode === parent ? nextSibling : null);
+      if (['zhuang-area', 'pan-area'].includes(inspectedArea.areaType)) inspectedArea.classList.remove('hide');
+      else inspectedArea.classList.toggle('hide', wasHidden);
+    }
+    inspectedArea.classList.remove('inspection-panel-area');
+    if (!this.inspectedAreaWasSubscribed) inspectedArea.stopCardsSubscription();
+    this.inspectedArea = null;
+    this.inspectedAreaRestore = null;
+    this.inspectedAreaWasSubscribed = false;
+    this.updateAreaActions();
+  }
+
   openAreaPanel(area, label) {
     if (this.classList.contains("current-player")) return;
+    const panel = this.shadowRoot.querySelector(".pai-info");
+    const switching = panel.matches(':popover-open') && this.inspectedArea && this.inspectedArea !== area;
+    if (switching) this.releaseInspectedArea();
+    if (this.inspectedArea === area) return;
     this.inspectedAreaWasSubscribed = Boolean(area.unSub);
     area.subscribeCards();
     this.inspectedArea = area;
     area.classList.add('inspection-panel-area');
-    const panel = this.shadowRoot.querySelector(".pai-info");
     panel.setAttribute("popover", "auto");
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-label", `${label}区域操作`);
@@ -597,7 +602,7 @@ class SgPlayer extends HTMLElement {
     area.classList.remove('hide');
     this.updateInspectionCardTiles();
     this.updateAreaActions();
-    panel.showPopover();
+    if (!panel.matches(':popover-open')) panel.showPopover();
     this.gameController.rootComponent?.syncSelectionMenus?.();
   }
 

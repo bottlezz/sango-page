@@ -50,8 +50,7 @@ export function installMobilePlayerView(player) {
     button.addEventListener('click', () => {
       const [area, areaLabel] = areaMap(player)[key];
       if (player.inspectedArea === area) return;
-      player.paiInfo.hidePopover();
-      setTimeout(() => player.openAreaPanel(area, areaLabel), 0);
+      player.openAreaPanel(area, areaLabel);
     });
     remoteTabs.append(button);
   });

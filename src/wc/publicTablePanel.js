@@ -1,5 +1,5 @@
 import {onValue, ref} from 'firebase/database';
-import {orderedEntries} from '../cardOrder.mjs';
+import {orderedEntries, recentEntries} from '../cardOrder.mjs';
 import {ACTION_HINT_OPCODE, decodeActionHint} from '../localActionLog.mjs';
 import './sgCard.js';
 import {captureCardPositions, animateCardLayoutChanges} from './cardInsertionAnimation.js';
@@ -29,14 +29,11 @@ export function installPublicTablePanel(table,host,cardMenu){
   host.append(discardDialog,sortDialog);
   const recentList=host.querySelector('.recent-discard-list'),drawSplit=host.querySelector('.public-draw-split');
   const drawToggle=host.querySelector('.draw-toggle'),drawOptions=host.querySelector('.draw-options');
-  let deckTop={},deckBottom={},discard={},draft=null,busy=false,lastHint=null,lastHintNonce=null,hintInitialized=false,previousDiscardKeys=null;
+  let deckTop={},discard={},draft=null,busy=false,lastHint=null,lastHintNonce=null,hintInitialized=false,previousDiscardKeys=null;
   const sourceByKey=new Map(),pendingDiscardKeys=new Set();
 
   const pathFor=(area,key)=>`${prefix}/tableDecks/${area}/cards/${key}`;
-  const deckEntries=()=>[
-    ...orderedEntries(deckTop).map(item=>({...item,path:pathFor('pai',item.key)})),
-    ...orderedEntries(deckBottom).map(item=>({...item,path:pathFor('paiBottom',item.key)})),
-  ];
+  const deckEntries=()=>orderedEntries(deckTop).map(item=>({...item,path:pathFor('pai',item.key)}));
   function cardFor(path,value,className,show=true){
     const card=document.createElement('sg-card');card.className=className;
     card.init(ref(db,path),{...value,show:show?'1':'0'},controller,{subscribe:false});card.renderCard();
@@ -46,6 +43,7 @@ export function installPublicTablePanel(table,host,cardMenu){
     if(!hint)return '';
     if(hint.opcode===ACTION_HINT_OPCODE.PLAY)return '打出';
     if(hint.opcode===ACTION_HINT_OPCODE.DISCARD||hint.opcode===ACTION_HINT_OPCODE.DISCARD_OTHER)return '弃置';
+    if(hint.opcode===ACTION_HINT_OPCODE.USE_CARD)return '使用';
     if(hint.opcode===ACTION_HINT_OPCODE.REVEAL_JUDGMENT)return '展示／判定';
     return '';
   }
@@ -55,11 +53,11 @@ export function installPublicTablePanel(table,host,cardMenu){
     pendingDiscardKeys.forEach(key=>{if(source)sourceByKey.set(key,source);});
     pendingDiscardKeys.clear();lastHintNonce=lastHint.nonce;renderDiscard();
   }
-  function renderDiscard(animate=false){
+  function renderDiscard(animate=false,newFrom='left'){
     const keyFor=node=>node.dataset.cardKey;
     const previous=captureCardPositions(recentList.querySelectorAll('.recent-discard-card'),keyFor);
     const existing=new Map([...recentList.querySelectorAll('.recent-discard-card')].map(node=>[keyFor(node),node]));
-    const entries=orderedEntries(discard).reverse();
+    const entries=recentEntries(discard);
     recentList.querySelector('.public-empty')?.remove();
     const visible=new Set(entries.slice(0,RECENT_LIMIT).map(item=>item.key));
     existing.forEach((node,key)=>{if(!visible.has(key))node.remove();});
@@ -81,10 +79,10 @@ export function installPublicTablePanel(table,host,cardMenu){
     });
     if(!entries.length){const empty=document.createElement('div');empty.className='public-empty';empty.innerHTML='<b>暂无弃牌</b><small>打出、弃置或展示／判定的牌会显示在这里</small>';recentList.append(empty);}
     host.querySelector('.discard-count').textContent=entries.length;
-    if(animate)animateCardLayoutChanges(recentList.querySelectorAll('.recent-discard-card'),previous,keyFor);
+    if(animate)animateCardLayoutChanges(recentList.querySelectorAll('.recent-discard-card'),previous,keyFor,{newFrom});
     if(discardDialog.open)renderDiscardDialog(entries);
   }
-  function renderDiscardDialog(entries=orderedEntries(discard).reverse()){
+  function renderDiscardDialog(entries=recentEntries(discard)){
     const grid=discardDialog.querySelector('.discard-grid');grid.replaceChildren();
     entries.forEach(({key,value})=>{
       const item=document.createElement('div');item.className='discard-grid-item';
@@ -178,13 +176,13 @@ export function installPublicTablePanel(table,host,cardMenu){
   const refreshPlayer=()=>{renderDeck();renderDiscard();};table.addEventListener('player-seat-changed',refreshPlayer);
   const subscriptions=[
     onValue(ref(db,`${prefix}/tableDecks/pai/cards`),snapshot=>{deckTop=snapshot.val()||{};renderDeck();}),
-    onValue(ref(db,`${prefix}/tableDecks/paiBottom/cards`),snapshot=>{deckBottom=snapshot.val()||{};renderDeck();}),
     onValue(ref(db,`${prefix}/runtime/a`),snapshot=>{const hint=decodeActionHint(snapshot.val());if(!hintInitialized){hintInitialized=true;lastHint=hint;lastHintNonce=hint?.nonce||null;}else lastHint=hint;classifyPending();}),
     onValue(ref(db,`${prefix}/tableDecks/discard/cards`),snapshot=>{
-      const next=snapshot.val()||{},keys=new Set(Object.keys(next));
+      const next=snapshot.val()||{},keys=new Set(Object.keys(next)),priorKeys=previousDiscardKeys;
       const changed=previousDiscardKeys!==null&&(keys.size!==previousDiscardKeys.size||[...keys].some(key=>!previousDiscardKeys.has(key)));
       if(previousDiscardKeys!==null)keys.forEach(key=>{if(!previousDiscardKeys.has(key))pendingDiscardKeys.add(key);});
-      previousDiscardKeys=keys;discard=next;[...sourceByKey.keys()].forEach(key=>{if(!keys.has(key))sourceByKey.delete(key);});renderDiscard(changed);classifyPending();
+      previousDiscardKeys=keys;discard=next;[...sourceByKey.keys()].forEach(key=>{if(!keys.has(key))sourceByKey.delete(key);});
+      renderDiscard(changed,node=>priorKeys?.has(node.dataset.cardKey)?'right':'left');classifyPending();
     }),
   ];
   renderDeck();renderDiscard();

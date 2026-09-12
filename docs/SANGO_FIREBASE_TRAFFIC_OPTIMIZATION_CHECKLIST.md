@@ -71,32 +71,32 @@
 
 ## Phase 2 — 卡牌移动与排序
 
-- [x] **M01 — Same-area reorder** · Priority: High
+- [x] **M01 — Draw-pile reorder** · Priority: High
   - 当前入口：`moveOrderedCards(paths, targetRef, beforeKey)`。
-  - 范围：手牌、区1、区2、公共区、牌堆；装备区和判定区已禁用拖拽排序。
-  - 目标：读取目标区域并只提交发生变化的 `order` 字段。
-  - Baseline：多选牌顺序保持、插入位置正确、同区域排序不改变卡牌 ID/亮置状态。
+  - 范围：只有牌堆保存并调整 `order`；其他区域按 Firebase push key 显示最新加入的牌。
+  - 目标：读取牌堆并只提交发生变化的 `order` 字段。
+  - Baseline：调整牌堆不改变卡牌 ID 和亮置状态。
   - 验收：不读取／提交玩家其他区域和完整房间。
   - 完成记录：见下方统一完成记录。
 
 - [x] **M02 — Cross-area card move** · Priority: High
   - 当前入口：拖拽、`moveCardToPlayerArea()`、`moveCardToTableDeck()`、摸／弃／出。
-  - 目标：只读取 source area(s) 与 target area，只提交源删除、目标新增及必要排序字段。
+  - 目标：只读取选中的 source card；装备区、判定区和牌堆按规则额外读取 target area；只提交源删除、目标新增及必要排序字段。
   - Baseline：多选一次提交；卡牌顺序保持；进入弃牌区清除 `show`；移出判定区清除判定字段。
-  - 并发要求：同一张牌最多被一个客户端成功移动。
-  - 验收：普通跨区域移动不执行整房间事务；冲突测试通过。
+  - 并发策略：普通区域采用 optimistic update，不加区域或单牌锁；只有涉及牌堆的移动加牌堆锁。
+  - 验收：普通跨区域移动不执行 transaction；移动仍由一次 multi-location update 完成。
   - 完成记录：见下方统一完成记录。
 
 - [x] **M03 — Equipment capacity** · Priority: High
   - 当前规则：装备区最多四张，同区不支持排序，移入固定追加。
-  - 目标：容量校验和移动在并发下保持一致，不能依赖容易过期的单独 `get()`。
-  - 验收：两个客户端同时向剩余一个空位移牌，最多一个成功；失败方原牌不丢失。
+  - 目标：移动前读取目标区域并检查容量，随后直接提交，不加锁。
+  - 验收：通常操作会阻止超过四张；极少数并发可暂时超过限制，由玩家手动纠正。
   - 完成记录：见下方统一完成记录。
 
 - [x] **M04 — Judgment placement** · Priority: High
   - 当前规则：乐不思蜀、兵粮寸断、闪电各最多一张，按进入顺序显示，不支持拖拽排序。
   - 目标：只读取源牌和目标判定区；提交移动、`judgmentEffect` 和顺序字段。
-  - 验收：两个客户端同时放入相同效果时最多一个成功；失败方原牌不丢失。
+  - 验收：通常操作会阻止重复效果；极少数并发可产生重复，由玩家手动纠正。
   - 完成记录：见下方统一完成记录。
 
 - [x] **M05 — Recycle / legacy move paths** · Priority: Medium
@@ -119,13 +119,13 @@
   - 当前入口：`dealCards()`。
   - 规则：只有所有玩家手牌为空时，按座次从牌堆给每人四张。
   - 目标：只读取牌堆及六个手牌区；只提交相关牌堆和手牌变化。
-  - 并发要求：多人同时点击发牌只能有一个操作成功。
+  - 并发要求：只锁定牌堆；手牌区域不加锁。
   - 验收：一次操作、没有重复发牌、不会产生部分玩家已发牌的状态。
   - 完成记录：见下方统一完成记录。
 
 - [x] **B03 — Shuffle draw pile** · Priority: Medium
   - 当前入口：`resetPai()`、`shuffleDeck()`。
-  - 目标：只处理 `pai`、`paiBottom`、`discard`；不读取／提交玩家数据和日志历史。
+  - 目标：只处理 `pai`、`discard`；不读取／提交玩家数据和日志历史。
   - Baseline：合并相关牌堆、清除亮置和判定字段、重新生成稳定 order。
   - 验收：操作范围限制在 `tableDecks` 的相关节点。
   - 完成记录：见下方统一完成记录。
@@ -139,7 +139,7 @@
 - [x] **B05 — Lock selected generals** · Priority: Medium
   - 当前入口：`SgJiangArea.lockInSelected()`。
   - 目标：只读取两张候选牌，原子移动到主将／副将并更新锁定状态。
-  - 并发要求：重复点击或另一客户端操作不会复制武将。
+  - 并发策略：玩家只操作自己的选将区域，不加锁，由界面 busy 状态避免本地重复提交。
   - 完成记录：见下方统一完成记录。
 
 - [x] **B06 — Reset table** · Priority: Low

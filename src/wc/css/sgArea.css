@@ -109,6 +109,23 @@
   height: auto;
   overflow: visible;
 }
+:host(.pan-area.inspection-panel-area) .wrapper {
+  height: 100%;
+  overflow: hidden;
+  border: 1px dashed rgba(232, 207, 139, 0.28);
+}
+:host(.pan-area.inspection-panel-area) .card-area {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.22rem;
+  height: 100%;
+  min-height: 0;
+  padding: 0.2rem 0.25rem 0.2rem 0.45rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 :host(.jiang-block) .wrapper { border: 0; border-radius: 0; overflow: hidden; }
 :host(.jiang-block) .card-area {
   gap: 0;

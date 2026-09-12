@@ -19,14 +19,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
  assert.equal(await pile.locator('sg-card .card-back').first().isVisible(),false);
  await page.evaluate(()=>window.fixture.controller.resetCard(window.fixture.table.paiArea.cardArea.firstElementChild.cardRef));
  await pile.locator('sg-card .card-back').first().waitFor({state:'visible'});
- const first=pool.locator('sg-card').nth(0),third=pool.locator('sg-card').nth(2);
- const a=await third.boundingBox(),b=await first.boundingBox();
- await page.mouse.move(a.x+15,a.y+20);await page.mouse.down();
- await page.mouse.move(b.x+2,b.y+20,{steps:8});
- await page.waitForTimeout(100);
- assert.equal(await pool.evaluate(node=>node.classList.contains('drag-target')),true);
- await page.mouse.up();
- await page.waitForFunction(()=>window.fixture.read('game/6/tableDecks/discard/cards/c2').order===0);
+ const first=pool.locator('sg-card').nth(0);
  const opponent=page.locator('sg-player[data-key="p2"]');
  const target=await opponent.boundingBox();
  async function dragToPlayer(){const r=await first.boundingBox();await page.mouse.move(r.x+15,r.y+20);await page.mouse.down();await page.mouse.move(target.x+210,target.y+70,{steps:12});await page.waitForTimeout(80);assert.equal(await opponent.evaluate(n=>n.classList.contains('drag-target')),true);await page.mouse.up();await opponent.locator('.drop-picker').waitFor({state:'visible'});}
@@ -48,7 +41,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
  assert.equal(await opponent.locator('[data-effect="闪电"]').isDisabled(),true);
  await opponent.locator('[data-effect="乐不思蜀"]').click();
  await page.waitForFunction(()=>Object.keys(window.fixture.read('game/6/p2/pan/cards')||{}).length===2);
- assert.deepEqual(await page.evaluate(()=>Object.values(window.fixture.read('game/6/p2/pan/cards')).sort((a,b)=>a.order-b.order).map(c=>c.judgmentEffect)),['闪电','乐不思蜀']);
+ assert.deepEqual(await page.evaluate(()=>Object.values(window.fixture.read('game/6/p2/pan/cards')).map(c=>c.judgmentEffect).sort()),['乐不思蜀','闪电']);
   await page.evaluate(async()=>{
     const f=window.fixture,p=f.table.playerDoms.find(p=>p.dataset.key==='p2');
     await f.controller.setScalarValue(p.hpWc.hpRef,'10/14');

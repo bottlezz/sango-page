@@ -4,7 +4,7 @@ export function captureCardPositions(nodes, keyFor) {
   return new Map([...nodes].map(node => [keyFor(node), node.getBoundingClientRect()]));
 }
 
-export function animateCardLayoutChanges(nodes, previous, keyFor) {
+export function animateCardLayoutChanges(nodes, previous, keyFor, {newFrom='left'} = {}) {
   const cards=[...nodes];
   const keys=new Set(cards.map(keyFor));
   const membershipChanged=keys.size!==previous.size||cards.some(node=>!previous.has(keyFor(node)));
@@ -19,7 +19,9 @@ export function animateCardLayoutChanges(nodes, previous, keyFor) {
       if(Math.abs(x)+Math.abs(y)<1)return;
       node.animate([{transform:`translate(${x}px,${y}px)`},{transform:'translate(0,0)'}],{duration:360,easing:'cubic-bezier(.2,.7,.3,1)'});
     }else{
-      node.animate([{transform:'translateX(-48px)',opacity:0},{transform:'translateX(0)',opacity:1}],{duration:360,delay:100,fill:'backwards',easing:'cubic-bezier(.2,.7,.3,1)'});
+      const direction=typeof newFrom==='function'?newFrom(node):newFrom;
+      const offset=direction==='right'?Math.max(48,rect.width+8):-Math.max(48,rect.width+8);
+      node.animate([{transform:`translateX(${offset}px)`,opacity:0},{transform:'translateX(0)',opacity:1}],{duration:360,delay:100,fill:'backwards',easing:'cubic-bezier(.2,.7,.3,1)'});
     }
   });
 }

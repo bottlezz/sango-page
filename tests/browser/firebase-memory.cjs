@@ -5,6 +5,10 @@ function read(p){return parts(p).reduce((v,k)=>v?.[k],data)??null}
 function reference(path=''){path=parts(path).join('/');return {path,key:parts(path).at(-1)||null,get parent(){return reference(parts(path).slice(0,-1).join('/'))},toString(){return 'https://test.local/'+path}}}
 function snapshot(p){const value=read(p);return {key:parts(p).at(-1),exists:()=>value!==null,val:()=>structuredClone(value)}}
 function write(p,value){const keys=parts(p);let v=data;for(const k of keys.slice(0,-1))v=v[k]??={};if(value===null)delete v[keys.at(-1)];else v[keys.at(-1)]=structuredClone(value)}
+function resolveServerValue(path,value){
+  const delta=value?.['.sv']?.increment;
+  return typeof delta==='number'?(Number(read(path))||0)+delta:value;
+}
 exports.seed=value=>{data=value};exports.read=read;
 exports.resetMetrics=()=>{metrics={gets:[],subscriptions:[],sets:[],updates:[],transactions:[]}};
 exports.getMetrics=()=>structuredClone({...metrics,activeSubscriptions,activePaths});
@@ -35,7 +39,8 @@ const trackedChildren=(r,type,fn,emitInitial,accept)=>{
 exports.onChildAdded=(r,fn)=>trackedChildren(r,'child-added',fn,true,(key,previous,current)=>!(key in previous)&&key in current);
 exports.onChildRemoved=(r,fn)=>trackedChildren(r,'child-removed',fn,false,(key,previous,current)=>key in previous&&!(key in current));
 exports.onChildChanged=(r,fn)=>trackedChildren(r,'child-changed',fn,false,(key,previous,current)=>key in previous&&key in current&&JSON.stringify(previous[key])!==JSON.stringify(current[key]));
-exports.update=async(r,patch)=>{metrics.updates.push({path:r.path,paths:Object.keys(patch),writeBytes:bytes(patch)});for(const [p,v]of Object.entries(patch))write(r.path+'/'+p,v);queueMicrotask(()=>[...listeners].forEach(fn=>fn()))};
+exports.update=async(r,patch)=>{metrics.updates.push({path:r.path,paths:Object.keys(patch),writeBytes:bytes(patch)});for(const [p,v]of Object.entries(patch)){const path=parts(r.path+'/'+p).join('/');write(path,resolveServerValue(path,v))}queueMicrotask(()=>[...listeners].forEach(fn=>fn()))};
 exports.set=async(r,v)=>{metrics.sets.push({path:r.path,writeBytes:bytes(v)});write(r.path,v);queueMicrotask(()=>[...listeners].forEach(fn=>fn()))};exports.remove=r=>exports.set(r,null);exports.push=r=>reference(r.path+'/new'+(++sequence));
 
 exports.serverTimestamp=()=>Date.now();
+exports.increment=delta=>({'.sv':{increment:delta}});

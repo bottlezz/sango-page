@@ -2,6 +2,7 @@ const MOVE_DURATION=700;
 const TRAIL_HOLD=500;
 const TRAIL_FADE=150;
 const ACTION_PREVIEW_DURATION=2500;
+const SUIT_MARKS={heart:'♥',diamond:'♦',spade:'♠',club:'♣'};
 
 function center(rect){return{x:rect.left+rect.width/2,y:rect.top+rect.height/2};}
 function edge(rect,toward){
@@ -37,7 +38,17 @@ export function installCardTransferAnimation(table){
     return rect?.width&&rect?.height?candidate:player;
   }
 
-  function play({source,target,count,label}){
+  function cardFace({suit,rank,name}){
+    const tile=document.createElement('div');tile.className='card-reveal-tile';
+    const index=document.createElement('span');index.className=`card-reveal-index ${suit}`;
+    const mark=document.createElement('b');mark.textContent=SUIT_MARKS[suit]||suit;
+    const number=document.createElement('em');number.textContent=rank;
+    const title=document.createElement('strong');title.textContent=name;
+    index.append(mark,number);tile.append(index,title);
+    return tile;
+  }
+
+  function play({source,target,count,label,suppressCards=false}){
     const from=areaHost(source),to=areaHost(target);
     if(!from||!to||from===to||!from.isConnected||!to.isConnected)return;
     const fromRect=from.getBoundingClientRect(),toRect=to.getBoundingClientRect();
@@ -55,7 +66,7 @@ export function installCardTransferAnimation(table){
     const caption=document.createElement('span');caption.className='card-transfer-label';caption.textContent=`${label} · ${count} 张`;
     caption.style.left=`${(start.x+end.x)/2+14}px`;caption.style.top=`${(start.y+end.y)/2-25}px`;group.append(caption);
     caption.animate([{opacity:0},{opacity:1,offset:100/trailDuration},{opacity:1,offset:trailHold},{opacity:0}],{duration:trailDuration,fill:'forwards'});
-    if(!reduced.matches)for(let index=0;index<Math.min(count,3);index++){
+    if(!reduced.matches&&!suppressCards)for(let index=0;index<Math.min(count,3);index++){
       const card=document.createElement('div');card.className='card-transfer-card';group.append(card);
       const position=(x,y,scale,rotation)=>`translate(${x-16+index*4}px,${y-22-index*3}px) scale(${scale}) rotate(${rotation}deg)`;
       card.animate([
@@ -69,6 +80,34 @@ export function installCardTransferAnimation(table){
       {filter:'brightness(1)'},{filter:'brightness(1.24)',offset:.3},{filter:'brightness(1)'},
     ],{duration:220}),Math.max(0,duration-80));
     window.setTimeout(()=>group.remove(),trailDuration+20);
+  }
+
+  function playUse({source,useCardName,useTargetSeat,useCards=[]}){
+    const host=revealHost(source);
+    if(!host||!host.isConnected||!useCardName||!useCards.length)return;
+    const rect=host.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    const group=document.createElement('div');group.className='card-use-group';
+    group.style.left=`${Math.min(window.innerWidth-48,Math.max(48,rect.left+rect.width/2))}px`;
+    const owner=String(source||'').split('/')[0],isLocalPlayer=owner===table.gameController.currentPlayer;
+    const centerY=isLocalPlayer?(rect.top>=120?rect.top-55:rect.bottom+55):rect.top+rect.height/2;
+    group.style.top=`${Math.min(window.innerHeight-62,Math.max(62,centerY))}px`;
+    const heading=document.createElement('span');heading.className='card-use-heading';heading.textContent=`作为「${useCardName}」使用`;
+    const list=document.createElement('div');list.className='card-reveal-list card-use-list';
+    useCards.forEach(card=>list.append(cardFace(card)));
+    group.append(heading,list);layer.append(group);
+    const duration=reduced.matches?500:ACTION_PREVIEW_DURATION;
+    group.animate([
+      {opacity:0,transform:'translate(-50%,-22%) scale(.72)'},
+      {opacity:1,transform:'translate(-50%,-50%) scale(1.06)',offset:.13},
+      {opacity:1,transform:'translate(-50%,-56%) scale(1)',offset:.8},
+      {opacity:0,transform:'translate(-50%,-68%) scale(.96)'},
+    ],{duration,easing:'cubic-bezier(.18,.72,.25,1)',fill:'forwards'});
+    host.animate([{filter:'brightness(1)'},{filter:'brightness(1.3)',offset:.35},{filter:'brightness(1)'}],{duration:360});
+    if(useTargetSeat)play({
+      source,target:`${useTargetSeat}/hand`,count:1,label:`使用 · ${useCardName}`,suppressCards:true,
+    });
+    window.setTimeout(()=>group.remove(),duration+30);
   }
 
 
@@ -87,15 +126,7 @@ export function installCardTransferAnimation(table){
     group.style.top=`${Math.min(window.innerHeight-64,Math.max(64,centerY))}px`;
     const label=document.createElement('span');label.className='card-reveal-heading';label.textContent=labelText;
     const list=document.createElement('div');list.className='card-reveal-list';
-    const suitMarks={heart:'♥',diamond:'♦',spade:'♠',club:'♣'};
-    cards.forEach(({suit,rank,name})=>{
-      const tile=document.createElement('div');tile.className='card-reveal-tile';
-      const index=document.createElement('span');index.className=`card-reveal-index ${suit}`;
-      const mark=document.createElement('b');mark.textContent=suitMarks[suit]||suit;
-      const number=document.createElement('em');number.textContent=rank;
-      const title=document.createElement('strong');title.textContent=name;
-      index.append(mark,number);tile.append(index,title);list.append(tile);
-    });
+    cards.forEach(card=>list.append(cardFace(card)));
     group.append(label,list);layer.append(group);
     const duration=reduced.matches?Math.min(500,requestedDuration):requestedDuration;
     group.animate([
@@ -110,6 +141,10 @@ export function installCardTransferAnimation(table){
   }
 
   function playTransfer(transfer){
+    if(transfer.label==='使用'){
+      if(transfer.usePrimary)playUse(transfer);
+      return;
+    }
     if((transfer.label==='打出'||transfer.label==='弃置')&&transfer.cards?.length){
       playReveal({target:transfer.source,cards:transfer.cards,labelText:transfer.label,duration:ACTION_PREVIEW_DURATION});
       play(transfer);

@@ -78,4 +78,4 @@
 - 内存运行，刷新重置；不连接真实 Firebase，不修改正式多人游戏规则。
 - 编译：`node node_modules/webpack/bin/webpack.js --config docs/sango-design-webpack.cjs`。
 
-正式桌面的主体实现位于 `src/wc/publicTablePanel.js`，继续使用现有 `pai`、`paiBottom`、`discard` 和玩家手牌容器，不新增结算表或历史列表。
+正式桌面的主体实现位于 `src/wc/publicTablePanel.js`，使用单一 `pai`、`discard` 和玩家手牌容器，不新增结算表或历史列表。展开牌堆中的“牌底列”只是提交前的编辑状态，确认后与牌顶列合并写回 `pai/cards`。

@@ -13,6 +13,10 @@ import { installActionLog } from './actionLogPanel.js';
 import { installPublicTablePanel } from './publicTablePanel.js';
 import { installCardTransferAnimation } from './cardTransferAnimation.js';
 import { installMobileBoardLayout } from './mobileBoardLayout.js';
+import { USE_CARD_NAMES } from '../localActionLog.mjs';
+
+const TARGETED_USE_CARDS = new Set(['杀','决斗','过河拆桥','顺手牵羊']);
+const INSPECT_HAND_AFTER_USE = new Set(['过河拆桥','顺手牵羊']);
 
 class SgTable extends HTMLElement {
   db;
@@ -187,6 +191,84 @@ class SgTable extends HTMLElement {
     this.movePlayerPicker.showModal();
   }
 
+  ensureUseCardPicker() {
+    if (this.useCardPicker) return;
+    this.useCardPicker=document.createElement('dialog');
+    this.useCardPicker.className='use-card-picker';
+    this.useCardPicker.innerHTML='<header><button type="button" data-use-back hidden>← 返回</button><h3>使用什么牌？</h3><button type="button" data-use-close aria-label="关闭">关闭 ×</button></header><p class="use-summary"></p><div class="use-card-options"></div>';
+    this.useCardPicker.querySelector('[data-use-close]').addEventListener('click',()=>this.useCardPicker.close());
+    this.useCardPicker.querySelector('[data-use-back]').addEventListener('click',()=>this.renderUseCardChoices());
+    this.useCardPicker.querySelector('.use-card-options').addEventListener('click',event=>{
+      const cardButton=event.target.closest('[data-use-card]');
+      if(cardButton){
+        const cardName=cardButton.dataset.useCard;
+        if(TARGETED_USE_CARDS.has(cardName))this.renderUseTargets(cardName);
+        else this.commitUseCard(cardName);
+        return;
+      }
+      const targetButton=event.target.closest('[data-use-target]');
+      if(targetButton)this.commitUseCard(this.pendingUseCardName,targetButton.dataset.useTarget);
+    });
+    this.useCardPicker.addEventListener('close',()=>{this.pendingUseCards=null;this.pendingUseCardName=null;});
+    this.shadowRoot.append(this.useCardPicker);
+  }
+
+  openUseCardPicker() {
+    const current=this.gameController.currentPlayer;
+    const cards=[...this.gameController.selectedCards].filter(card=>card.isConnected);
+    if(!current||!cards.length||!cards.every(card=>card.dataset.path?.includes(`/${current}/`)))return;
+    this.ensureUseCardPicker();
+    this.pendingUseCards=cards;
+    this.renderUseCardChoices();
+    this.useCardPicker.showModal();
+  }
+
+  renderUseCardChoices() {
+    const picker=this.useCardPicker,options=picker.querySelector('.use-card-options');
+    picker.querySelector('h3').textContent='使用什么牌？';
+    picker.querySelector('[data-use-back]').hidden=true;
+    picker.querySelector('.use-summary').textContent=`以选中的 ${this.pendingUseCards?.length||0} 张牌使用为：`;
+    options.replaceChildren(...USE_CARD_NAMES.map(name=>{
+      const button=document.createElement('button');button.type='button';button.dataset.useCard=name;button.textContent=name;return button;
+    }));
+  }
+
+  renderUseTargets(cardName) {
+    this.pendingUseCardName=cardName;
+    const picker=this.useCardPicker,options=picker.querySelector('.use-card-options');
+    picker.querySelector('h3').textContent=`${cardName} · 选择目标`;
+    picker.querySelector('[data-use-back]').hidden=false;
+    picker.querySelector('.use-summary').textContent='请选择一位目标玩家。';
+    const current=this.gameController.currentPlayer;
+    const players=this.playerDoms.filter(player=>player.dataset.key!==current&&player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty');
+    options.replaceChildren(...players.map(player=>{
+      const key=player.dataset.key,name=player.shadowRoot.querySelector('.player-name')?.textContent?.trim()||key;
+      const button=document.createElement('button');button.type='button';button.dataset.useTarget=key;
+      const playerName=document.createElement('b');playerName.textContent=name;
+      const playerMeta=document.createElement('small');playerMeta.textContent=key;
+      button.append(playerName,playerMeta);return button;
+    }));
+  }
+
+  async commitUseCard(cardName,targetSeat=null) {
+    const cards=this.pendingUseCards;
+    if(!cards?.length||this.useCardBusy)return;
+    this.useCardBusy=true;
+    this.useCardPicker.querySelectorAll('button').forEach(button=>button.disabled=true);
+    const inspectTargetHand=targetSeat&&INSPECT_HAND_AFTER_USE.has(cardName);
+    if(inspectTargetHand){
+      const player=this.playerDoms.find(item=>item.dataset.key===targetSeat);
+      this.useCardPicker.close();
+      player?.openAreaPanel(player.handArea,'手牌');
+    }
+    try{
+      await this.gameController.useSelectedCards(cardName,targetSeat,cards);
+      if(this.useCardPicker.open)this.useCardPicker.close();
+      cards.forEach(card=>{if(this.gameController.selectedCards.includes(card))card.unselectCard();});
+    }catch(error){window.alert(error.message||'使用失败，请重试');}
+    finally{this.useCardBusy=false;this.useCardPicker?.querySelectorAll('button').forEach(button=>button.disabled=false);}
+  }
+
   getCardMenu() {
     const cardMenu = document.createElement("div");
     cardMenu.className = "card-menu hide";
@@ -229,11 +311,16 @@ class SgTable extends HTMLElement {
     moveButton.dataset.selectionAction='move';
     moveButton.textContent='移动';
     moveButton.addEventListener('click',()=>this.openMovePlayerPicker());
+    const useButton=document.createElement('button');
+    useButton.dataset.selectionAction='use';
+    useButton.textContent='使用';
+    useButton.addEventListener('click',()=>this.openUseCardPicker());
 
     cardMenu.appendChild(playButton);
     cardMenu.appendChild(drawButton);
     cardMenu.appendChild(showButton);
     cardMenu.appendChild(moveButton);
+    cardMenu.appendChild(useButton);
     cardMenu.appendChild(discardButton);
     cardMenu.appendChild(cancelButton);
     // cardMenu.appendChild(peakButton);
@@ -336,6 +423,7 @@ class SgTable extends HTMLElement {
       this.cardMenu.querySelectorAll('[data-selection-action]').forEach(button => {
         const action = button.dataset.selectionAction;
         button.hidden = (isDiscardSelection && !['take', 'cancel'].includes(action))
+          || (action === 'use' && !isOwnSelection)
           || (action === 'take' && hasOnlyOwnHandSelection);
       });
       const showButton = this.cardMenu.querySelector('[data-selection-action="show"]');

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {orderedEntries, orderedMovePatch} from '../src/cardOrder.mjs';
+import {orderedEntries, orderedMovePatch, recentEntries} from '../src/cardOrder.mjs';
 const path='game/6/tableDecks/pai/cards';
 const cards={a:{id:'p1',order:0,show:'0'},b:{id:'p2',order:1024,show:'0'},c:{id:'p3',order:2048,show:'0'}};
 test('judgment effects are independent, unique, ordered and cleared on exit', () => {
@@ -11,9 +11,9 @@ test('judgment effects are independent, unique, ordered and cleared on exit', ()
  assert.throws(()=>orderedMovePatch(target,existing,sources,null,()=> 'new',{[source]:'闪电'}), /已有/);
  const patch=orderedMovePatch(target,existing,sources,null,()=> 'new',{[source]:'乐不思蜀'});
  const added=patch[target+'/new'];
- assert.equal(added.id,'p1');assert.equal(added.judgmentEffect,'乐不思蜀');assert.equal(added.order,1024);
- const reordered=orderedMovePatch(target,{...existing,new:added},[{path:target+'/new',value:added}],'lightning',()=>assert.fail());
- assert.equal(reordered[target+'/new/order'],0);
+ assert.equal(added.id,'p1');assert.equal(added.judgmentEffect,'乐不思蜀');assert.equal(added.order,undefined);
+ const unchanged=orderedMovePatch(target,{...existing,new:added},[{path:target+'/new',value:added}],null,()=>assert.fail());
+ assert.deepEqual(unchanged,{});
  const exit=orderedMovePatch(path,{},[{path:target+'/new',value:added}],null,()=> 'exit');
  assert.equal(exit[path+'/exit'].judgmentEffect,undefined);
  assert.equal(exit[path+'/exit'].panOrder,undefined);
@@ -37,14 +37,17 @@ test('missing insertion target and equipment overflow reject without a patch',()
  assert.throws(()=>orderedMovePatch(path,cards,[],'gone',()=> 'new'));
  assert.throws(()=>orderedMovePatch('game/6/p1/zhuang/cards',cards,[{path:'game/6/p2/hand/cards/x',value:{}},{path:'game/6/p2/hand/cards/y',value:{}}],null,()=> 'new'));
 });
-test('legacy entries are deterministic and persisted order restores after reload',()=>{
+test('pile order is persisted while ordinary areas use newest push key first',()=>{
  assert.deepEqual(orderedEntries({a:{},b:{}}).map(x=>x.key),['b','a']);
  assert.deepEqual(orderedEntries({a:{order:2048},b:{order:0}}).map(x=>x.key),['b','a']);
+ assert.deepEqual(recentEntries({a:{order:0},b:{order:2048}}).map(x=>x.key),['b','a']);
+ assert.deepEqual(recentEntries({newer:{discardedAt:20},laterKey:{discardedAt:10}}).map(x=>x.key),['newer','laterKey']);
 });
 test('entering discard clears reveal state; reordering in draw pile preserves it',()=>{
  const value={id:'p8',show:'1'};
  const patch=orderedMovePatch('game/6/tableDecks/discard/cards',{},[{path:path+'/a',value}],null,()=> 'new');
  assert.equal(patch['game/6/tableDecks/discard/cards/new'].show,'0');
+ assert.equal(patch['game/6/tableDecks/discard/cards/new'].order,undefined);
  const reorder=orderedMovePatch(path,{a:{...value,order:0}},[{path:path+'/a',value}],null,()=>assert.fail());
  assert.deepEqual(reorder,{[path+'/a/order']:0});
 });

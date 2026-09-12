@@ -2,7 +2,7 @@
 // session, and invalidated only by layout/data changes, not every pointer event.
 export function installCardDrag(table) {
   const controller = table.gameController;
-  let drag, frame = 0, suppressUntil = 0, highlighted;
+  let drag, frame = 0, suppressClick = false, suppressTimer = 0, highlighted;
   const abort = new AbortController(), options = {signal: abort.signal};
   const status = document.createElement('div');
   status.setAttribute('role', 'status');
@@ -106,12 +106,28 @@ export function installCardDrag(table) {
     }
     if(drag.active){e.preventDefault();drag.x=e.clientX;drag.y=e.clientY;schedule();}
   },{...options,passive:false});
-  document.addEventListener('pointerup',e=>{if(!drag||drag.waiting||e.pointerId!==drag.id)return;if(!drag.active){drag=null;return;}suppressUntil=Date.now()+400;drag.x=e.clientX;drag.y=e.clientY;drag.released=true;schedule();},options);
-  table.addEventListener('click',e=>{if(Date.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation();}},{...options,capture:true});
+  document.addEventListener('pointerup',e=>{
+    if(!drag||drag.waiting||e.pointerId!==drag.id)return;
+    if(!drag.active){drag=null;return;}
+    // A completed pointer drag is immediately followed by a synthetic click.
+    // Suppress only that click in the current event turn. A time window here
+    // also swallows the user's next, unrelated desktop toolbar/player click.
+    suppressClick=true;
+    clearTimeout(suppressTimer);
+    suppressTimer=setTimeout(()=>{suppressClick=false;},0);
+    drag.x=e.clientX;drag.y=e.clientY;drag.released=true;schedule();
+  },options);
+  table.addEventListener('click',e=>{
+    if(!suppressClick)return;
+    suppressClick=false;
+    clearTimeout(suppressTimer);
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  },{...options,capture:true});
   document.addEventListener('pointercancel',()=>{if(!drag?.waiting)finish(false);},options);
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&drag&&!drag.waiting){e.preventDefault();finish(false);}},{...options,capture:true});
   window.addEventListener('blur',()=>{if(!drag?.waiting)finish(false);},options);
   window.addEventListener('resize',()=>{if(drag)schedule();},options);
   document.addEventListener('scroll',()=>{if(drag?.active&&!drag.waiting)schedule();},{...options,capture:true,passive:true});
-  return ()=>{abort.abort();finish(false);status.remove();clearTimeout(statusTimer);};
+  return ()=>{abort.abort();finish(false);status.remove();clearTimeout(statusTimer);clearTimeout(suppressTimer);};
 }

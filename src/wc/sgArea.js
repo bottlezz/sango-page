@@ -14,7 +14,7 @@ import {
 import "./sgCard.js";
 import commonCss from "./css/common.css";
 import areaCss from "./css/sgArea.css";
-import { orderedEntries } from "../cardOrder.mjs";
+import { orderedEntries, recentEntries } from "../cardOrder.mjs";
 import {captureCardPositions, animateCardLayoutChanges} from './cardInsertionAnimation.js';
 
 class SgArea extends HTMLElement {
@@ -198,7 +198,9 @@ class SgArea extends HTMLElement {
       const animate=initialized&&['hand-area','other1-area','other2-area','zhuang-area','pan-area'].includes(this.areaType);
       const keyFor=card=>card.cardRef.key;
       const previous=animate?captureCardPositions(Object.values(this.cards),keyFor):null;
-      const entries = orderedEntries(snapshot.val() || {}, this.areaType === 'pan-area');
+      const entries = this.areaType === 'pai-area'
+        ? orderedEntries(snapshot.val() || {})
+        : recentEntries(snapshot.val() || {});
       const keys = new Set(entries.map(item => item.key));
       Object.entries(this.cards).forEach(([key, card]) => {
         if (!keys.has(key)) { card.remove(); delete this.cards[key]; }

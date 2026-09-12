@@ -4,6 +4,20 @@ export function orderedEntries(cards = {}, judgment = false) {
       - (b.value.order ?? (judgment ? b.value.panOrder : undefined) ?? b.index * 1024));
 }
 
+// Realtime Database push keys sort chronologically. Ordinary card areas show
+// the newest entry first and do not persist a separate order field.
+export function recentEntries(cards = {}) {
+  return Object.entries(cards)
+    .map(([key, value]) => ({key, value}))
+    .sort((a, b) => {
+      const aTime = Number(a.value?.discardedAt), bTime = Number(b.value?.discardedAt);
+      const aTimed = Number.isFinite(aTime), bTimed = Number.isFinite(bTime);
+      if (aTimed && bTimed && aTime !== bTime) return bTime - aTime;
+      if (aTimed !== bTimed) return aTimed ? -1 : 1;
+      return b.key.localeCompare(a.key);
+    });
+}
+
 // Build a complete deal so the transaction cannot leave a partially dealt table.
 export function dealOpeningHands(room, playerCount) {
   if (!room || !Number.isInteger(playerCount) || playerCount < 1) throw Error('房间尚未准备好');
@@ -11,8 +25,8 @@ export function dealOpeningHands(room, playerCount) {
   if (seats.some(seat => Object.keys(room[seat]?.hand?.cards || {}).length)) {
     throw Error('只有所有玩家手牌为空时才能发牌');
   }
-  const deck = ['pai', 'paiBottom'].flatMap(area =>
-    orderedEntries(room.tableDecks?.[area]?.cards || {}).map(card => ({...card, area})));
+  const deck = orderedEntries(room.tableDecks?.pai?.cards || {})
+    .map(card => ({...card, area:'pai'}));
   if (deck.length < playerCount * 4) throw Error(`牌堆不足，需要 ${playerCount * 4} 张牌`);
   const next = structuredClone(room);
   seats.forEach((seat, seatIndex) => {
@@ -20,7 +34,8 @@ export function dealOpeningHands(room, playerCount) {
     next[seat].hand ??= {};
     next[seat].hand.cards = {};
     deck.slice(seatIndex * 4, seatIndex * 4 + 4).forEach(({key, value, area}, index) => {
-      const card = {...value, show: '0', order: index * 1024};
+      const card = {...value, show: '0'};
+      delete card.order;
       delete card.panOrder;
       delete card.judgmentEffect;
       next[seat].hand.cards[`deal${index}`] = card;
@@ -35,7 +50,8 @@ export const judgmentEffects = ['乐不思蜀', '兵粮寸断', '闪电'];
 
 export function orderedMovePatch(targetPath, targetCards, sources, beforeKey, newKey, effects = {}, legacyEffect = () => null) {
   const sourcePaths = new Set(sources.map(source => source.path));
-  const remaining = orderedEntries(targetCards, targetPath.includes('/pan/'))
+  const orderedTarget = /\/tableDecks\/pai\/cards$/.test(targetPath);
+  const remaining = (orderedTarget ? orderedEntries(targetCards) : recentEntries(targetCards))
     .filter(item => !sourcePaths.has(`${targetPath}/${item.key}`));
   const incoming = sources.map(source => ({
     key: source.path.slice(0, source.path.lastIndexOf('/')) === targetPath ? source.path.split('/').pop() : newKey(),
@@ -55,6 +71,20 @@ export function orderedMovePatch(targetPath, targetCards, sources, beforeKey, ne
     if (remaining.length + incoming.length > 3) throw Error('判定区最多放三张牌');
   }
   if (targetPath.includes('/zhuang/') && remaining.length + incoming.length > 4) throw Error('装备区最多放四张牌');
+  if (!orderedTarget) {
+    const patch = {};
+    incoming.forEach(item => {
+      if (item.source.path === `${targetPath}/${item.key}`) return;
+      patch[item.source.path] = null;
+      item.value.show = '0';
+      delete item.value.order;
+      delete item.value.panOrder;
+      if (!/\/tableDecks\/discard\/cards$/.test(targetPath)) delete item.value.discardedAt;
+      if (!judgment) delete item.value.judgmentEffect;
+      patch[`${targetPath}/${item.key}`] = item.value;
+    });
+    return patch;
+  }
   const prepend=beforeKey==null&&/\/(hand|other1|other2)\/cards$/.test(targetPath)&&sources.every(source=>!source.path.startsWith(`${targetPath}/`));
   const index = beforeKey == null ? (prepend?0:remaining.length) : remaining.findIndex(item => item.key === beforeKey);
   if (index < 0) throw Error('目标牌已移动，请重新拖放');
@@ -66,6 +96,7 @@ export function orderedMovePatch(targetPath, targetCards, sources, beforeKey, ne
       patch[item.source.path] = null;
       item.value.show = '0';
       delete item.value.panOrder;
+      delete item.value.discardedAt;
       if (!judgment) delete item.value.judgmentEffect;
       if (targetPath.includes('/pan/')) item.value.panOrder = Date.now() + index;
       patch[path] = {...item.value, order};

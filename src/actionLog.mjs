@@ -1,6 +1,6 @@
 import {orderedEntries} from './cardOrder.mjs';
 
-const labels = {hand:'手牌',zhuang:'装备区',pan:'判定区',other1:'区1',other2:'区2',jiang:'选将区',jiang1:'主将',jiang2:'副将',pai:'牌堆',paiBottom:'牌堆底部',discard:'公共区'};
+const labels = {hand:'手牌',zhuang:'装备区',pan:'判定区',other1:'区1',other2:'区2',jiang:'选将区',jiang1:'主将',jiang2:'副将',pai:'牌堆',discard:'公共区'};
 function areas(room) {
   const result = {};
   for (const [owner, data] of Object.entries(room || {})) {
@@ -60,7 +60,7 @@ function detectDraw(before, after) {
     if (delta.removed.length || delta.added.length) changed.push({path, old, next, ...delta});
   }
   if (changed.length !== 2) return null;
-  const source = changed.find(item => /^tableDecks\/(pai|paiBottom)$/.test(item.path));
+  const source = changed.find(item => item.path === 'tableDecks/pai');
   const target = changed.find(item => /^p\d+\/hand$/.test(item.path));
   if (!source || !target || source.added.length || target.removed.length || source.removed.length !== target.added.length) return null;
   const removedIds = source.removed.map(key => source.old[key].id).sort();

@@ -136,6 +136,12 @@ class SgTable extends HTMLElement {
     });
     roundMenu.appendChild(paiShuffleBtn);
 
+    const reloadViewBtn=document.createElement("button");
+    reloadViewBtn.textContent="重载界面";
+    reloadViewBtn.title="重新创建全部界面和数据库监听，不改变当前房间与座位";
+    reloadViewBtn.addEventListener("click",()=>this.reloadViews());
+    roundMenu.appendChild(reloadViewBtn);
+
     const startRoundBtn = document.createElement("button");
     startRoundBtn.innerHTML = "清台";
     startRoundBtn.className = "clear-table";
@@ -145,6 +151,14 @@ class SgTable extends HTMLElement {
     roundMenu.appendChild(startRoundBtn);
 
     return roundMenu;
+  }
+
+  reloadViews() {
+    if(!this.parentNode)return;
+    this.endPlayerTargetSelection?.();
+    this.gameController.selectedCards=[];
+    const replacement=new SgTable(this.db,this.gameController);
+    this.replaceWith(replacement);
   }
 
   disconnectedCallback() {
@@ -246,6 +260,17 @@ class SgTable extends HTMLElement {
       const targetKey=[...state.selected][0],player=this.playerDoms.find(item=>item.dataset.key===targetKey);
       const pending=state.pending;this.endPlayerTargetSelection();
       if(!player||!pending)return;
+      if(pending.autoArea){
+        queueMicrotask(async()=>{
+          try{
+            await player.movePathsToArea(pending.paths,pending.autoArea);
+            pending.cards.forEach(card=>{if(card.isConnected&&this.gameController.selectedCards.includes(card))card.unselectCard();});
+          }catch(error){
+            window.alert(error.message||'移动失败，请重试');
+          }
+        });
+        return;
+      }
       queueMicrotask(()=>player.openDropPicker(pending.paths[0],pending.paths,ok=>{
         if(ok)pending.cards.forEach(card=>{if(card.isConnected&&this.gameController.selectedCards.includes(card))card.unselectCard();});
       }));
@@ -262,8 +287,11 @@ class SgTable extends HTMLElement {
     if(!cards.length)return;
     const paths=[...new Set(cards.map(card=>card.dataset.path).filter(Boolean))];
     if(!paths.length)return;
+    const lightning=cards.length===1&&paths.length===1
+      && /\/pan\/cards\/[^/]+$/.test(paths[0])
+      && (cards[0].cardData?.judgmentEffect||paiKu[cards[0].cardData?.id]?.name)==='闪电';
     const players=this.playerDoms.filter(player=>player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty');
-    this.beginPlayerTargetSelection({mode:'move',eligible:players,single:true,valid:true,title:'移动到哪位玩家？',summary:`已选择 ${paths.length} 张牌，请点击目标玩家。`,confirmLabel:'选择区域',pending:{cards,paths}});
+    this.beginPlayerTargetSelection({mode:'move',eligible:players,single:true,valid:true,title:'移动到哪位玩家？',summary:lightning?'选择闪电要移入判定区的玩家。':`已选择 ${paths.length} 张牌，请点击目标玩家。`,confirmLabel:lightning?'确认移动':'选择区域',pending:{cards,paths,...(lightning?{autoArea:'panArea'}:{})}});
   }
 
   ensureUseCardPicker() {
@@ -412,7 +440,7 @@ class SgTable extends HTMLElement {
       const current=this.gameController.currentPlayer;
       const cards=[...this.gameController.selectedCards].filter(card=>card.isConnected);
       if(!current||cards.length!==1||paiKu[cards[0].cardData?.id]?.category!=='equipment')return;
-      this.gameController.moveSelectedCards(cards,`game/${this.gameController.gameId}/${current}/zhuang/cards`)
+      this.gameController.equipSelectedCard(cards)
         .catch(error=>window.alert(error.message||'装备失败，请重试'));
     });
 

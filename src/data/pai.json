@@ -9,14 +9,16 @@
     "suit": "diamond",
     "rank": "A",
     "name": "诸葛连弩",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "weapon"
   },
   "p3": {
     "suit": "diamond",
     "rank": "A",
     "name": "朱雀羽扇",
     "category": "equipment",
-    "desc": "4"
+    "desc": "4",
+    "subCategory": "weapon"
   },
   "p4": {
     "suit": "diamond",
@@ -89,7 +91,8 @@
     "rank": "5",
     "name": "贯石斧",
     "category": "equipment",
-    "desc": "3"
+    "desc": "3",
+    "subCategory": "weapon"
   },
   "p16": {
     "suit": "diamond",
@@ -216,7 +219,8 @@
     "rank": "Q",
     "name": "方天画戟",
     "category": "equipment",
-    "desc": "4"
+    "desc": "4",
+    "subCategory": "weapon"
   },
   "p37": {
     "suit": "diamond",
@@ -235,14 +239,16 @@
     "rank": "K",
     "name": "紫骍",
     "category": "equipment",
-    "desc": "-"
+    "desc": "-",
+    "subCategory": "ride-"
   },
   "p40": {
     "suit": "diamond",
     "rank": "K",
     "name": "骅骝",
     "category": "equipment",
-    "desc": "+"
+    "desc": "+",
+    "subCategory": "ride+"
   },
   "p41": {
     "suit": "club",
@@ -254,13 +260,15 @@
     "suit": "club",
     "rank": "A",
     "name": "诸葛连弩",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "weapon"
   },
   "p43": {
     "suit": "club",
     "rank": "A",
     "name": "白银狮子",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "armor"
   },
   "p44": {
     "suit": "club",
@@ -272,19 +280,22 @@
     "suit": "club",
     "rank": "2",
     "name": "八卦阵",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "armor"
   },
   "p46": {
     "suit": "club",
     "rank": "2",
     "name": "藤甲",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "armor"
   },
   "p47": {
     "suit": "club",
     "rank": "2",
     "name": "仁王盾",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "armor"
   },
   "p48": {
     "suit": "club",
@@ -320,7 +331,8 @@
     "suit": "club",
     "rank": "4",
     "name": "兵粮寸断",
-    "category": "spell"
+    "category": "spell",
+    "subCategory": "delay"
   },
   "p54": {
     "suit": "club",
@@ -339,7 +351,8 @@
     "rank": "5",
     "name": "的卢",
     "category": "equipment",
-    "desc": "+"
+    "desc": "+",
+    "subCategory": "ride+"
   },
   "p57": {
     "suit": "club",
@@ -357,7 +370,8 @@
     "suit": "club",
     "rank": "6",
     "name": "乐不思蜀",
-    "category": "spell"
+    "category": "spell",
+    "subCategory": "delay"
   },
   "p60": {
     "suit": "club",
@@ -568,14 +582,16 @@
     "rank": "5",
     "name": "麒麟弓",
     "category": "equipment",
-    "desc": "5"
+    "desc": "5",
+    "subCategory": "weapon"
   },
   "p95": {
     "suit": "heart",
     "rank": "5",
     "name": "赤兔",
     "category": "equipment",
-    "desc": "-"
+    "desc": "-",
+    "subCategory": "ride-"
   },
   "p96": {
     "suit": "heart",
@@ -593,7 +609,8 @@
     "suit": "heart",
     "rank": "6",
     "name": "乐不思蜀",
-    "category": "spell"
+    "category": "spell",
+    "subCategory": "delay"
   },
   "p99": {
     "suit": "heart",
@@ -707,7 +724,8 @@
     "suit": "heart",
     "rank": "Q",
     "name": "闪电",
-    "category": "spell"
+    "category": "spell",
+    "subCategory": "delay"
   },
   "p118": {
     "suit": "heart",
@@ -720,7 +738,8 @@
     "rank": "K",
     "name": "爪黄飞电",
     "category": "equipment",
-    "desc": "+"
+    "desc": "+",
+    "subCategory": "ride+"
   },
   "p120": {
     "suit": "heart",
@@ -738,40 +757,46 @@
     "suit": "spade",
     "rank": "A",
     "name": "闪电",
-    "category": "spell"
+    "category": "spell",
+    "subCategory": "delay"
   },
   "p123": {
     "suit": "spade",
     "rank": "A",
     "name": "古锭刀",
     "category": "equipment",
-    "desc": "2"
+    "desc": "2",
+    "subCategory": "weapon"
   },
   "p124": {
     "suit": "spade",
     "rank": "2",
     "name": "雌雄双股",
     "category": "equipment",
-    "desc": "2"
+    "desc": "2",
+    "subCategory": "weapon"
   },
   "p125": {
     "suit": "spade",
     "rank": "2",
     "name": "八卦阵",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "armor"
   },
   "p126": {
     "suit": "spade",
     "rank": "2",
     "name": "藤甲",
-    "category": "equipment"
+    "category": "equipment",
+    "subCategory": "armor"
   },
   "p127": {
     "suit": "spade",
     "rank": "2",
     "name": "寒冰剑",
     "category": "equipment",
-    "desc": "2"
+    "desc": "2",
+    "subCategory": "weapon"
   },
   "p128": {
     "suit": "spade",
@@ -820,14 +845,16 @@
     "rank": "5",
     "name": "青龙偃月",
     "category": "equipment",
-    "desc": "3"
+    "desc": "3",
+    "subCategory": "weapon"
   },
   "p136": {
     "suit": "spade",
     "rank": "5",
     "name": "绝影",
     "category": "equipment",
-    "desc": "+"
+    "desc": "+",
+    "subCategory": "ride+"
   },
   "p137": {
     "suit": "spade",
@@ -839,14 +866,16 @@
     "suit": "spade",
     "rank": "6",
     "name": "乐不思蜀",
-    "category": "spell"
+    "category": "spell",
+    "subCategory": "delay"
   },
   "p139": {
     "suit": "spade",
     "rank": "6",
     "name": "青釭剑",
     "category": "equipment",
-    "desc": "2"
+    "desc": "2",
+    "subCategory": "weapon"
   },
   "p140": {
     "suit": "spade",
@@ -918,7 +947,8 @@
     "suit": "spade",
     "rank": "10",
     "name": "兵粮寸断",
-    "category": "spell"
+    "category": "spell",
+    "subCategory": "delay"
   },
   "p152": {
     "suit": "spade",
@@ -955,7 +985,8 @@
     "rank": "Q",
     "name": "丈八蛇矛",
     "category": "equipment",
-    "desc": "3"
+    "desc": "3",
+    "subCategory": "weapon"
   },
   "p158": {
     "suit": "spade",
@@ -974,6 +1005,7 @@
     "rank": "K",
     "name": "大宛",
     "category": "equipment",
-    "desc": "-"
+    "desc": "-",
+    "subCategory": "ride-"
   }
 }

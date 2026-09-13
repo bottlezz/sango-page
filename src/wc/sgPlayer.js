@@ -642,15 +642,10 @@ class SgPlayer extends HTMLElement {
 
   async confirmPlayerDrop(areaName) {
     if (!this.pendingDrop || this.dropBusy) return;
-    const target = child(this[areaName].deckRef, "/cards");
-    const baseUrl = ref(this.gameController.db).toString();
-    const targetPath = target.toString().replace(baseUrl, "");
-    const paths = this.pendingDrop.filter(path => !path.startsWith(`${targetPath}/`));
     this.dropBusy = true;
     this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = true; });
     try {
-      const effects=areaName==='panArea'?Object.fromEntries(paths.map(path=>[path,'闪电'])):{};
-      if (paths.length) await this.gameController.moveOrderedCards(paths, target, null, effects);
+      await this.movePathsToArea(this.pendingDrop,areaName);
       this.dropCommitted = true;
       this.dropPicker.close();
     } catch (error) {
@@ -660,6 +655,16 @@ class SgPlayer extends HTMLElement {
       this.dropBusy = false;
       this.dropPicker.querySelectorAll("button").forEach(button => { button.disabled = false; });
     }
+  }
+
+  async movePathsToArea(sourcePaths,areaName) {
+    const target=child(this[areaName].deckRef,"/cards");
+    const baseUrl=ref(this.gameController.db).toString();
+    const targetPath=target.toString().replace(baseUrl,"");
+    const paths=[...new Set(sourcePaths)].filter(path=>!path.startsWith(`${targetPath}/`));
+    const effects=areaName==='panArea'?Object.fromEntries(paths.map(path=>[path,'闪电'])):{};
+    if(paths.length)await this.gameController.moveOrderedCards(paths,target,null,effects);
+    return paths.length;
   }
 
 }

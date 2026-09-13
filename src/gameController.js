@@ -188,7 +188,7 @@ class gameController {
     }
   }
 
-  async moveOrderedCards(paths, targetRef, beforeKey = null, effects = {}, actionOpcode = null, actionArgs = null) {
+  async moveOrderedCards(paths, targetRef, beforeKey = null, effects = {}, actionOpcode = null, actionArgs = null, options = {}) {
     const base = ref(this.db).toString();
     const targetPath = targetRef.toString().replace(base, '');
     const prefix = `game/${this.gameId}/`;
@@ -208,8 +208,30 @@ class gameController {
       ]);
       if (snapshots.some(snapshot => !snapshot.exists())) throw Error('卡牌已移动，请重新选择');
       const sources = snapshots.map((snapshot, index) => ({path: unique[index], value: snapshot.val()}));
-      const patch = orderedMovePatch(targetPath, target.val() || {}, sources, beforeKey,
+      let targetCards=target.val()||{};
+      const replacedEquipment=[];
+      if(options.replaceEquipment){
+        if(!/\/zhuang\/cards$/.test(targetPath)||sources.length!==1)throw Error('每次只能装备一张装备牌');
+        const incoming=paiKu[sources[0].value.id];
+        if(incoming?.category!=='equipment'||!incoming.subCategory)throw Error('无法识别装备类型');
+        targetCards=Object.fromEntries(Object.entries(targetCards).filter(([key,value])=>{
+          const replaced=paiKu[value?.id]?.subCategory===incoming.subCategory;
+          if(replaced)replacedEquipment.push({key,value});
+          return !replaced;
+        }));
+      }
+      const patch = orderedMovePatch(targetPath, targetCards, sources, beforeKey,
         () => push(targetRef).key, effects, card => paiKu[card.id]?.name);
+      if(replacedEquipment.length){
+        const discardPath=`game/${this.gameId}/tableDecks/discard/cards`;
+        replacedEquipment.forEach(({key,value})=>{
+          patch[`${targetPath}/${key}`]=null;
+          const discardKey=push(ref(this.db,discardPath)).key;
+          const card={...value,show:'0',discardedAt:serverTimestamp()};
+          delete card.order;delete card.panOrder;delete card.judgmentEffect;
+          patch[`${discardPath}/${discardKey}`]=card;
+        });
+      }
       if (/\/tableDecks\/discard\/cards$/.test(targetPath)) {
         Object.entries(patch).forEach(([path,value]) => {
           if (path.startsWith(`${targetPath}/`) && value && typeof value === 'object') {
@@ -514,6 +536,23 @@ class gameController {
       return await this.moveOrderedCards(paths, ref(this.db, targetPath), null, {}, ownOnly?actionOpcode:null, ownOnly?actionArgs:null);
     } finally {
       this.selectionMoveBusy = false;
+    }
+  }
+
+  async equipSelectedCard(cards=[...this.selectedCards]) {
+    if(this.selectionMoveBusy)return;
+    if(!this.currentPlayer||cards.length!==1)throw Error('每次只能装备一张牌');
+    const cardInfo=paiKu[cards[0].cardData?.id];
+    if(cardInfo?.category!=='equipment'||!cardInfo.subCategory)throw Error('所选卡牌不是可识别的装备牌');
+    const base=ref(this.db).toString();
+    const path=cards[0].cardRef.toString().replace(base,'');
+    const targetPath=`game/${this.gameId}/${this.currentPlayer}/zhuang/cards`;
+    if(path.startsWith(`${targetPath}/`))return;
+    this.selectionMoveBusy=true;
+    try{
+      return await this.moveOrderedCards([path],ref(this.db,targetPath),null,{},null,null,{replaceEquipment:true});
+    }finally{
+      this.selectionMoveBusy=false;
     }
   }
 

@@ -116,12 +116,12 @@ export function installCardTransferAnimation(table){
         {transform:position(start.x+dx*.08,start.y+dy*.08,1,-3),opacity:1,offset:.12},
         {transform:position(end.x,end.y,.9,0),opacity:1,offset:.88},
         {transform:position(end.x,end.y,.7,0),opacity:0},
-      ],{duration,delay:index*22,easing:'cubic-bezier(.2,.65,.3,1)',fill:'forwards'});
+      ],{duration,delay:index*22,easing:'cubic-bezier(.2,.65,.3,1)',fill:'both'});
     }
     window.setTimeout(()=>group.remove(),trailDuration+20);
   }
 
-  function playUse({source,useCardName,useTargetSeat,useTargetSeats=[],useCards=[]}){
+  function playUse({source,useCardName,useTargetSeat,useTargetSeats=[],useCards=[],converted=false}){
     const host=revealHost(source);
     if(!host||!host.isConnected||!useCardName||!useCards.length)return;
     const playerHost=areaHost(source);
@@ -134,8 +134,8 @@ export function installCardTransferAnimation(table){
     group.style.top=`${Math.min(window.innerHeight-78,Math.max(78,centerY))}px`;
     const list=document.createElement('div');list.className='card-reveal-list card-use-list';
     useCards.forEach(card=>list.append(cardFace(card)));
-    const converted=useCards.some(card=>card.name!==useCardName);
-    if(converted){
+    const showConversion=converted||useCards.some(card=>card.name!==useCardName);
+    if(showConversion){
       const heading=document.createElement('span');heading.className='card-use-heading';heading.textContent=`作为「${useCardName}」使用`;
       group.append(heading);
     }

@@ -17,6 +17,7 @@ import menuCss from "./css/sgGameMenu.css";
 import { gameController } from "../gameController";
 import { SgTable } from "./sgTable";
 import * as appData from "../data/appData.js";
+import {loadActiveRooms} from '../roomPresence.js';
 
 const template = document.createElement("template");
 template.innerHTML = `
@@ -29,6 +30,7 @@ ${menuCss}
     <div class="brand-emblem" aria-hidden="true">杀</div>
     <h1>三国杀 <span>双将 3v3</span></h1>
   </header>
+  <div class="login-stage">
   <div name="login-menu" class="widget">
     <div class="card-heading">
       <h2>加入对局</h2>
@@ -52,8 +54,16 @@ ${menuCss}
     </form>
     <div class="card-footer"><button type="button" name="reset-btn">重置数据库</button></div>
   </div>
+  <button type="button" class="active-room-summary" data-active-room-summary aria-haspopup="dialog">
+    <span>活跃房间</span><strong data-active-room-count>检测中</strong><b aria-hidden="true">查看 ›</b>
+  </button>
+  </div>
   <div name="seat-menu" class="widget hide"></div>
 </main>
+<dialog class="active-room-dialog">
+  <header><div><h2>活跃房间</h2><p>当前与游戏服务器保持连接的房间</p></div><button type="button" data-active-room-close>关闭 ×</button></header>
+  <div class="active-room-list" data-active-room-list><p>正在检测……</p></div>
+</dialog>
 `;
 
 class SgGameMenu extends HTMLElement {
@@ -72,9 +82,12 @@ class SgGameMenu extends HTMLElement {
 
     this.db = db;
     this.shadowRoot = shadowRoot;
-    this.loginMenu = shadowRoot.querySelector(`div[name="login-menu"]`);
+    this.loginMenu = shadowRoot.querySelector('.login-stage');
     this.playButton = shadowRoot.querySelector("button[name='play-btn']");
     this.resetButton = shadowRoot.querySelector("button[name='reset-btn']");
+    this.activeRoomDialog=shadowRoot.querySelector('.active-room-dialog');
+    this.activeRoomList=shadowRoot.querySelector('[data-active-room-list]');
+    this.activeRooms=[];
 
     shadowRoot.querySelector(".login-form").addEventListener("submit", (event) => {
       event.preventDefault();
@@ -82,6 +95,27 @@ class SgGameMenu extends HTMLElement {
     });
     this.resetButton.addEventListener("click", () => {
       this.onResetClick();
+    });
+    shadowRoot.querySelector('[data-active-room-summary]').addEventListener('click',()=>{
+      if(!this.activeRoomDialog.open)this.activeRoomDialog.showModal();
+    });
+    shadowRoot.querySelector('[data-active-room-close]').addEventListener('click',()=>this.activeRoomDialog.close());
+    this.activeRoomDialog.addEventListener('click',event=>{if(event.target===this.activeRoomDialog)this.activeRoomDialog.close();});
+    loadActiveRooms(this.db).then(rooms=>this.renderActiveRooms(rooms)).catch(()=>this.renderActiveRooms([]));
+  }
+
+  renderActiveRooms(rooms) {
+    this.activeRooms=rooms;
+    this.shadowRoot.querySelector('[data-active-room-count]').textContent=`${rooms.length} 个`;
+    this.activeRoomList.replaceChildren();
+    if(!rooms.length){
+      const empty=document.createElement('p');empty.className='active-room-empty';empty.textContent='当前没有活跃房间';this.activeRoomList.append(empty);return;
+    }
+    rooms.forEach(room=>{
+      const item=document.createElement('div');item.className='active-room-item';
+      item.innerHTML=`<span>房间 <strong></strong></span><small>${room.connectionCount} 个连接</small>`;
+      item.querySelector('strong').textContent=room.roomId;
+      this.activeRoomList.append(item);
     });
   }
 

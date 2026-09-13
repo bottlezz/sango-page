@@ -259,7 +259,7 @@ class gameController {
         }
       });
       countDeltas.forEach((delta,path)=>{if(delta)patch[path]=increment(delta);});
-      const hintOpcode=actionOpcode||this.moveActionOpcode(unique,targetPath);
+      const hintOpcode=actionOpcode||(options.replaceEquipment?ACTION_HINT_OPCODE.EQUIP:this.moveActionOpcode(unique,targetPath));
       if(hintOpcode){
         const includesPublicFaces=[ACTION_HINT_OPCODE.PLAY,ACTION_HINT_OPCODE.DISCARD,ACTION_HINT_OPCODE.DISCARD_OTHER,ACTION_HINT_OPCODE.TAKE_DISCARD].includes(hintOpcode);
         const hintArgs=Array.isArray(actionArgs)?actionArgs:includesPublicFaces
@@ -269,6 +269,8 @@ class gameController {
             })]
           : hintOpcode===ACTION_HINT_OPCODE.PLACE_JUDGMENT
             ? [targetPath.match(/\/(p\d+)\/pan\/cards$/)?.[1]||'p0','i',...sources.flatMap(source=>[source.value.id,effects[source.path]])]
+            : hintOpcode===ACTION_HINT_OPCODE.EQUIP
+              ? ['i',sources[0].value.id,...replacedEquipment.map(item=>item.value.id)]
             : [];
         Object.assign(patch,this.actionHintPatch(hintOpcode,hintArgs));
       }
@@ -416,6 +418,10 @@ class gameController {
       updates[`${playerPath}/jiang1`] = {};
       updates[`${playerPath}/jiang2`] = {};
       updates[`${playerPath}/jiangLocked`] = false;
+      updates[`${playerPath}/role`] = '-';
+      updates[`${playerPath}/hp`] = '4/4';
+      updates[`${playerPath}/debuff`] = '00';
+      updates[`${playerPath}/state`] = 'off';
       updates[`${playerPath}/hand/cards`] = {};
       updates[`${playerPath}/pan/cards`] = {};
       updates[`${playerPath}/zhuang/cards`] = {};
@@ -515,7 +521,7 @@ class gameController {
     return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`, ACTION_HINT_OPCODE.PLAY);
   }
 
-  async useSelectedCards(cardName, targetSeat = null, cards = [...this.selectedCards]) {
+  async useSelectedCards(cardName, targetSeat = null, cards = [...this.selectedCards], converted = false) {
     if (!USE_CARD_NAMES.includes(cardName)) throw Error('无效的使用牌名');
     const targetSeats=targetSeat==null?[]:[...new Set(Array.isArray(targetSeat)?targetSeat:String(targetSeat).split(','))];
     if (targetSeats.some(seat=>!/^p\d+$/.test(seat))) throw Error('无效的目标玩家');
@@ -534,10 +540,10 @@ class gameController {
     });
     if (payload.some(value => !value)) throw Error('无法读取所选牌');
     return this.moveSelectedCards(cards, `game/${this.gameId}/tableDecks/discard/cards`,
-      ACTION_HINT_OPCODE.USE_CARD, [cardName, targetSeats.join(',') || '-', 'i', ...payload]);
+      ACTION_HINT_OPCODE.USE_CARD, [cardName, targetSeats.join(',') || '-', converted?'c':'i', ...payload]);
   }
 
-  async placeDelayedTrick(cardName, targetSeat, cards = [...this.selectedCards]) {
+  async placeDelayedTrick(cardName, targetSeat, cards = [...this.selectedCards], converted = false) {
     if (!['乐不思蜀','兵粮寸断','闪电'].includes(cardName)) throw Error('无效的延迟锦囊');
     if (!/^p\d+$/.test(targetSeat || '')) throw Error(`${cardName}需要选择目标玩家`);
     if (cards.length !== 1) throw Error('延迟锦囊每次只能选择一张牌');
@@ -545,7 +551,9 @@ class gameController {
     const paths=cards.map(card=>card.cardRef.toString().replace(base,''));
     if (paths.some(path=>!path.includes(`/${this.currentPlayer}/`))) throw Error('只能使用自己区域的牌');
     const effects=Object.fromEntries(paths.map(path=>[path,cardName]));
-    return this.moveOrderedCards(paths,ref(this.db,`game/${this.gameId}/${targetSeat}/pan/cards`),null,effects,ACTION_HINT_OPCODE.PLACE_JUDGMENT);
+    const payload=cards.flatMap(card=>[card.cardData?.id,cardName]);
+    if(payload.some(value=>!value))throw Error('无法读取所选牌');
+    return this.moveOrderedCards(paths,ref(this.db,`game/${this.gameId}/${targetSeat}/pan/cards`),null,effects,ACTION_HINT_OPCODE.PLACE_JUDGMENT,[targetSeat,converted?'c':'i',...payload]);
   }
 
   async moveSelectedCards(cards, targetPath, actionOpcode = null, actionArgs = null) {

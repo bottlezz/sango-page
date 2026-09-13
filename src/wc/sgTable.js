@@ -13,6 +13,7 @@ import { installActionLog } from './actionLogPanel.js';
 import { installPublicTablePanel } from './publicTablePanel.js';
 import { installCardTransferAnimation } from './cardTransferAnimation.js';
 import { installMobileBoardLayout } from './mobileBoardLayout.js';
+import { installRoomPresence } from '../roomPresence.js';
 import { USE_CARD_NAMES } from '../localActionLog.mjs';
 import paiKu from '../data/pai.json' assert { type: 'json' };
 import cardGuide from '../data/cardGuide.json' assert { type: 'json' };
@@ -123,6 +124,7 @@ class SgTable extends HTMLElement {
     this.disposeTransferAnimation = installCardTransferAnimation(this);
     this.disposeLog = installActionLog(this);
     this.disposeMobileLayout = installMobileBoardLayout(this);
+    this.disposePresence = installRoomPresence(this.gameController);
   }
 
   getRoundMenu() {
@@ -139,42 +141,42 @@ class SgTable extends HTMLElement {
       }
     };
     const rollRolesBtn = document.createElement("button");
-    rollRolesBtn.innerHTML = "身份";
-    rollRolesBtn.title = "按当前已入座人数分配身份";
+    rollRolesBtn.innerHTML = "分配身份";
+    rollRolesBtn.title = "按当前已入座人数随机分配身份";
     rollRolesBtn.addEventListener("click", () => runSetupAction(rollRolesBtn,()=>this.gameController.assignRoles()));
     roundMenu.appendChild(rollRolesBtn);
 
     const jiangShuffleBtn = document.createElement("button");
-    jiangShuffleBtn.innerHTML = "发将";
-    jiangShuffleBtn.title = "只给当前已入座的玩家发将";
+    jiangShuffleBtn.innerHTML = "发放武将";
+    jiangShuffleBtn.title = "给当前已入座玩家每人发放七张候选武将";
     jiangShuffleBtn.addEventListener("click", () => runSetupAction(jiangShuffleBtn,()=>this.gameController.dispatchJiang()));
     roundMenu.appendChild(jiangShuffleBtn);
 
     const dealBtn = document.createElement("button");
-    dealBtn.textContent = "发牌";
+    dealBtn.textContent = "初始发牌";
     dealBtn.title = "已入座玩家手牌为空时，按座次给每人发四张牌";
     dealBtn.addEventListener("click", () => runSetupAction(dealBtn,()=>this.gameController.dealCards()));
     roundMenu.appendChild(dealBtn);
 
     const paiShuffleBtn = document.createElement("button");
-    paiShuffleBtn.innerHTML = "洗牌";
+    paiShuffleBtn.innerHTML = "重洗牌堆";
+    paiShuffleBtn.title = "将弃牌合并回牌堆并重新洗混";
     paiShuffleBtn.addEventListener("click", () => {
       this.gameController.resetPai();
     });
     roundMenu.appendChild(paiShuffleBtn);
 
     const reloadViewBtn=document.createElement("button");
-    reloadViewBtn.textContent="重载界面";
+    reloadViewBtn.textContent="刷新界面";
     reloadViewBtn.title="重新创建全部界面和数据库监听，不改变当前房间与座位";
     reloadViewBtn.addEventListener("click",()=>this.reloadViews());
     roundMenu.appendChild(reloadViewBtn);
 
     const startRoundBtn = document.createElement("button");
-    startRoundBtn.innerHTML = "清台";
+    startRoundBtn.innerHTML = "重置游戏";
+    startRoundBtn.title = "保留房间和已入座玩家，清除身份、状态、武将及所有卡牌区域";
     startRoundBtn.className = "clear-table";
-    startRoundBtn.addEventListener("click", () => {
-      this.gameController.resetTable();
-    });
+    startRoundBtn.addEventListener("click", () => runSetupAction(startRoundBtn,()=>this.gameController.resetTable()));
     roundMenu.appendChild(startRoundBtn);
 
     return roundMenu;
@@ -189,7 +191,7 @@ class SgTable extends HTMLElement {
   }
 
   disconnectedCallback() {
-    queueMicrotask(() => { if (!this.isConnected) {this.disposeMobileLayout?.();this.disposeDrag?.();this.disposeTransferAnimation?.();this.disposeLog?.();this.disposePublicPanel?.();} });
+    queueMicrotask(() => { if (!this.isConnected) {this.disposePresence?.();this.disposeMobileLayout?.();this.disposeDrag?.();this.disposeTransferAnimation?.();this.disposeLog?.();this.disposePublicPanel?.();} });
   }
 
   getCurrentPlayerDom() {
@@ -278,7 +280,7 @@ class SgTable extends HTMLElement {
     if(this.playerTargetBar)this.playerTargetBar.hidden=true;
     this.playerDoms.forEach(player=>player.classList.remove('player-target-option','player-target-selected'));
     if(!state)return null;
-    if(state.mode==='use'&&!preserveUse){this.pendingUseCards=null;this.pendingUseCardName=null;this.pendingUseTargets=new Set();this.pendingUseNoTarget=false;}
+    if(state.mode==='use'&&!preserveUse){this.pendingUseCards=null;this.pendingUseCardName=null;this.pendingUseTargets=new Set();this.pendingUseNoTarget=false;this.pendingUseConverted=false;}
     return state;
   }
 
@@ -340,7 +342,7 @@ class SgTable extends HTMLElement {
     });
     this.useCardPicker.addEventListener('close',()=>{
       if(this.playerTargetState?.mode==='use')return;
-      this.pendingUseCards=null;this.pendingUseCardName=null;this.pendingUseTargets=new Set();this.pendingUseNoTarget=false;
+      this.pendingUseCards=null;this.pendingUseCardName=null;this.pendingUseTargets=new Set();this.pendingUseNoTarget=false;this.pendingUseConverted=false;
     });
     this.shadowRoot.append(this.useCardPicker);
   }
@@ -351,6 +353,7 @@ class SgTable extends HTMLElement {
     if(!current||!cards.length||!cards.every(card=>card.dataset.path?.includes(`/${current}/`)))return;
     this.ensureUseCardPicker();
     this.pendingUseCards=cards;
+    this.pendingUseConverted=true;
     this.renderUseCardChoices();
     if(!this.useCardPicker.open)this.useCardPicker.showModal();
   }
@@ -365,6 +368,7 @@ class SgTable extends HTMLElement {
     if(!USE_CARD_NAMES.includes(cardName)){window.alert(`${cardName}暂不支持直接使用，可通过“转化”选择牌名。`);return;}
     this.ensureUseCardPicker();
     this.pendingUseCards=cards;
+    this.pendingUseConverted=false;
     if(TARGETED_USE_CARDS.has(cardName)||DELAYED_USE_CARDS.has(cardName)){
       this.renderUseTargets(cardName);
     }else this.commitUseCard(cardName);
@@ -409,8 +413,8 @@ class SgTable extends HTMLElement {
     this.useCardBusy=true;
     this.useCardPicker.querySelectorAll('button').forEach(button=>button.disabled=true);
     try{
-      if(DELAYED_USE_CARDS.has(cardName))await this.gameController.placeDelayedTrick(cardName,targetSeat,cards);
-      else await this.gameController.useSelectedCards(cardName,targetSeat,cards);
+      if(DELAYED_USE_CARDS.has(cardName))await this.gameController.placeDelayedTrick(cardName,targetSeat,cards,this.pendingUseConverted);
+      else await this.gameController.useSelectedCards(cardName,targetSeat,cards,this.pendingUseConverted);
       if(this.useCardPicker.open)this.useCardPicker.close();
       cards.forEach(card=>{if(this.gameController.selectedCards.includes(card))card.unselectCard();});
     }catch(error){window.alert(error.message||'使用失败，请重试');}
@@ -568,7 +572,7 @@ class SgTable extends HTMLElement {
       card.dataset.path?.includes(`/${currentPlayer}/hand/cards/`));
     const isEquipmentSelection = selected.length === 1
       && paiKu[selected[0].cardData?.id]?.category === 'equipment';
-    const canEquip = Boolean(currentPlayer) && isEquipmentSelection
+    const canEquip = Boolean(currentPlayer) && isOwnSelection && isEquipmentSelection
       && !selected[0].dataset.path?.includes(`/${currentPlayer}/zhuang/cards/`);
     const remoteAreaPanelOpen = this.playerDoms.some(player =>
       !player.classList.contains('current-player')
@@ -583,7 +587,7 @@ class SgTable extends HTMLElement {
       this.cardMenu.querySelector(".selection-label").textContent = `${source} · ${selected.length} 张`;
       this.cardMenu.querySelectorAll('[data-selection-action]').forEach(button => {
         const action = button.dataset.selectionAction;
-        button.hidden = (isDiscardSelection && !['take', 'equip', 'cancel'].includes(action))
+        button.hidden = (isDiscardSelection && !['take', 'cancel'].includes(action))
           || (['use','convert'].includes(action) && !isOwnSelection)
           || (action === 'use' && isEquipmentSelection)
           || (action === 'equip' && !canEquip)

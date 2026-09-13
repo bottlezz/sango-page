@@ -46,11 +46,10 @@ export function installPublicTablePanel(table,host,cardMenu){
     if(hint.opcode===ACTION_HINT_OPCODE.DISCARD||hint.opcode===ACTION_HINT_OPCODE.DISCARD_OTHER)return '弃置';
     if(hint.opcode===ACTION_HINT_OPCODE.USE_CARD){
       const [useCardName,,format,...payload]=hint.args;
-      if(format!=='i'||!cardValue?.id)return '';
+      if(!['i','c'].includes(format)||!cardValue?.id)return '';
       const usedIds=new Set();
       for(let index=1;index<payload.length;index+=2)usedIds.add(payload[index]);
-      const physicalName=paiKu[cardValue.id]?.name;
-      return usedIds.has(cardValue.id)&&physicalName&&physicalName!==useCardName?`→ ${useCardName}`:'';
+      return format==='c'&&usedIds.has(cardValue.id)?`→ ${useCardName}`:'';
     }
     if(hint.opcode===ACTION_HINT_OPCODE.REVEAL_JUDGMENT)return '展示／判定';
     return '';

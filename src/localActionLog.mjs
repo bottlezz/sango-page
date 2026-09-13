@@ -9,6 +9,7 @@ export const ACTION_HINT_OPCODE = Object.freeze({
   PLAY:'p', DISCARD:'e', DRAW:'w', REVEAL_JUDGMENT:'v',
   TAKE_DISCARD:'k', REARRANGE_DECK:'u', REVEAL_CARDS:'l', VIEW_CARDS:'q',
   LOCK_GENERALS:'g', REVEAL_GENERAL:'h', PLACE_JUDGMENT:'a', USE_CARD:'f',
+  EQUIP:'b',
 });
 
 export const USE_CARD_NAMES = Object.freeze([
@@ -110,7 +111,7 @@ function transferLabel(hint, source, target) {
 
 function actionCardsFromHint(hint,cardCatalog={}) {
   const offset=hint?.opcode===ACTION_HINT_OPCODE.USE_CARD?2:0;
-  if(![ACTION_HINT_OPCODE.PLAY,ACTION_HINT_OPCODE.DISCARD,ACTION_HINT_OPCODE.DISCARD_OTHER,ACTION_HINT_OPCODE.TAKE_DISCARD,ACTION_HINT_OPCODE.USE_CARD].includes(hint?.opcode)||hint.args[offset]!=='i'||(hint.args.length-offset-1)%2!==0)return [];
+  if(![ACTION_HINT_OPCODE.PLAY,ACTION_HINT_OPCODE.DISCARD,ACTION_HINT_OPCODE.DISCARD_OTHER,ACTION_HINT_OPCODE.TAKE_DISCARD,ACTION_HINT_OPCODE.USE_CARD].includes(hint?.opcode)||!['i','c'].includes(hint.args[offset])||(hint.args.length-offset-1)%2!==0)return [];
   const cards=[];
   for(let index=offset+1;index<hint.args.length;index+=2){
     const [source,id]=hint.args.slice(index,index+2),data=cardCatalog[id];
@@ -126,10 +127,10 @@ export function createCardTransfers(before,after,cardCatalog={}) {
   const cards=actionCardsFromHint(hint,cardCatalog);
   const transfers=moves(before,after).map(move=>({...move,label:transferLabel(hint,move.source,move.target),cards:cards.filter(card=>card.source===move.source)}));
   if(hint?.opcode===ACTION_HINT_OPCODE.USE_CARD){
-    const [useCardName,useTargetSeat]=hint.args;
+    const [useCardName,useTargetSeat,format]=hint.args;
     const useTargetSeats=useTargetSeat&&useTargetSeat!=='-'?useTargetSeat.split(',').filter(seat=>/^p\d+$/.test(seat)):[];
     transfers.forEach((transfer,index)=>Object.assign(transfer,{
-      useCardName,useTargetSeat:useTargetSeats.length===1?useTargetSeats[0]:null,useTargetSeats,usePrimary:index===0,
+      useCardName,useTargetSeat:useTargetSeats.length===1?useTargetSeats[0]:null,useTargetSeats,usePrimary:index===0,converted:format==='c',
       useCards:index===0?cards:[],
     }));
   }
@@ -194,26 +195,44 @@ function hintedChanges(hint,before,after,cardCatalog={},localSeat=null){
     }
     case ACTION_HINT_OPCODE.PLACE_JUDGMENT:{
       const [targetSeat,format,...payload]=hint.args;
-      if(!/^p\d+$/.test(targetSeat)||format!=='i'||payload.length%2!==0)return [];
+      if(!/^p\d+$/.test(targetSeat)||!['i','c'].includes(format)||payload.length%2!==0)return [];
       const target=playerName(after,targetSeat),changes=[];
       for(let index=0;index<payload.length;index+=2){
-        const [id,effect]=payload.slice(index,index+2),name=cardCatalog[id]?.name||id;
-        changes.push(name===effect
-          ? `将 ${name} 置入 ${target} 的判定区`
-          : `将 ${name} 转化为 ${effect} 置入 ${target} 的判定区`);
+        const [id,effect]=payload.slice(index,index+2),card=cardCatalog[id]||{},name=card.name||id;
+        const face=`${suitIcon(card.suit)} ${card.rank||'?'} ${name}`;
+        changes.push(format==='c'||name!==effect
+          ? `将 ${face} 转化为 ${effect} 置入 ${target} 的判定区`
+          : `将 ${name} 置入 ${target} 的判定区`);
       }
       return changes;
     }
     case ACTION_HINT_OPCODE.USE_CARD:{
-      const [cardName,targetValue]=hint.args;
+      const [cardName,targetValue,format]=hint.args;
       if(!USE_CARD_NAMES.includes(cardName))return [];
       const targets=targetValue&&targetValue!=='-'
         ?targetValue.split(',').filter(seat=>/^p\d+$/.test(seat)).map(seat=>playerName(after,seat))
         :[];
+      if(format==='c'){
+        const cards=actionCardsFromHint(hint,cardCatalog);
+        const source=cards.length?cards.map(card=>`${suitIcon(card.suit)} ${card.rank} ${card.name}`).join('、'):'所选牌';
+        if(cardName==='闪'||(!targets.length&&cardName.endsWith('杀')))return [`将 ${source} 转化为 ${cardName} 并打出`];
+        return targets.length
+          ? [`将 ${source} 转化为 ${cardName}，并对 ${targets.join('、')} 使用`]
+          : [`将 ${source} 转化为 ${cardName} 并使用`];
+      }
       if(cardName==='闪'||(!targets.length&&cardName.endsWith('杀')))return [`打出了 ${cardName}`];
       return targets.length
         ? [`对 ${targets.join('、')} 使用了 ${cardName}`]
-        : [`使用了 ${cardName}`];
+          : [`使用了 ${cardName}`];
+    }
+    case ACTION_HINT_OPCODE.EQUIP:{
+      const [format,incomingId,...replacedIds]=hint.args;
+      if(format!=='i'||!incomingId)return [];
+      const label=id=>{const card=cardCatalog[id]||{};return `${suitIcon(card.suit)} ${card.rank||'?'} ${card.name||id}`;};
+      const equipped=label(incomingId);
+      return replacedIds.length
+        ? [`使用 ${equipped} 替换了 ${replacedIds.map(label).join('、')}`]
+        : [`装备了 ${equipped}`];
     }
     case ACTION_HINT_OPCODE.MOVE_OTHER:return moved.map(x=>`将 ${x.count} 张牌从 ${areaName(after,x.source)} 移到 ${areaName(after,x.target)}`);
     case ACTION_HINT_OPCODE.DEAL_CARDS:return ['为已入座玩家发牌'];
@@ -221,7 +240,7 @@ function hintedChanges(hint,before,after,cardCatalog={},localSeat=null){
     case ACTION_HINT_OPCODE.ASSIGN_ROLES:return ['重新分配了身份'];
     case ACTION_HINT_OPCODE.SHUFFLE:{const names={p:'牌堆',d:'公共区',h:'手牌',z:'装备区',n:'判定区',o:'卡牌区',j:'选将区'};return [`洗混了${names[hint.args[0]]||'卡牌'}`];}
     case ACTION_HINT_OPCODE.RESET_DECK:return ['重置并洗混了牌堆'];
-    case ACTION_HINT_OPCODE.RESET_TABLE:return ['清空了桌面'];
+    case ACTION_HINT_OPCODE.RESET_TABLE:return ['重置了游戏'];
     case ACTION_HINT_OPCODE.PLAY:{
       const cards=actionCardsFromHint(hint,cardCatalog);
       if(cards.length)return [`打出了 ${cards.map(card=>card.name).join('、')}`];

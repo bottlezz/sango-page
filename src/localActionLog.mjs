@@ -216,8 +216,8 @@ function hintedChanges(hint,before,after,cardCatalog={},localSeat=null){
         : [`使用了 ${cardName}`];
     }
     case ACTION_HINT_OPCODE.MOVE_OTHER:return moved.map(x=>`将 ${x.count} 张牌从 ${areaName(after,x.source)} 移到 ${areaName(after,x.target)}`);
-    case ACTION_HINT_OPCODE.DEAL_CARDS:return ['为所有玩家发牌'];
-    case ACTION_HINT_OPCODE.DEAL_GENERALS:return ['为所有玩家发将'];
+    case ACTION_HINT_OPCODE.DEAL_CARDS:return ['为已入座玩家发牌'];
+    case ACTION_HINT_OPCODE.DEAL_GENERALS:return ['为已入座玩家发将'];
     case ACTION_HINT_OPCODE.ASSIGN_ROLES:return ['重新分配了身份'];
     case ACTION_HINT_OPCODE.SHUFFLE:{const names={p:'牌堆',d:'公共区',h:'手牌',z:'装备区',n:'判定区',o:'卡牌区',j:'选将区'};return [`洗混了${names[hint.args[0]]||'卡牌'}`];}
     case ACTION_HINT_OPCODE.RESET_DECK:return ['重置并洗混了牌堆'];

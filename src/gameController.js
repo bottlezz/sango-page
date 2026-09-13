@@ -158,15 +158,17 @@ class gameController {
 
   async dealCards() {
     const prefix = `game/${this.gameId}`;
+    const {occupiedSeats} = await this.getOccupiedSeats();
+    if (!occupiedSeats.length) throw Error('当前没有已入座玩家');
     const deckPaths = [`${prefix}/tableDecks/pai/cards`];
-    const handPaths = Array.from({length:Number(this.playerCount)}, (_,index)=>`${prefix}/p${index+1}/hand/cards`);
+    const handPaths = occupiedSeats.map(seat=>`${prefix}/${seat}/hand/cards`);
     const locks = await this.acquireGameLocks(deckPaths.map(path=>`area:${path}`));
     let released = false;
     try {
       const snapshots = await Promise.all([...deckPaths, ...handPaths].map(path=>get(ref(this.db,path))));
       const hands = snapshots.slice(deckPaths.length);
       if (hands.some(snapshot=>snapshot.exists() && Object.keys(snapshot.val() || {}).length)) {
-        throw Error('只有所有玩家手牌为空时才能发牌');
+        throw Error('只有所有已入座玩家手牌为空时才能发牌');
       }
       const deck = orderedEntries(snapshots[0].val() || {}).map(card=>({...card,path:deckPaths[0]}));
       const needed = handPaths.length * 4;
@@ -306,21 +308,39 @@ class gameController {
     return `game/${this.gameId}/${playerKey}`;
   }
 
-  assignRoles() {
-    let roles;
-    if (this.playerCount == 6) {
-      roles = ["忠", "忠", "反", "反", "内", "主"];
-    } else {
-      roles = ["忠", "忠", "忠", "反", "反", "反", "内", "主"];
+  async getOccupiedSeats() {
+    const allSeats = Array.from({length:Number(this.playerCount)}, (_,index)=>`p${index+1}`);
+    const prefix = `game/${this.gameId}`;
+    const names = await Promise.all(allSeats.map(seat=>get(ref(this.db,`${prefix}/${seat}/name`))));
+    const occupiedSeats = allSeats.filter((seat,index)=>{
+      const name = names[index].val();
+      const normalizedName = name == null ? '' : String(name).trim();
+      return normalizedName !== '' && normalizedName !== 'empty';
+    });
+    return {allSeats, occupiedSeats};
+  }
+
+  getRolesForPlayerCount(count) {
+    if (count === 2) return ["主", "内"];
+    if (count === 4) return ["主", "内", "忠", "反"];
+    const sixPlayerRoles = ["主", "内", "忠", "反", "忠", "反"];
+    if (count <= sixPlayerRoles.length) return sixPlayerRoles.slice(0,count);
+    const roles = [...sixPlayerRoles];
+    while (roles.length < count) roles.push((roles.length-sixPlayerRoles.length)%2 === 0 ? "忠" : "反");
+    return roles;
+  }
+
+  async assignRoles() {
+    const {allSeats, occupiedSeats} = await this.getOccupiedSeats();
+    if (!occupiedSeats.length) throw Error('当前没有已入座玩家');
+    const roles = this.getRolesForPlayerCount(occupiedSeats.length);
+    for (let index=roles.length-1;index>0;index--) {
+      const swapIndex=Math.floor(Math.random()*(index+1));
+      [roles[index],roles[swapIndex]]=[roles[swapIndex],roles[index]];
     }
     const updates = {};
-    for (let i = 0; i < this.playerCount; i++) {
-      const len = roles.length;
-      const idx = Math.floor(Math.random() * len);
-      const role = roles[idx];
-      roles.splice(idx, 1);
-      updates[`game/${this.gameId}/p${i + 1}/role`] = role;
-    }
+    allSeats.forEach(seat=>{ updates[`game/${this.gameId}/${seat}/role`] = '-'; });
+    occupiedSeats.forEach((seat,index)=>{ updates[`game/${this.gameId}/${seat}/role`] = roles[index]; });
     return update(ref(this.db), {...updates,...this.actionHintPatch(ACTION_HINT_OPCODE.ASSIGN_ROLES)});
   }
 
@@ -441,16 +461,20 @@ class gameController {
   }
 
   async dispatchJiang() {
+    const {occupiedSeats} = await this.getOccupiedSeats();
+    if (!occupiedSeats.length) throw Error('当前没有已入座玩家');
     const jiangCards = this.getShuffledJiang();
+    const needed = occupiedSeats.length * 7;
+    if (jiangCards.length < needed) throw Error(`武将牌不足，需要 ${needed} 张`);
     const updates = {};
-    for (let i = 0; i < this.playerCount; i++) {
+    occupiedSeats.forEach(seat=>{
       const jiangs = jiangCards.splice(0, 7);
-      const playerPath=`game/${this.gameId}/p${i + 1}`;
+      const playerPath=`game/${this.gameId}/${seat}`;
       updates[`${playerPath}/jiang/cards`] = jiangs;
       updates[`${playerPath}/jiang1`] = {};
       updates[`${playerPath}/jiang2`] = {};
       updates[`${playerPath}/jiangLocked`] = false;
-    }
+    });
     await update(ref(this.db),{...updates,...this.actionHintPatch(ACTION_HINT_OPCODE.DEAL_GENERALS)});
     return true;
   }

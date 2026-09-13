@@ -15,6 +15,7 @@ import { installCardTransferAnimation } from './cardTransferAnimation.js';
 import { installMobileBoardLayout } from './mobileBoardLayout.js';
 import { USE_CARD_NAMES } from '../localActionLog.mjs';
 import paiKu from '../data/pai.json' assert { type: 'json' };
+import cardGuide from '../data/cardGuide.json' assert { type: 'json' };
 
 const TARGETED_USE_CARDS = new Set(['杀','火杀','雷杀','桃','无懈可击','无中生有','决斗','过河拆桥','顺手牵羊','铁索连环','火攻','借刀杀人']);
 const SELF_ONLY_TARGET_USE_CARDS = new Set(['无中生有']);
@@ -56,7 +57,8 @@ class SgTable extends HTMLElement {
     topbar.innerHTML = `<span class="seal">杀</span><span class="brand">SANGO · 双将3v3</span>
       <span class="room"></span><span class="seat-label" aria-live="polite">座次：未入座</span>
       <span class="mode"><i class="live-dot" aria-hidden="true"></i><span>手动桌面 · 技能与结算由玩家执行</span></span>
-      <button type="button" class="top-btn">操作说明</button>`;
+      <button type="button" class="topbar-action" data-help><span class="utility-icon" aria-hidden="true">?</span><span>操作说明</span></button>
+      <button type="button" class="topbar-action" data-card-guide><span class="utility-icon" aria-hidden="true">牌</span><span>牌谱</span></button>`;
     topbar.querySelector(".room").textContent = `房间 ${String(this.gameController.gameId).padStart(3, "0")}`;
     const help = document.createElement("dialog");
     help.className = "table-help";
@@ -65,16 +67,42 @@ class SgTable extends HTMLElement {
       <p>选中后可点击“移动”，依次选择目标玩家和区域；也可直接拖到玩家卡片。</p>
       <p>通过侧栏调整血量、翻面和连环。技能与结算由玩家执行。</p>
       <form method="dialog"><button class="top-btn">关闭</button></form>`;
-    topbar.querySelector("button").addEventListener("click", () => {if(!help.open)help.showModal();});
+    topbar.querySelector("[data-help]").addEventListener("click", () => {if(!help.open)help.showModal();});
     help.addEventListener('click',event=>{if(event.target===help)help.close();});
+    const guide=document.createElement('dialog');
+    guide.className='card-guide-dialog';
+    const guideHeader=document.createElement('header');
+    guideHeader.innerHTML='<div><h2>牌谱</h2><p>按类别展开查看常用牌的效果</p></div><button type="button" class="top-btn" data-guide-close>关闭 ×</button>';
+    const guideGroups=document.createElement('div');guideGroups.className='card-guide-groups';
+    cardGuide.forEach((group,index)=>{
+      const details=document.createElement('details');details.className='card-guide-group';details.name='card-guide-category';details.open=index===0;
+      const summary=document.createElement('summary');summary.innerHTML=`<strong>${group.label}</strong><small>${group.items.length} 种</small>`;
+      const list=document.createElement('div');list.className='card-guide-list';
+      group.items.forEach(item=>{
+        const row=document.createElement('article');
+        const heading=document.createElement('h3');heading.textContent=item.name;
+        if(item.meta){const meta=document.createElement('small');meta.textContent=item.meta;heading.append(meta);}
+        const effect=document.createElement('p');effect.textContent=item.effect;
+        row.append(heading,effect);list.append(row);
+      });
+      details.append(summary,list);guideGroups.append(details);
+    });
+    guide.append(guideHeader,guideGroups);
+    topbar.querySelector('[data-card-guide]').addEventListener('click',()=>{if(!guide.open)guide.showModal();});
+    guide.querySelector('[data-guide-close]').addEventListener('click',()=>guide.close());
+    guide.addEventListener('click',event=>{if(event.target===guide)guide.close();});
     const publicTools = document.createElement("details");
     publicTools.className = "public-tools";
     const toolsToggle = document.createElement("summary");
-    toolsToggle.textContent = "公共工具";
+    toolsToggle.innerHTML = '<span class="utility-icon" aria-hidden="true">⋯</span><span>公共工具</span><span class="utility-chevron" aria-hidden="true">⌄</span>';
     const toolsMenu = this.getRoundMenu();
     toolsMenu.setAttribute("aria-label", "公共工具");
     publicTools.append(toolsToggle, toolsMenu);
-    topbar.append(publicTools);
+    const topbarActions=document.createElement('nav');
+    topbarActions.className='topbar-actions';
+    topbarActions.setAttribute('aria-label','牌桌帮助与工具');
+    topbarActions.append(topbar.querySelector('[data-help]'),topbar.querySelector('[data-card-guide]'),publicTools);
+    topbar.append(topbarActions);
     toolsMenu.addEventListener("click", event => {
       if (event.target.closest("button")) publicTools.open = false;
     });
@@ -87,7 +115,7 @@ class SgTable extends HTMLElement {
         toolsToggle.focus();
       }
     });
-    this.shadowRoot.append(topbar, help);
+    this.shadowRoot.append(topbar,help,guide);
     this.shadowRoot.appendChild(container);
 
     this.initGame();
@@ -100,33 +128,32 @@ class SgTable extends HTMLElement {
   getRoundMenu() {
     const roundMenu = document.createElement("div");
     roundMenu.className = "round-menu";
+    const runSetupAction = async (button, action) => {
+      button.disabled = true;
+      try {
+        await action();
+      } catch (error) {
+        window.alert(error.message);
+      } finally {
+        button.disabled = false;
+      }
+    };
     const rollRolesBtn = document.createElement("button");
     rollRolesBtn.innerHTML = "身份";
-    rollRolesBtn.addEventListener("click", () => {
-      this.gameController.assignRoles();
-    });
+    rollRolesBtn.title = "按当前已入座人数分配身份";
+    rollRolesBtn.addEventListener("click", () => runSetupAction(rollRolesBtn,()=>this.gameController.assignRoles()));
     roundMenu.appendChild(rollRolesBtn);
 
     const jiangShuffleBtn = document.createElement("button");
     jiangShuffleBtn.innerHTML = "发将";
-    jiangShuffleBtn.addEventListener("click", () => {
-      this.gameController.dispatchJiang();
-    });
+    jiangShuffleBtn.title = "只给当前已入座的玩家发将";
+    jiangShuffleBtn.addEventListener("click", () => runSetupAction(jiangShuffleBtn,()=>this.gameController.dispatchJiang()));
     roundMenu.appendChild(jiangShuffleBtn);
 
     const dealBtn = document.createElement("button");
     dealBtn.textContent = "发牌";
-    dealBtn.title = "所有玩家手牌为空时，按座次从牌堆给每人发四张牌";
-    dealBtn.addEventListener("click", async () => {
-      dealBtn.disabled = true;
-      try {
-        await this.gameController.dealCards();
-      } catch (error) {
-        window.alert(error.message);
-      } finally {
-        dealBtn.disabled = false;
-      }
-    });
+    dealBtn.title = "已入座玩家手牌为空时，按座次给每人发四张牌";
+    dealBtn.addEventListener("click", () => runSetupAction(dealBtn,()=>this.gameController.dealCards()));
     roundMenu.appendChild(dealBtn);
 
     const paiShuffleBtn = document.createElement("button");
@@ -194,6 +221,7 @@ class SgTable extends HTMLElement {
       else if(state.selected.has(player.dataset.key))state.selected.delete(player.dataset.key);
       else state.selected.add(player.dataset.key);
       this.syncPlayerTargetPicker();
+      if(state.autoCommitOnSelect)this.commitPlayerTargetSelection();
     },true);
     this.shadowRoot.addEventListener('dblclick',event=>{
       const state=this.playerTargetState;
@@ -239,7 +267,7 @@ class SgTable extends HTMLElement {
       ? `已选择 ${state.selected.size} 位玩家${desktopSingleUse?' · 双击可直接确认':''}`
       : `${state.summary}${desktopSingleUse?' 双击玩家可直接确认。':''}`;
     this.playerTargetBar.querySelector('span').textContent=summary;
-    const confirm=this.playerTargetBar.querySelector('[data-target-commit]');confirm.textContent=state.confirmLabel||'确认';
+    const confirm=this.playerTargetBar.querySelector('[data-target-commit]');confirm.hidden=Boolean(state.autoCommitOnSelect);confirm.textContent=state.confirmLabel||'确认';
     confirm.disabled=!state.valid||(!state.noTarget&&!state.selected.size);
   }
 
@@ -291,7 +319,7 @@ class SgTable extends HTMLElement {
       && /\/pan\/cards\/[^/]+$/.test(paths[0])
       && (cards[0].cardData?.judgmentEffect||paiKu[cards[0].cardData?.id]?.name)==='闪电';
     const players=this.playerDoms.filter(player=>player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty');
-    this.beginPlayerTargetSelection({mode:'move',eligible:players,single:true,valid:true,title:'移动到哪位玩家？',summary:lightning?'选择闪电要移入判定区的玩家。':`已选择 ${paths.length} 张牌，请点击目标玩家。`,confirmLabel:lightning?'确认移动':'选择区域',pending:{cards,paths,...(lightning?{autoArea:'panArea'}:{})}});
+    this.beginPlayerTargetSelection({mode:'move',eligible:players,single:true,valid:true,title:'移动到哪位玩家？',summary:lightning?'点击玩家后，闪电会立即移入其判定区。':`已选择 ${paths.length} 张牌，请点击目标玩家。`,autoCommitOnSelect:lightning,confirmLabel:'选择区域',pending:{cards,paths,...(lightning?{autoArea:'panArea'}:{})}});
   }
 
   ensureUseCardPicker() {

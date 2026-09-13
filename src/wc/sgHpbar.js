@@ -52,6 +52,9 @@ class sgHpBar extends HTMLElement {
     this.shadowRoot.append(clone);
 
     const pickerGrid = this.shadowRoot.querySelector(".picker-grid");
+    this.shadowRoot.querySelector(".max-hp-picker").addEventListener("close", () => {
+      this.classList.remove("picker-open");
+    });
     for (let hp = 1; hp <= 15; hp++) {
       const option = document.createElement("button");
       option.className = "max-hp-option";
@@ -141,7 +144,13 @@ class sgHpBar extends HTMLElement {
   openMaxPicker() {
     const picker = this.shadowRoot.querySelector(".max-hp-picker");
     if (!this.classList.contains("current-player") || picker.open) return;
-    picker.showModal();
+    this.classList.add("picker-open");
+    try {
+      picker.showModal();
+    } catch (error) {
+      this.classList.remove("picker-open");
+      throw error;
+    }
     const selected = picker.querySelector(`[data-max-hp="${this.max}"]`);
     selected?.focus();
   }

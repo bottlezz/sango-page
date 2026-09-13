@@ -18,6 +18,7 @@ import paiKu from '../data/pai.json' assert { type: 'json' };
 
 const TARGETED_USE_CARDS = new Set(['杀','火杀','雷杀','桃','无懈可击','无中生有','决斗','过河拆桥','顺手牵羊','铁索连环','火攻','借刀杀人']);
 const SELF_ONLY_TARGET_USE_CARDS = new Set(['无中生有']);
+const SELF_ALLOWED_TARGET_USE_CARDS = new Set(['桃','无懈可击','铁索连环']);
 const DELAYED_USE_CARDS = new Set(['乐不思蜀','兵粮寸断','闪电']);
 const USE_CARD_GROUPS = [
   {title:'基本牌',cards:['杀','火杀','闪','酒','桃']},
@@ -64,7 +65,8 @@ class SgTable extends HTMLElement {
       <p>选中后可点击“移动”，依次选择目标玩家和区域；也可直接拖到玩家卡片。</p>
       <p>通过侧栏调整血量、翻面和连环。技能与结算由玩家执行。</p>
       <form method="dialog"><button class="top-btn">关闭</button></form>`;
-    topbar.querySelector("button").addEventListener("click", () => help.showModal());
+    topbar.querySelector("button").addEventListener("click", () => {if(!help.open)help.showModal();});
+    help.addEventListener('click',event=>{if(event.target===help)help.close();});
     const publicTools = document.createElement("details");
     publicTools.className = "public-tools";
     const toolsToggle = document.createElement("summary");
@@ -162,7 +164,8 @@ class SgTable extends HTMLElement {
     bar.querySelector('[data-target-cancel]').addEventListener('click',()=>this.endPlayerTargetSelection());
     bar.querySelector('[data-target-none]').addEventListener('click',()=>{
       const state=this.playerTargetState;if(!state?.allowNoTarget)return;
-      state.noTarget=!state.noTarget;state.selected.clear();this.syncPlayerTargetPicker();
+      state.noTarget=true;state.selected.clear();this.syncPlayerTargetPicker();
+      this.commitPlayerTargetSelection();
     });
     bar.querySelector('[data-target-commit]').addEventListener('click',()=>this.commitPlayerTargetSelection());
     this.shadowRoot.addEventListener('click',event=>{
@@ -178,6 +181,20 @@ class SgTable extends HTMLElement {
       else state.selected.add(player.dataset.key);
       this.syncPlayerTargetPicker();
     },true);
+    this.shadowRoot.addEventListener('dblclick',event=>{
+      const state=this.playerTargetState;
+      const mobile=this.shadowRoot.querySelector('.table-container')?.classList.contains('mobile-layout-active');
+      if(!state||state.mode!=='use'||!state.single||mobile)return;
+      const path=event.composedPath();
+      if(path.includes(bar))return;
+      const player=path.find(node=>node?.tagName==='SG-PLAYER');
+      if(!player||!state.eligible.has(player.dataset.key))return;
+      event.preventDefault();event.stopImmediatePropagation();
+      state.noTarget=false;
+      state.selected=new Set([player.dataset.key]);
+      this.syncPlayerTargetPicker();
+      this.commitPlayerTargetSelection();
+    },true);
     this.shadowRoot.addEventListener('keydown',event=>{
       if(event.key==='Escape'&&this.playerTargetState){event.preventDefault();this.endPlayerTargetSelection();}
     });
@@ -186,6 +203,7 @@ class SgTable extends HTMLElement {
 
   beginPlayerTargetSelection(state) {
     this.ensurePlayerTargetPicker();
+    if(this.playerTargetState)this.endPlayerTargetSelection({preserveUse:true});
     this.playerTargetState={...state,eligible:new Set(state.eligible.map(player=>player.dataset.key)),selected:new Set(state.selected||[]),noTarget:false};
     this.classList.add('player-target-mode');this.playerTargetScrim.hidden=false;this.playerTargetBar.hidden=false;
     this.syncPlayerTargetPicker();
@@ -201,17 +219,23 @@ class SgTable extends HTMLElement {
     const none=this.playerTargetBar.querySelector('[data-target-none]');
     none.hidden=!state.allowNoTarget;none.textContent=state.noTarget?'✓ 无目标':state.noTargetLabel||'无目标';none.classList.toggle('is-selected',state.noTarget);
     this.playerTargetBar.querySelector('strong').textContent=state.title;
-    const summary=state.noTarget?'已选择无目标':state.selected.size?`已选择 ${state.selected.size} 位玩家`:state.summary;
+    const desktopSingleUse=state.mode==='use'&&state.single
+      && !this.shadowRoot.querySelector('.table-container')?.classList.contains('mobile-layout-active');
+    const summary=state.noTarget?'已选择无目标':state.selected.size
+      ? `已选择 ${state.selected.size} 位玩家${desktopSingleUse?' · 双击可直接确认':''}`
+      : `${state.summary}${desktopSingleUse?' 双击玩家可直接确认。':''}`;
     this.playerTargetBar.querySelector('span').textContent=summary;
     const confirm=this.playerTargetBar.querySelector('[data-target-commit]');confirm.textContent=state.confirmLabel||'确认';
     confirm.disabled=!state.valid||(!state.noTarget&&!state.selected.size);
   }
 
   endPlayerTargetSelection({preserveUse=false}={}) {
-    const state=this.playerTargetState;if(!state)return null;
+    const state=this.playerTargetState;
     this.playerTargetState=null;this.classList.remove('player-target-mode');
-    this.playerTargetScrim.hidden=true;this.playerTargetBar.hidden=true;
+    if(this.playerTargetScrim)this.playerTargetScrim.hidden=true;
+    if(this.playerTargetBar)this.playerTargetBar.hidden=true;
     this.playerDoms.forEach(player=>player.classList.remove('player-target-option','player-target-selected'));
+    if(!state)return null;
     if(state.mode==='use'&&!preserveUse){this.pendingUseCards=null;this.pendingUseCardName=null;this.pendingUseTargets=new Set();this.pendingUseNoTarget=false;}
     return state;
   }
@@ -248,6 +272,7 @@ class SgTable extends HTMLElement {
     this.useCardPicker.className='use-card-picker';
     this.useCardPicker.innerHTML='<header><h3>使用什么牌？</h3><button type="button" data-use-close aria-label="关闭">关闭 ×</button></header><p class="use-summary"></p><div class="use-card-options"></div>';
     this.useCardPicker.querySelector('[data-use-close]').addEventListener('click',()=>this.useCardPicker.close());
+    this.useCardPicker.addEventListener('click',event=>{if(event.target===this.useCardPicker&&!this.useCardBusy)this.useCardPicker.close();});
     this.useCardPicker.querySelector('.use-card-options').addEventListener('click',event=>{
       const cardButton=event.target.closest('[data-use-card]');
       if(cardButton){
@@ -271,7 +296,7 @@ class SgTable extends HTMLElement {
     this.ensureUseCardPicker();
     this.pendingUseCards=cards;
     this.renderUseCardChoices();
-    this.useCardPicker.showModal();
+    if(!this.useCardPicker.open)this.useCardPicker.showModal();
   }
 
   openUseSelectedPhysicalCard() {
@@ -309,7 +334,7 @@ class SgTable extends HTMLElement {
     const current=this.gameController.currentPlayer;
     const validDelayedSelection=!isDelayed||this.pendingUseCards?.length===1;
     const players=this.playerDoms
-      .filter(player=>(SELF_ONLY_TARGET_USE_CARDS.has(cardName)?player.dataset.key===current:(isDelayed||['桃','无懈可击'].includes(cardName)||player.dataset.key!==current))&&player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty');
+      .filter(player=>(SELF_ONLY_TARGET_USE_CARDS.has(cardName)?player.dataset.key===current:(isDelayed||SELF_ALLOWED_TARGET_USE_CARDS.has(cardName)||player.dataset.key!==current))&&player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty');
     const summary=!validDelayedSelection?'延迟锦囊每次只能选择一张牌。'
       :cardName==='闪电'?'已默认选择自己，可点击其他玩家改选。'
       :cardName.endsWith('杀')?'点击玩家卡选择目标，或选择无目标响应。'
@@ -392,8 +417,8 @@ class SgTable extends HTMLElement {
     });
 
     cardMenu.appendChild(useButton);
-    cardMenu.appendChild(convertButton);
     cardMenu.appendChild(equipButton);
+    cardMenu.appendChild(convertButton);
     cardMenu.appendChild(drawButton);
     cardMenu.appendChild(showButton);
     cardMenu.appendChild(moveButton);
@@ -485,8 +510,9 @@ class SgTable extends HTMLElement {
       && selected.every(card => card.dataset.path?.includes('/tableDecks/discard/cards/'));
     const hasOnlyOwnHandSelection = Boolean(currentPlayer) && selected.length > 0 && selected.every(card =>
       card.dataset.path?.includes(`/${currentPlayer}/hand/cards/`));
-    const canEquip = Boolean(currentPlayer) && selected.length === 1
-      && paiKu[selected[0].cardData?.id]?.category === 'equipment'
+    const isEquipmentSelection = selected.length === 1
+      && paiKu[selected[0].cardData?.id]?.category === 'equipment';
+    const canEquip = Boolean(currentPlayer) && isEquipmentSelection
       && !selected[0].dataset.path?.includes(`/${currentPlayer}/zhuang/cards/`);
     const remoteAreaPanelOpen = this.playerDoms.some(player =>
       !player.classList.contains('current-player')
@@ -503,6 +529,7 @@ class SgTable extends HTMLElement {
         const action = button.dataset.selectionAction;
         button.hidden = (isDiscardSelection && !['take', 'equip', 'cancel'].includes(action))
           || (['use','convert'].includes(action) && !isOwnSelection)
+          || (action === 'use' && isEquipmentSelection)
           || (action === 'equip' && !canEquip)
           || (action === 'take' && hasOnlyOwnHandSelection);
       });

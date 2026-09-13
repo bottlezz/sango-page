@@ -20,7 +20,7 @@ div[name="player-game-area"], .open-info { position: relative; width: 100%; heig
 .player-info { gap: 0; padding-right: 1.65rem; overflow: visible; border-bottom: 0; }
 .player-info::after { content: ""; position: absolute; right: 0; bottom: -0.5rem; left: -0.3rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(232,207,139,.34) 8%, rgba(232,207,139,.34) 92%, transparent); }
 .player-role, .player-role-marker { width: 1.5rem; max-width: 1.5rem; height: 1.4rem; padding: 0; border-radius: 50%; font-size: 0.82rem; line-height: 1; font-weight: 800; }
-:host(.current-player) .player-info::after { display: none; }
+:host(.current-player) .player-info::after { display: block; right: 0.25rem; left: 0.25rem; background: linear-gradient(90deg, transparent, rgba(232,207,139,.46) 10%, rgba(232,207,139,.46) 90%, transparent); }
 .player-role-marker { display: none; }
 .player-role.role-lord, .player-role.role-renegade, :host(.current-player) .player-role { display: grid; }
 .player-role.role-lord { color: #ffd7d0; border-color: #d96158; background: rgba(151, 43, 37, 0.58); }

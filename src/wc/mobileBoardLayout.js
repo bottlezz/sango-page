@@ -10,17 +10,20 @@ export function installMobileBoardLayout(table) {
   const playerPanel = document.createElement('section');
   playerPanel.className = 'mobile-player-panel';
   playerPanel.hidden = true;
-  playerPanel.innerHTML = `<header><strong>玩家操作</strong><button type="button" data-player-panel-close aria-label="关闭玩家操作">×</button></header><div class="mobile-player-hp"><button type="button" data-player-action="hp-minus" aria-label="扣血">−</button><span>体力 <b>0 / 0</b></span><button type="button" data-player-action="hp-plus" aria-label="加血">＋</button></div><div class="mobile-player-state-actions"><button type="button" data-player-debuff="0">翻面</button><button type="button" data-player-debuff="1">连环</button><button type="button" data-player-action="select-general">选将</button><button type="button" data-player-action="hp-limit">血量上限</button></div>`;
+  playerPanel.innerHTML = `<header><strong>玩家操作</strong><button type="button" data-player-panel-close aria-label="关闭玩家操作">×</button></header><div class="mobile-player-hp"><button type="button" data-player-action="hp-minus" aria-label="扣血">−</button><span>体力 <b>0 / 0</b></span><button type="button" data-player-action="hp-plus" aria-label="加血">＋</button></div><div class="mobile-player-state-actions"><button type="button" data-player-debuff="0">翻面</button><button type="button" data-player-debuff="1">连环</button><button type="button" data-player-action="select-general">选将</button><button type="button" data-player-action="hp-limit" aria-expanded="false">血量上限</button></div><section class="mobile-max-hp" hidden><p>选择体力上限</p><div>${Array.from({length:15},(_,index)=>`<button type="button" data-mobile-max-hp="${index+1}">${index+1}</button>`).join('')}</div></section>`;
   const localPlayer=()=>table.playerDoms.find(player=>player.classList.contains('current-player'));
   const syncPlayerPanel=()=>{
     const player=localPlayer();
     const hp=playerPanel.querySelector('.mobile-player-hp b');
     hp.textContent=player ? `${player.hpWc?.cur ?? 0} / ${player.hpWc?.max ?? 0}` : '0 / 0';
     playerPanel.querySelectorAll('[data-player-debuff]').forEach(button=>button.classList.toggle('active',player?.debuff?.[Number(button.dataset.playerDebuff)]==='1'));
+    playerPanel.querySelectorAll('[data-mobile-max-hp]').forEach(button=>button.classList.toggle('selected',Number(button.dataset.mobileMaxHp)===Number(player?.hpWc?.max)));
     actions.querySelector('[data-mobile-action="player"]').disabled=!player;
   };
   const closePlayerPanel=()=>{
     playerPanel.hidden=true;
+    playerPanel.querySelector('.mobile-max-hp').hidden=true;
+    playerPanel.querySelector('[data-player-action="hp-limit"]').setAttribute('aria-expanded','false');
     actions.querySelector('[data-mobile-action="player"]')?.setAttribute('aria-expanded','false');
   };
   playerPanel.addEventListener('click',event=>{
@@ -29,6 +32,21 @@ export function installMobileBoardLayout(table) {
     if(button.dataset.playerPanelClose!==undefined)return closePlayerPanel();
     const player=localPlayer();
     if(!player)return;
+    const maxHpPanel=playerPanel.querySelector('.mobile-max-hp');
+    if(button.dataset.mobileMaxHp){
+      maxHpPanel.hidden=true;
+      playerPanel.querySelector('[data-player-action="hp-limit"]').setAttribute('aria-expanded','false');
+      Promise.resolve(player.hpWc.setMax(Number(button.dataset.mobileMaxHp)))
+        .catch(error=>window.alert(error.message||'更新血量上限失败，请重试'));
+      return;
+    }
+    if(button.dataset.playerAction==='hp-limit'){
+      maxHpPanel.hidden=!maxHpPanel.hidden;
+      button.setAttribute('aria-expanded',String(!maxHpPanel.hidden));
+      return;
+    }
+    maxHpPanel.hidden=true;
+    playerPanel.querySelector('[data-player-action="hp-limit"]').setAttribute('aria-expanded','false');
     const selector=button.dataset.playerDebuff!==undefined
       ? `[data-debuff="${button.dataset.playerDebuff}"]`
       : `[data-action="${button.dataset.playerAction}"]`;
@@ -52,9 +70,12 @@ export function installMobileBoardLayout(table) {
     options.hidden = true;
     toggle.setAttribute('aria-expanded', 'false');
     if(button.dataset.mobileAction==='player'){
-      playerPanel.hidden=!playerPanel.hidden;
-      button.setAttribute('aria-expanded',String(!playerPanel.hidden));
-      if(!playerPanel.hidden)syncPlayerPanel();
+      if(!playerPanel.hidden)closePlayerPanel();
+      else{
+        playerPanel.hidden=false;
+        button.setAttribute('aria-expanded','true');
+        syncPlayerPanel();
+      }
       return;
     }
     closePlayerPanel();

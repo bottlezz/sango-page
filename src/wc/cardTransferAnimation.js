@@ -38,6 +38,48 @@ export function installCardTransferAnimation(table){
     return rect?.width&&rect?.height?candidate:player;
   }
 
+  function playerHighlightSurface(player){
+    if(!player?.isConnected)return null;
+    if(player.classList.contains('mobile-presentation')){
+      return player.shadowRoot?.querySelector('.mobile-player-summary')||null;
+    }
+    return player;
+  }
+
+  function highlightPlayer(player,type,duration){
+    const surface=playerHighlightSurface(player);
+    if(!surface?.isConnected)return;
+    const mobile=surface!==player;
+    const frames=type==='source'
+      ? mobile
+        ? [
+          {filter:'brightness(1)',borderColor:'rgba(162,186,143,.14)',boxShadow:'inset 0 0 0 0 rgba(240,204,115,0)'},
+          {filter:'brightness(1.12)',borderColor:'rgba(240,204,115,.9)',boxShadow:'inset 0 0 0 2px rgba(240,204,115,.82),inset 0 0 1.2rem rgba(226,184,75,.24)',offset:.1},
+          {filter:'brightness(1.08)',borderColor:'rgba(240,204,115,.72)',boxShadow:'inset 0 0 0 2px rgba(240,204,115,.68),inset 0 0 1rem rgba(226,184,75,.18)',offset:.82},
+          {filter:'brightness(1)',borderColor:'rgba(162,186,143,.14)',boxShadow:'inset 0 0 0 0 rgba(240,204,115,0)'},
+        ]
+        : [
+          {filter:'brightness(1)',boxShadow:'0 0 0 0 rgba(240,204,115,0)'},
+          {filter:'brightness(1.14)',boxShadow:'0 0 0 3px rgba(240,204,115,.82),0 0 1.8rem rgba(226,184,75,.58)',offset:.1},
+          {filter:'brightness(1.1)',boxShadow:'0 0 0 3px rgba(240,204,115,.72),0 0 1.45rem rgba(226,184,75,.42)',offset:.82},
+          {filter:'brightness(1)',boxShadow:'0 0 0 0 rgba(240,204,115,0)'},
+        ]
+      : mobile
+        ? [
+          {filter:'brightness(1)',borderColor:'rgba(162,186,143,.14)',boxShadow:'inset 0 0 0 0 rgba(132,199,170,0)'},
+          {filter:'brightness(1.08) saturate(1.04)',borderColor:'rgba(154,217,189,.86)',boxShadow:'inset 0 0 0 2px rgba(154,217,189,.75),inset 0 0 1.2rem rgba(101,184,149,.26)',offset:.1},
+          {filter:'brightness(1.05) saturate(1.03)',borderColor:'rgba(154,217,189,.68)',boxShadow:'inset 0 0 0 2px rgba(154,217,189,.58),inset 0 0 1rem rgba(101,184,149,.18)',offset:.82},
+          {filter:'brightness(1)',borderColor:'rgba(162,186,143,.14)',boxShadow:'inset 0 0 0 0 rgba(132,199,170,0)'},
+        ]
+        : [
+          {filter:'brightness(1)',boxShadow:'0 0 0 rgba(132,199,170,0)'},
+          {filter:'brightness(1.1) saturate(1.04)',boxShadow:'0 0 1.9rem .35rem rgba(132,199,170,.62)',offset:.1},
+          {filter:'brightness(1.07) saturate(1.03)',boxShadow:'0 0 1.55rem .2rem rgba(132,199,170,.44)',offset:.82},
+          {filter:'brightness(1)',boxShadow:'0 0 0 rgba(132,199,170,0)'},
+        ];
+    surface.animate(frames,{duration,easing:'ease-out'});
+  }
+
   function cardFace({suit,rank,name}){
     const tile=document.createElement('div');tile.className='card-reveal-tile';
     const index=document.createElement('span');index.className=`card-reveal-index ${suit}`;
@@ -76,22 +118,20 @@ export function installCardTransferAnimation(table){
         {transform:position(end.x,end.y,.7,0),opacity:0},
       ],{duration,delay:index*22,easing:'cubic-bezier(.2,.65,.3,1)',fill:'forwards'});
     }
-    window.setTimeout(()=>to.animate([
-      {filter:'brightness(1)'},{filter:'brightness(1.24)',offset:.3},{filter:'brightness(1)'},
-    ],{duration:220}),Math.max(0,duration-80));
     window.setTimeout(()=>group.remove(),trailDuration+20);
   }
 
   function playUse({source,useCardName,useTargetSeat,useTargetSeats=[],useCards=[]}){
     const host=revealHost(source);
     if(!host||!host.isConnected||!useCardName||!useCards.length)return;
+    const playerHost=areaHost(source);
     const rect=host.getBoundingClientRect();
     if(!rect.width||!rect.height)return;
     const group=document.createElement('div');group.className='card-use-group';
     group.style.left=`${Math.min(window.innerWidth-48,Math.max(48,rect.left+rect.width/2))}px`;
     const owner=String(source||'').split('/')[0],isLocalPlayer=owner===table.gameController.currentPlayer;
     const centerY=isLocalPlayer?(rect.top>=120?rect.top-55:rect.bottom+55):rect.top+rect.height/2;
-    group.style.top=`${Math.min(window.innerHeight-62,Math.max(62,centerY))}px`;
+    group.style.top=`${Math.min(window.innerHeight-78,Math.max(78,centerY))}px`;
     const list=document.createElement('div');list.className='card-reveal-list card-use-list';
     useCards.forEach(card=>list.append(cardFace(card)));
     const converted=useCards.some(card=>card.name!==useCardName);
@@ -108,10 +148,13 @@ export function installCardTransferAnimation(table){
       {opacity:0,transform:'translate(-50%,-68%) scale(.96)'},
     ],{duration,easing:'cubic-bezier(.18,.72,.25,1)',fill:'forwards'});
     host.animate([{filter:'brightness(1)'},{filter:'brightness(1.3)',offset:.35},{filter:'brightness(1)'}],{duration:360});
+    highlightPlayer(playerHost,'source',duration);
     const targets=useTargetSeats.length?useTargetSeats:(useTargetSeat?[useTargetSeat]:[]);
-    targets.forEach(targetSeat=>play({
-      source,target:`${targetSeat}/hand`,count:1,label:`使用 · ${useCardName}`,suppressCards:true,
-    }));
+    targets.forEach(targetSeat=>{
+      play({source,target:`${targetSeat}/hand`,count:1,label:`使用 · ${useCardName}`,suppressCards:true});
+      const targetHost=areaHost(`${targetSeat}/hand`);
+      highlightPlayer(targetHost,'target',duration);
+    });
     window.setTimeout(()=>group.remove(),duration+30);
   }
 

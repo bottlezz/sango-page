@@ -182,6 +182,7 @@
 :host(.table-area.discard-area) .card-area > sg-card + sg-card { margin-left: 0; }
 @media (max-width: 620px) {
   :host(.mobile-compact) .expand-area { display:none; }
+  :host(.mobile-compact.hand-area) .scroll-left { left:3px; }
   :host(.mobile-compact.mobile-inactive) { display:none !important; }
   :host(.mobile-compact.zhuang-area) .wrapper {
     border: 0;

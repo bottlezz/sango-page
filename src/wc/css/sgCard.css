@@ -675,7 +675,7 @@
 }
 
 /* Large public discard card: same two-column language as local narrow cards. */
-:host(.recent-public-card) { display:block; flex:0 0 4rem; width:4rem; height:5.25rem; }
+:host(.recent-public-card) { display:block; flex:0 0 3.55rem; width:3.55rem; height:4.4rem; }
 :host(.recent-public-card) .card-block,
 :host(.recent-public-card) .card-widget { display:block; width:100%; height:100%; }
 :host(.recent-public-card) .card-front {

@@ -5,8 +5,10 @@ module.exports = {
   devtool: "eval-source-map",
   devServer: {
     static: {
-      directory: path.resolve(__dirname),
-      publicPath: "/",
+      // Source files and the HTML template are already watched through
+      // webpack's dependency graph. Only general artwork is served directly.
+      directory: path.resolve(__dirname, "imgs"),
+      publicPath: "/imgs",
     },
     hot: true,
   },

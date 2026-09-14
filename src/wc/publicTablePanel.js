@@ -20,7 +20,7 @@ export function installPublicTablePanel(table,host,cardMenu){
       </div>
     </section>
     <section class="public-discard-panel">
-      <header><strong>弃牌区</strong><small>最近 ${RECENT_LIMIT} 张 · 最新 → 较早</small></header>
+      <header><strong>结算区</strong><small>本回合新增 · 最新 → 较早</small></header>
       <div class="public-discard-body"><div class="recent-discard-list"></div><aside class="discard-summary"><div class="discard-summary-main"><div class="discard-icon" aria-hidden="true">弃</div><div><b class="discard-count">0</b><small>张弃牌</small></div></div><button class="text-action" data-public-action="all-discard">查看全部 ↗</button></aside></div>
     </section>`;
   host.append(cardMenu);
@@ -30,7 +30,8 @@ export function installPublicTablePanel(table,host,cardMenu){
   host.append(discardDialog,sortDialog);
   const recentList=host.querySelector('.recent-discard-list'),drawSplit=host.querySelector('.public-draw-split');
   const drawToggle=host.querySelector('.draw-toggle'),drawOptions=host.querySelector('.draw-options');
-  let deckTop={},discard={},draft=null,busy=false,lastHint=null,lastHintNonce=null,hintInitialized=false,previousDiscardKeys=null;
+  let deckTop={},discard={},draft=null,busy=false,lastHint=null,lastHintNonce=null,hintInitialized=false,previousDiscardKeys=null,settlementCollection=Promise.resolve();
+  const settlementKeys=new Set(),mobileQuery=window.matchMedia('(max-width:620px)');
   const sourceByKey=new Map(),pendingDiscardKeys=new Set();
 
   const pathFor=(area,key)=>`${prefix}/tableDecks/${area}/cards/${key}`;
@@ -67,27 +68,37 @@ export function installPublicTablePanel(table,host,cardMenu){
     const previous=captureCardPositions(recentList.querySelectorAll('.recent-discard-card'),keyFor);
     const existing=new Map([...recentList.querySelectorAll('.recent-discard-card')].map(node=>[keyFor(node),node]));
     const entries=recentEntries(discard);
+    const displayedEntries=mobileQuery.matches
+      ? entries
+      : entries.filter(item=>settlementKeys.has(item.key));
+    const header=host.querySelector('.public-discard-panel>header');
+    header.querySelector('strong').textContent=mobileQuery.matches?'弃牌区':'结算区';
+    header.querySelector('small').textContent=mobileQuery.matches
+      ? `最近 ${RECENT_LIMIT} 张 · 最新 → 较早`
+      : '本回合新增 · 最新 → 较早';
     recentList.querySelector('.public-empty')?.remove();
-    const visible=new Set(entries.slice(0,RECENT_LIMIT).map(item=>item.key));
+    const visible=new Set(displayedEntries.slice(0,RECENT_LIMIT).map(item=>item.key));
     existing.forEach((node,key)=>{if(!visible.has(key))node.remove();});
-    entries.slice(0,RECENT_LIMIT).forEach(({key,value})=>{
+    displayedEntries.slice(0,RECENT_LIMIT).forEach(({key,value},index)=>{
       if(existing.has(key)){
         const item=existing.get(key);item.querySelector('button').disabled=busy||!controller.currentPlayer;
         const action=sourceByKey.get(key);
         let badge=item.querySelector('.discard-action-indicator');
         if(action){if(!badge){badge=document.createElement('small');badge.className='discard-action-indicator';item.append(badge);}badge.textContent=action;}else badge?.remove();
-        item.style.order=entries.findIndex(entry=>entry.key===key);return;
+        item.style.order=index;return;
       }
       const item=document.createElement('div');item.className='recent-discard-card';
       item.dataset.cardKey=key;
-      item.style.order=entries.findIndex(entry=>entry.key===key);
+      item.style.order=index;
       item.append(cardFor(pathFor('discard',key),value,'discard-area-card recent-public-card'));
       const take=document.createElement('button');take.className='text-action';take.textContent='收入手牌';take.dataset.takeDiscard=pathFor('discard',key);take.disabled=busy||!controller.currentPlayer;
       const action=sourceByKey.get(key);
       if(action){const source=document.createElement('small');source.className='discard-action-indicator';source.textContent=action;item.append(source);}
       item.append(take);recentList.append(item);
     });
-    if(!entries.length){const empty=document.createElement('div');empty.className='public-empty';empty.innerHTML='<b>暂无弃牌</b><small>打出、弃置或展示／判定的牌会显示在这里</small>';recentList.append(empty);}
+    if(!displayedEntries.length){const empty=document.createElement('div');empty.className='public-empty';empty.innerHTML=mobileQuery.matches
+      ? '<b>暂无弃牌</b><small>打出、弃置或展示／判定的牌会显示在这里</small>'
+      : '<b>结算区为空</b><small>本回合新增的结算牌会显示在这里</small>';recentList.append(empty);}
     host.querySelector('.discard-count').textContent=entries.length;
     if(animate)animateCardLayoutChanges(recentList.querySelectorAll('.recent-discard-card'),previous,keyFor,{newFrom});
     if(discardDialog.open)renderDiscardDialog(entries);
@@ -102,6 +113,35 @@ export function installPublicTablePanel(table,host,cardMenu){
     });
     if(!entries.length)grid.innerHTML='<p>暂无弃牌</p>';
     discardDialog.querySelector('h2').textContent=`弃牌堆 · 全部 ${entries.length} 张`;
+  }
+  async function collectSettlement(){
+    const keysToClear=[...settlementKeys];
+    if(!keysToClear.length)return;
+    if(mobileQuery.matches||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      keysToClear.forEach(key=>settlementKeys.delete(key));renderDiscard();return;
+    }
+    const target=host.querySelector('.discard-icon')?.getBoundingClientRect();
+    if(!target?.width||!target?.height){keysToClear.forEach(key=>settlementKeys.delete(key));renderDiscard();return;}
+    const flights=[];
+    recentList.querySelectorAll('.recent-discard-card').forEach((item,index)=>{
+      const key=item.dataset.cardKey,value=discard[key];
+      if(!keysToClear.includes(key)||!value)return;
+      const source=item.querySelector('sg-card')?.getBoundingClientRect();
+      if(!source?.width||!source?.height)return;
+      const card=cardFor(pathFor('discard',key),value,'discard-area-card recent-public-card settlement-collect-card');
+      card.style.left=`${source.left}px`;card.style.top=`${source.top}px`;card.style.width=`${source.width}px`;card.style.height=`${source.height}px`;
+      table.shadowRoot.append(card);item.style.visibility='hidden';
+      const dx=target.left+target.width/2-(source.left+source.width/2),dy=target.top+target.height/2-(source.top+source.height/2);
+      const animation=card.animate([
+        {transform:'translate(0,0) scale(1)',opacity:1},
+        {transform:`translate(${dx*.16}px,${dy*.08-10}px) scale(1.03)`,opacity:1,offset:.22},
+        {transform:`translate(${dx}px,${dy}px) scale(.42)`,opacity:.15},
+      ],{duration:560,delay:index*32,easing:'cubic-bezier(.35,.05,.5,1)',fill:'forwards'});
+      flights.push(animation.finished.catch(()=>{}).then(()=>card.remove()));
+    });
+    await Promise.all(flights);
+    recentList.querySelectorAll('.recent-discard-card').forEach(item=>item.style.visibility='');
+    keysToClear.forEach(key=>settlementKeys.delete(key));renderDiscard();
   }
   function renderDeck(){
     const count=deckEntries().length,empty=count===0;
@@ -125,6 +165,7 @@ export function installPublicTablePanel(table,host,cardMenu){
     shuffle:()=>run(()=>controller.resetPai()),
     openDeck:openSort,
     openDiscard:()=>{renderDiscardDialog();discardDialog.showModal();},
+    endTurn:()=>controller.endTurn(),
   };
   function sortLane(key,title){
     const section=document.createElement('section');section.className=`sort-lane sort-${key}`;section.innerHTML=`<h3>${title}</h3>`;
@@ -183,6 +224,8 @@ export function installPublicTablePanel(table,host,cardMenu){
   });
   sortDialog.addEventListener('cancel',()=>{draft=null;});
   const closeDraw=event=>{if(!event.composedPath().includes(drawSplit))setDrawOpen(false);};document.addEventListener('click',closeDraw);
+  const handleLayoutChange=()=>renderDiscard();mobileQuery.addEventListener('change',handleLayoutChange);
+  const handleTurnEnd=()=>{settlementCollection=settlementCollection.then(()=>collectSettlement());};table.addEventListener('turn-ended',handleTurnEnd);
   const refreshPlayer=()=>{renderDeck();renderDiscard();};table.addEventListener('player-seat-changed',refreshPlayer);
   const subscriptions=[
     onValue(ref(db,`${prefix}/tableDecks/pai/cards`),snapshot=>{deckTop=snapshot.val()||{};renderDeck();}),
@@ -190,11 +233,12 @@ export function installPublicTablePanel(table,host,cardMenu){
     onValue(ref(db,`${prefix}/tableDecks/discard/cards`),snapshot=>{
       const next=snapshot.val()||{},keys=new Set(Object.keys(next)),priorKeys=previousDiscardKeys;
       const changed=previousDiscardKeys!==null&&(keys.size!==previousDiscardKeys.size||[...keys].some(key=>!previousDiscardKeys.has(key)));
-      if(previousDiscardKeys!==null)keys.forEach(key=>{if(!previousDiscardKeys.has(key))pendingDiscardKeys.add(key);});
+      if(previousDiscardKeys!==null)keys.forEach(key=>{if(!previousDiscardKeys.has(key)){pendingDiscardKeys.add(key);settlementKeys.add(key);}});
+      [...settlementKeys].forEach(key=>{if(!keys.has(key))settlementKeys.delete(key);});
       previousDiscardKeys=keys;discard=next;[...sourceByKey.keys()].forEach(key=>{if(!keys.has(key))sourceByKey.delete(key);});
       renderDiscard(changed,node=>priorKeys?.has(node.dataset.cardKey)?'right':'left');classifyPending();
     }),
   ];
   renderDeck();renderDiscard();
-  return()=>{subscriptions.forEach(unsubscribe=>unsubscribe());document.removeEventListener('click',closeDraw);table.removeEventListener('player-seat-changed',refreshPlayer);discardDialog.remove();sortDialog.remove();table.publicPanelApi=null;};
+  return()=>{subscriptions.forEach(unsubscribe=>unsubscribe());document.removeEventListener('click',closeDraw);mobileQuery.removeEventListener('change',handleLayoutChange);table.removeEventListener('turn-ended',handleTurnEnd);table.removeEventListener('player-seat-changed',refreshPlayer);discardDialog.remove();sortDialog.remove();table.publicPanelApi=null;};
 }

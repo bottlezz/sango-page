@@ -9,7 +9,7 @@ export const ACTION_HINT_OPCODE = Object.freeze({
   PLAY:'p', DISCARD:'e', DRAW:'w', REVEAL_JUDGMENT:'v',
   TAKE_DISCARD:'k', REARRANGE_DECK:'u', REVEAL_CARDS:'l', VIEW_CARDS:'q',
   LOCK_GENERALS:'g', REVEAL_GENERAL:'h', PLACE_JUDGMENT:'a', USE_CARD:'f',
-  EQUIP:'b',
+  EQUIP:'b', END_TURN:'n',
 });
 
 export const USE_CARD_NAMES = Object.freeze([
@@ -173,6 +173,12 @@ export function createCardReveals(before,after) {
   return [...groups.values()];
 }
 
+export function createTurnEndNotice(before,after) {
+  const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
+  if(hint?.opcode!==ACTION_HINT_OPCODE.END_TURN||!hint.actorSeat)return null;
+  return {actorSeat:hint.actorSeat,actor:playerName(after,hint.actorSeat)};
+}
+
 function hintedChanges(hint,before,after,cardCatalog={},localSeat=null){
   const moved=moves(before,after);
   switch(hint.opcode){
@@ -264,6 +270,7 @@ function hintedChanges(hint,before,after,cardCatalog={},localSeat=null){
     }
     case ACTION_HINT_OPCODE.LOCK_GENERALS:return ['锁定了武将'];
     case ACTION_HINT_OPCODE.REVEAL_GENERAL:return [`亮将 ${hint.args[0]||'未知武将'}`];
+    case ACTION_HINT_OPCODE.END_TURN:return ['结束了当前回合'];
     default:return [];
   }
 }

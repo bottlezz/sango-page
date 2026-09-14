@@ -62,6 +62,7 @@ class SgJiangArea extends SgArea {
       this.updateSelectionAvailability();
 
       this.lockJiangArea();
+      this.dispatchEvent(new CustomEvent('cards-updated', {bubbles: true, composed: true}));
     }));
     this.childSubs.push(onChildRemoved(child(deckRef, "/cards"), (snapshot) => {
       const key = snapshot.key;
@@ -77,12 +78,14 @@ class SgJiangArea extends SgArea {
       this.cardArea.removeChild(cardWc);
       delete this.cards[key];
       this.lockJiangArea();
+      this.dispatchEvent(new CustomEvent('cards-updated', {bubbles: true, composed: true}));
     }));
     this.childSubs.push(onChildChanged(child(deckRef, "/cards"), (snapshot) => {
       const cardWc = this.cards[snapshot.key];
       if (cardWc) {
         cardWc.cardData = snapshot.val();
         cardWc.renderCard();
+        this.dispatchEvent(new CustomEvent('cards-updated', {bubbles: true, composed: true}));
       }
     }));
 

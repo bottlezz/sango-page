@@ -123,6 +123,11 @@ class gameController {
     return {[`game/${this.gameId}/runtime/a`]:encodeActionHint(opcode,this.currentPlayer,args)};
   }
 
+  endTurn() {
+    if (!this.currentPlayer) throw Error('请先入座');
+    return update(ref(this.db), this.actionHintPatch(ACTION_HINT_OPCODE.END_TURN));
+  }
+
   moveActionOpcode(paths, targetPath) {
     if (!this.currentPlayer) return null;
     const playerArea = path => path.match(/^game\/[^/]+\/(p\d+)\/([^/]+)\/cards(?:\/[^/]+)?$/);

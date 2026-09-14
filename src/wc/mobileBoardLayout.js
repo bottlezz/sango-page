@@ -14,6 +14,17 @@ export function installMobileBoardLayout(table) {
   const localPlayer=()=>table.playerDoms.find(player=>player.classList.contains('current-player'));
   const syncPlayerPanel=()=>{
     const player=localPlayer();
+    const hasGenerals=Boolean(player?.hasAssignedGenerals?.());
+    const selectionOnly=Boolean(player && !hasGenerals);
+    playerPanel.classList.toggle('general-selection-only',selectionOnly);
+    playerPanel.querySelector('.mobile-player-hp').hidden=selectionOnly;
+    playerPanel.querySelectorAll('[data-player-debuff]').forEach(button=>button.hidden=selectionOnly);
+    playerPanel.querySelector('[data-player-action="select-general"]').hidden=!selectionOnly;
+    playerPanel.querySelector('[data-player-action="hp-limit"]').hidden=selectionOnly;
+    if(selectionOnly){
+      playerPanel.querySelector('.mobile-max-hp').hidden=true;
+      playerPanel.querySelector('[data-player-action="hp-limit"]').setAttribute('aria-expanded','false');
+    }
     const hp=playerPanel.querySelector('.mobile-player-hp b');
     hp.textContent=player ? `${player.hpWc?.cur ?? 0} / ${player.hpWc?.max ?? 0}` : '0 / 0';
     playerPanel.querySelectorAll('[data-player-debuff]').forEach(button=>button.classList.toggle('active',player?.debuff?.[Number(button.dataset.playerDebuff)]==='1'));

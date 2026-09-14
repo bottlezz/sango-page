@@ -1,5 +1,5 @@
 import {ref, onValue} from 'firebase/database';
-import {createCardReveals, createCardTransfers, createLocalLogEntry, mergeLocalLogEntries} from '../localActionLog.mjs';
+import {createCardReveals, createCardTransfers, createLocalLogEntry, createTurnEndNotice, mergeLocalLogEntries} from '../localActionLog.mjs';
 import paiKu from '../data/pai.json';
 
 const LOCAL_LOG_LIMIT = 500;
@@ -42,9 +42,11 @@ export function installActionLog(table) {
     if(previousRoom===null){previousRoom=room;return;}
     const transfers=createCardTransfers(previousRoom,room,paiKu);
     const reveals=createCardReveals(previousRoom,room);
+    const turnEnd=createTurnEndNotice(previousRoom,room);
     const entry=createLocalLogEntry(previousRoom,room,Date.now(),paiKu,controller.currentPlayer);previousRoom=room;
     if(transfers.length)table.dispatchEvent(new CustomEvent('card-transfers',{detail:{transfers}}));
     if(reveals.length)table.dispatchEvent(new CustomEvent('card-reveals',{detail:{reveals}}));
+    if(turnEnd)table.dispatchEvent(new CustomEvent('turn-ended',{detail:turnEnd}));
     if(!entry)return;
     const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 30;
     const mergedEntry=mergeLocalLogEntries(latestEntry,entry);

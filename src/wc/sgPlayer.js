@@ -61,6 +61,7 @@ ${mobilePlayerCss}
     <button type="button" data-debuff="1">连环</button>
     <button type="button" data-action="select-general">选将</button>
     <button type="button" data-action="hp-limit">血量上限</button>
+    <button type="button" class="end-turn" data-action="end-turn">结束回合</button>
   </div>
   <div name="drag-on-view">
     <div class="hand-drop">手牌</div>
@@ -283,6 +284,20 @@ class SgPlayer extends HTMLElement {
       .querySelector('[data-action="hp-limit"]')
       .addEventListener("click", () => this.openMaxHpPicker());
     this.shadowRoot
+      .querySelector('[data-action="end-turn"]')
+      .addEventListener("click", async event => {
+        if (!this.classList.contains("current-player")) return;
+        const button = event.currentTarget;
+        button.disabled = true;
+        try {
+          await this.gameController.rootComponent?.publicPanelApi?.endTurn?.();
+        } catch (error) {
+          window.alert(error.message || '结束回合失败，请重试');
+        } finally {
+          button.disabled = false;
+        }
+      });
+    this.shadowRoot
       .querySelector('[data-action="hp-plus"]')
       .addEventListener("click", () => {
         if (!this.classList.contains("current-player") || !this.hpWc) return;
@@ -344,6 +359,16 @@ class SgPlayer extends HTMLElement {
   }
 
   renderJiang() {}
+
+  hasAssignedGenerals() {
+    return [this.jiang1Area, this.jiang2Area]
+      .some(area => Object.keys(area?.cards || {}).length > 0);
+  }
+
+  syncGeneralToolState() {
+    this.classList.toggle("has-assigned-generals", this.hasAssignedGenerals());
+    this.updateMobileView?.();
+  }
 
   openGeneralSelection() {
     if (!this.classList.contains("current-player")) return;
@@ -509,11 +534,12 @@ class SgPlayer extends HTMLElement {
     this.panArea.init(child(playerRef, `/pan`), this.gameController);
     this.zhuangArea.addEventListener('cards-updated', () => this.updateMobileView?.());
     this.panArea.addEventListener('cards-updated', () => this.updateMobileView?.());
-    this.jiang1Area.addEventListener('cards-updated', () => this.updateMobileView?.());
-    this.jiang2Area.addEventListener('cards-updated', () => this.updateMobileView?.());
+    this.jiang1Area.addEventListener('cards-updated', () => this.syncGeneralToolState());
+    this.jiang2Area.addEventListener('cards-updated', () => this.syncGeneralToolState());
     this.other1Area.init(child(playerRef, `/other1`), this.gameController, {subscribe:isLocalPlayer});
     this.other2Area.init(child(playerRef, `/other2`), this.gameController, {subscribe:isLocalPlayer});
     this.jiang2Area.init(child(playerRef, `/jiang2`), this.gameController);
+    this.syncGeneralToolState();
 
     subscribe(child(playerRef, `/jiangLocked`), (snapshot) => {
       const locked = snapshot.exists() && snapshot.val() === true;
@@ -537,6 +563,7 @@ class SgPlayer extends HTMLElement {
     Object.values(inspectedArea.cards || {})
       .filter(card => this.gameController.selectedCards.includes(card))
       .forEach(card => card.unselectCard());
+    inspectedArea.cardArea.scrollLeft = 0;
     if (this.inspectedAreaRestore) {
       const { parent, nextSibling, wasHidden } = this.inspectedAreaRestore;
       parent.insertBefore(inspectedArea, nextSibling?.parentNode === parent ? nextSibling : null);
@@ -559,6 +586,7 @@ class SgPlayer extends HTMLElement {
     if (this.inspectedArea === area) return;
     this.inspectedAreaWasSubscribed = Boolean(area.unSub);
     area.subscribeCards();
+    area.enableOverflowControls();
     this.inspectedArea = area;
     area.classList.add('inspection-panel-area');
     panel.setAttribute("popover", "auto");
@@ -586,6 +614,7 @@ class SgPlayer extends HTMLElement {
     this.updateInspectionCardTiles();
     this.updateAreaActions();
     if (!panel.matches(':popover-open')) panel.showPopover();
+    requestAnimationFrame(() => area.updateOverflow?.());
     this.gameController.rootComponent?.syncSelectionMenus?.();
   }
 

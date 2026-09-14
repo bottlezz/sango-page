@@ -11,6 +11,15 @@
 .area-label { font-weight: 800; }.expand-label { color: #9fb6aa; font-size: .6rem; }
 .area-scroll { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 23px; height: 32px; padding: 0; font: 22px/1 Georgia, serif; box-shadow: 0 2px 8px #0006; }
 .scroll-left { left: 3.15rem; }.scroll-right { right: 3px; }
+:host(.inspection-panel-area) .expand-area { display: none; }
+:host(.inspection-panel-area) .scroll-left { left: 3px; }
+:host(.overflow-controls:not(.inspection-panel-area):not(.current-player)) .expand-area,
+:host(.overflow-controls:not(.inspection-panel-area):not(.current-player)) .area-scroll { display: none; }
+:host(.overflow-controls:not(.inspection-panel-area):not(.current-player)) .card-area > sg-card {
+  flex: 0 1 auto;
+  width: 100%;
+  min-width: 0;
+}
 .area-scroll[hidden] { display: none; }.area-scroll:disabled { opacity: .35; cursor: default; }
 .expand-area:focus-visible, .area-scroll:focus-visible, .expanded-heading button:focus-visible { outline: 2px solid #e2b84b; outline-offset: -2px; }
 :host(.overflow-controls) .wrapper:popover-open { position: fixed; inset: 0; margin: auto; width: min(760px, calc(100vw - 32px)); height: max-content; max-height: 85vh; padding: 16px; border: 1px solid #c7a75a; border-radius: 12px; color: #f4ead2; background: #0b3027; box-shadow: 0 16px 64px #0009; }

@@ -103,6 +103,11 @@ div[name="drag-on-view"].drag-over div { display: grid; place-items: center; bor
 .pai-info:popover-open button:disabled{opacity:.38;cursor:default}
 .pai-info:popover-open > sg-area { display: block; flex: none; width: 100%; height: 8rem; }
 .pai-info:popover-open > sg-area::part(card-area) { height: 100%; padding: 0.85rem 0.4rem 0.4rem; align-items: stretch; }
+@media (min-width: 621px) {
+  .pai-info:popover-open { padding: 1.05rem 1.15rem 1.15rem; }
+  .pai-info:popover-open > sg-area { height: 8.4rem; }
+  .pai-info:popover-open > sg-area::part(card-area) { box-sizing: border-box; align-items: center; gap: 0.5rem; padding: 0.75rem 2.15rem; }
+}
 .pai-info:popover-open > sg-area:not(.has-cards)::after { content: "暂无卡牌"; position: absolute; inset: 0; display: grid; place-items: center; color: #aebeb6; pointer-events: none; }
 .pai-info:popover-open > sg-area { position: relative; }
 .pai-info:popover-open .area-panel-actions button { flex: none; min-width: 3.4rem; min-height: 1.9rem; height: 1.9rem; padding: 0 .62rem; border: 1px solid rgba(232,207,139,.24); border-radius: .48rem; color: #f4ead2; background: rgba(255,255,255,.06); font-size: .68rem; white-space: nowrap; }
@@ -110,8 +115,11 @@ div[name="drag-on-view"].drag-over div { display: grid; place-items: center; bor
 .pai-info:popover-open .area-panel-actions button:last-child { color: #9fb6aa; border-color: transparent; background: transparent; }
 :host(:not(.current-player)) .zhuang-area, :host(:not(.current-player)) .pan-area { cursor: pointer; }
 :host(.current-player) .player-toolbar { position: absolute; top: 0.55rem; bottom: 0.55rem; left: -4.6rem; z-index: 15; display: flex; flex-direction: column; gap: 0.25rem; width: 4rem; padding: 0.38rem; border: 1px solid rgba(232, 207, 139, 0.27); border-radius: 0.7rem; background: linear-gradient(180deg, rgba(12, 50, 42, 0.98), rgba(5, 28, 24, 0.98)); box-shadow: 0 0.9rem 2rem rgba(0, 0, 0, 0.3); }
+:host(.current-player:not(.has-assigned-generals)) .player-toolbar > :not([data-action="select-general"]),
+:host(.current-player.has-assigned-generals) .player-toolbar > [data-action="select-general"] { display: none; }
 .player-toolbar button { display: grid; place-items: center; width: 100%; height: 1.75rem; padding: 0; border: 1px solid rgba(232, 207, 139, 0.32); border-radius: 0.42rem; color: #e8eee9; background: rgba(255, 255, 255, 0.065); font-size: 0.68rem; font-weight: 800; cursor: pointer; }
 .player-toolbar button:hover, .player-toolbar button.active { color: #192019; border-color: #e2b84b; background: #e2b84b; }
+.player-toolbar .end-turn { margin-top: auto; color: #e7cb84; border-color: rgba(226, 184, 75, 0.42); background: rgba(226, 184, 75, 0.08); }
 .player-toolbar .tool-separator { width: 100%; height: 1px; margin: 0.06rem 0; background: linear-gradient(90deg, transparent, rgba(232, 207, 139, 0.55), transparent); }
 .hp-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
 .hp-controls svg { display: block; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }

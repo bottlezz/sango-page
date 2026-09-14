@@ -201,9 +201,26 @@ export function installCardTransferAnimation(table){
     play(transfer);
   }
 
+  function playTurnEnd({actor}={}){
+    if(!actor)return;
+    const notice=document.createElement('div');notice.className='turn-end-notice';
+    notice.textContent=`${actor} 结束了当前回合`;
+    layer.append(notice);
+    const duration=reduced.matches?650:1800;
+    notice.animate([
+      {opacity:0,transform:'translate(-50%,calc(-50% + 10px)) scale(.96)'},
+      {opacity:1,transform:'translate(-50%,-50%) scale(1)',offset:.14},
+      {opacity:1,transform:'translate(-50%,-50%) scale(1)',offset:.72},
+      {opacity:0,transform:'translate(-50%,calc(-50% - 8px)) scale(.98)'},
+    ],{duration,easing:'cubic-bezier(.2,.7,.25,1)',fill:'forwards'});
+    window.setTimeout(()=>notice.remove(),duration+30);
+  }
+
   const onTransfers=event=>requestAnimationFrame(()=>event.detail?.transfers?.forEach(playTransfer));
   const onReveals=event=>requestAnimationFrame(()=>event.detail?.reveals?.forEach(playReveal));
+  const onTurnEnd=event=>requestAnimationFrame(()=>playTurnEnd(event.detail));
   table.addEventListener('card-transfers',onTransfers);
   table.addEventListener('card-reveals',onReveals);
-  return()=>{table.removeEventListener('card-transfers',onTransfers);table.removeEventListener('card-reveals',onReveals);layer.remove();};
+  table.addEventListener('turn-ended',onTurnEnd);
+  return()=>{table.removeEventListener('card-transfers',onTransfers);table.removeEventListener('card-reveals',onReveals);table.removeEventListener('turn-ended',onTurnEnd);layer.remove();};
 }

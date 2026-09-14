@@ -203,7 +203,8 @@ class SgTable extends HTMLElement {
     if(this.playerTargetBar)return;
     const scrim=document.createElement('div');scrim.className='player-target-scrim';scrim.hidden=true;
     const bar=document.createElement('div');bar.className='player-target-bar';bar.hidden=true;
-    bar.innerHTML='<div><strong></strong><span></span></div><button type="button" data-target-none hidden></button><button type="button" data-target-cancel>取消</button><button type="button" class="primary" data-target-commit disabled>确认</button>';
+    bar.innerHTML='<div class="player-target-controls"><div class="player-target-copy"><strong data-target-title></strong><span data-target-summary></span></div><button type="button" data-target-none hidden></button><button type="button" data-target-cancel>取消</button><button type="button" class="primary" data-target-commit disabled>确认</button></div><div class="player-target-list" aria-label="可选目标玩家"></div>';
+    const playerList=bar.querySelector('.player-target-list');
     bar.querySelector('[data-target-cancel]').addEventListener('click',()=>this.endPlayerTargetSelection());
     bar.querySelector('[data-target-none]').addEventListener('click',()=>{
       const state=this.playerTargetState;if(!state?.allowNoTarget)return;
@@ -211,22 +212,28 @@ class SgTable extends HTMLElement {
       this.commitPlayerTargetSelection();
     });
     bar.querySelector('[data-target-commit]').addEventListener('click',()=>this.commitPlayerTargetSelection());
+    playerList.addEventListener('click',event=>{
+      const button=event.target.closest('[data-target-player]');
+      if(button)this.selectPlayerTarget(button.dataset.targetPlayer);
+    });
+    playerList.addEventListener('dblclick',event=>{
+      const button=event.target.closest('[data-target-player]');
+      const state=this.getActivePlayerTargetState();
+      if(!button||!state||state.mode!=='use'||!state.single)return;
+      event.preventDefault();
+      this.selectPlayerTarget(button.dataset.targetPlayer,{commit:true});
+    });
     this.shadowRoot.addEventListener('click',event=>{
-      const state=this.playerTargetState;if(!state)return;
+      const state=this.getActivePlayerTargetState();if(!state)return;
       const path=event.composedPath();
       if(path.includes(bar))return;
       const player=path.find(node=>node?.tagName==='SG-PLAYER');
       event.preventDefault();event.stopImmediatePropagation();
       if(!player||!state.eligible.has(player.dataset.key))return;
-      state.noTarget=false;
-      if(state.single)state.selected=new Set([player.dataset.key]);
-      else if(state.selected.has(player.dataset.key))state.selected.delete(player.dataset.key);
-      else state.selected.add(player.dataset.key);
-      this.syncPlayerTargetPicker();
-      if(state.autoCommitOnSelect)this.commitPlayerTargetSelection();
+      this.selectPlayerTarget(player.dataset.key);
     },true);
     this.shadowRoot.addEventListener('dblclick',event=>{
-      const state=this.playerTargetState;
+      const state=this.getActivePlayerTargetState();
       const mobile=this.shadowRoot.querySelector('.table-container')?.classList.contains('mobile-layout-active');
       if(!state||state.mode!=='use'||!state.single||mobile)return;
       const path=event.composedPath();
@@ -234,15 +241,53 @@ class SgTable extends HTMLElement {
       const player=path.find(node=>node?.tagName==='SG-PLAYER');
       if(!player||!state.eligible.has(player.dataset.key))return;
       event.preventDefault();event.stopImmediatePropagation();
-      state.noTarget=false;
-      state.selected=new Set([player.dataset.key]);
-      this.syncPlayerTargetPicker();
-      this.commitPlayerTargetSelection();
+      this.selectPlayerTarget(player.dataset.key,{commit:true});
     },true);
     this.shadowRoot.addEventListener('keydown',event=>{
       if(event.key==='Escape'&&this.playerTargetState){event.preventDefault();this.endPlayerTargetSelection();}
     });
     this.playerTargetScrim=scrim;this.playerTargetBar=bar;this.shadowRoot.append(scrim,bar);
+  }
+
+  getActivePlayerTargetState() {
+    const state=this.playerTargetState;
+    if(!state)return null;
+    const active=this.classList.contains('player-target-mode')
+      && this.playerTargetBar?.isConnected && !this.playerTargetBar.hidden
+      && this.playerTargetBar.getClientRects().length > 0
+      && this.playerTargetScrim?.isConnected && !this.playerTargetScrim.hidden
+      && this.playerTargetScrim.getClientRects().length > 0;
+    if(active)return state;
+
+    // The click listener above runs in the capture phase and intentionally
+    // owns player-card clicks while a target picker is visible.  If a render
+    // or interrupted dialog transition leaves only the JS state behind, that
+    // stale state must not make every control inside sg-player unclickable.
+    this.endPlayerTargetSelection();
+    return null;
+  }
+
+  selectPlayerTarget(playerKey,{commit=false}={}) {
+    const state=this.getActivePlayerTargetState();
+    if(!state?.eligible.has(playerKey))return;
+    state.noTarget=false;
+    if(state.single)state.selected=new Set([playerKey]);
+    else if(state.selected.has(playerKey))state.selected.delete(playerKey);
+    else state.selected.add(playerKey);
+    this.syncPlayerTargetPicker();
+    if(commit||state.autoCommitOnSelect)this.commitPlayerTargetSelection();
+  }
+
+  getOrderedTargetPlayers(state) {
+    const currentNumber=Number(String(this.gameController.currentPlayer||'').replace(/^p/,''))||1;
+    return this.playerDoms
+      .filter(player=>player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty')
+      .sort((left,right)=>{
+        const leftNumber=Number(left.dataset.key.replace(/^p/,''));
+        const rightNumber=Number(right.dataset.key.replace(/^p/,''));
+        return (leftNumber-currentNumber+this.playerCount)%this.playerCount
+          - (rightNumber-currentNumber+this.playerCount)%this.playerCount;
+      });
   }
 
   beginPlayerTargetSelection(state) {
@@ -262,13 +307,24 @@ class SgTable extends HTMLElement {
     });
     const none=this.playerTargetBar.querySelector('[data-target-none]');
     none.hidden=!state.allowNoTarget;none.textContent=state.noTarget?'✓ 无目标':state.noTargetLabel||'无目标';none.classList.toggle('is-selected',state.noTarget);
-    this.playerTargetBar.querySelector('strong').textContent=state.title;
+    this.playerTargetBar.querySelector('[data-target-title]').textContent=state.title;
     const desktopSingleUse=state.mode==='use'&&state.single
       && !this.shadowRoot.querySelector('.table-container')?.classList.contains('mobile-layout-active');
     const summary=state.noTarget?'已选择无目标':state.selected.size
       ? `已选择 ${state.selected.size} 位玩家${desktopSingleUse?' · 双击可直接确认':''}`
       : `${state.summary}${desktopSingleUse?' 双击玩家可直接确认。':''}`;
-    this.playerTargetBar.querySelector('span').textContent=summary;
+    this.playerTargetBar.querySelector('[data-target-summary]').textContent=summary;
+    const list=this.playerTargetBar.querySelector('.player-target-list');
+    list.replaceChildren(...this.getOrderedTargetPlayers(state).map(player=>{
+      const key=player.dataset.key;
+      const button=document.createElement('button');button.type='button';button.dataset.targetPlayer=key;
+      button.disabled=!state.eligible.has(key);
+      button.className='player-target-list-item';button.classList.toggle('is-selected',state.selected.has(key));
+      button.setAttribute('aria-pressed',state.selected.has(key)?'true':'false');
+      const name=document.createElement('b');name.textContent=player.shadowRoot.querySelector('.player-name')?.textContent?.trim()||key;
+      const seat=document.createElement('small');seat.textContent=key===this.gameController.currentPlayer?`${key} · 自己`:key;
+      button.append(name,seat);return button;
+    }));
     const confirm=this.playerTargetBar.querySelector('[data-target-commit]');confirm.hidden=Boolean(state.autoCommitOnSelect);confirm.textContent=state.confirmLabel||'确认';
     confirm.disabled=!state.valid||(!state.noTarget&&!state.selected.size);
   }
@@ -321,7 +377,7 @@ class SgTable extends HTMLElement {
       && /\/pan\/cards\/[^/]+$/.test(paths[0])
       && (cards[0].cardData?.judgmentEffect||paiKu[cards[0].cardData?.id]?.name)==='闪电';
     const players=this.playerDoms.filter(player=>player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty');
-    this.beginPlayerTargetSelection({mode:'move',eligible:players,single:true,valid:true,title:'移动到哪位玩家？',summary:lightning?'点击玩家后，闪电会立即移入其判定区。':`已选择 ${paths.length} 张牌，请点击目标玩家。`,autoCommitOnSelect:lightning,confirmLabel:'选择区域',pending:{cards,paths,...(lightning?{autoArea:'panArea'}:{})}});
+    this.beginPlayerTargetSelection({mode:'move',eligible:players,single:true,valid:true,title:'移动到哪位玩家？',summary:lightning?'点击玩家卡或下方名单，闪电会立即移入其判定区。':`已选择 ${paths.length} 张牌，请点击玩家卡或下方名单。`,autoCommitOnSelect:lightning,confirmLabel:'选择区域',pending:{cards,paths,...(lightning?{autoArea:'panArea'}:{})}});
   }
 
   ensureUseCardPicker() {
@@ -396,9 +452,9 @@ class SgTable extends HTMLElement {
     const players=this.playerDoms
       .filter(player=>(SELF_ONLY_TARGET_USE_CARDS.has(cardName)?player.dataset.key===current:(isDelayed||SELF_ALLOWED_TARGET_USE_CARDS.has(cardName)||player.dataset.key!==current))&&player.shadowRoot.querySelector('.player-name')?.textContent?.trim()!=='empty');
     const summary=!validDelayedSelection?'延迟锦囊每次只能选择一张牌。'
-      :cardName==='闪电'?'已默认选择自己，可点击其他玩家改选。'
-      :cardName.endsWith('杀')?'点击玩家卡选择目标，或选择无目标响应。'
-      :'点击玩家卡选择目标。';
+      :cardName==='闪电'?'已默认选择自己，可点击玩家卡或下方名单改选。'
+      :cardName.endsWith('杀')?'点击玩家卡或下方名单选择目标，也可选择无目标响应。'
+      :'点击玩家卡或下方名单选择目标。';
     this.beginPlayerTargetSelection({
       mode:'use',cardName,eligible:validDelayedSelection?players:[],selected:cardName==='闪电'&&current?[current]:[],
       single:isDelayed,valid:validDelayedSelection,allowNoTarget:cardName.endsWith('杀'),

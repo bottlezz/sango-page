@@ -201,10 +201,11 @@ export function installCardTransferAnimation(table){
     play(transfer);
   }
 
-  function playTurnEnd({actor}={}){
-    if(!actor)return;
+  function playActionNotice(text,index=0){
+    if(!text)return;
     const notice=document.createElement('div');notice.className='turn-end-notice';
-    notice.textContent=`${actor} 结束了当前回合`;
+    notice.textContent=text;
+    notice.style.marginTop=`${index*2.6}rem`;
     layer.append(notice);
     const duration=reduced.matches?650:1800;
     notice.animate([
@@ -216,11 +217,17 @@ export function installCardTransferAnimation(table){
     window.setTimeout(()=>notice.remove(),duration+30);
   }
 
+  function playTurnEnd({actor}={}){
+    if(actor)playActionNotice(`${actor} 结束了当前回合`);
+  }
+
   const onTransfers=event=>requestAnimationFrame(()=>event.detail?.transfers?.forEach(playTransfer));
   const onReveals=event=>requestAnimationFrame(()=>event.detail?.reveals?.forEach(playReveal));
   const onTurnEnd=event=>requestAnimationFrame(()=>playTurnEnd(event.detail));
+  const onPlayerStateNotices=event=>requestAnimationFrame(()=>event.detail?.notices?.forEach((notice,index)=>playActionNotice(notice.text,index)));
   table.addEventListener('card-transfers',onTransfers);
   table.addEventListener('card-reveals',onReveals);
   table.addEventListener('turn-ended',onTurnEnd);
-  return()=>{table.removeEventListener('card-transfers',onTransfers);table.removeEventListener('card-reveals',onReveals);table.removeEventListener('turn-ended',onTurnEnd);layer.remove();};
+  table.addEventListener('player-state-notices',onPlayerStateNotices);
+  return()=>{table.removeEventListener('card-transfers',onTransfers);table.removeEventListener('card-reveals',onReveals);table.removeEventListener('turn-ended',onTurnEnd);table.removeEventListener('player-state-notices',onPlayerStateNotices);layer.remove();};
 }

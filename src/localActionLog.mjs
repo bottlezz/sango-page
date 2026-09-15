@@ -179,6 +179,27 @@ export function createTurnEndNotice(before,after) {
   return {actorSeat:hint.actorSeat,actor:playerName(after,hint.actorSeat)};
 }
 
+export function createPlayerStateNotices(before,after) {
+  const hint=before?.runtime?.a!==after?.runtime?.a?decodeActionHint(after?.runtime?.a):null;
+  if(hint?.opcode===ACTION_HINT_OPCODE.RESET_TABLE)return [];
+  const notices=[];
+  for(const seat of Object.keys(after||{}).filter(key=>/^p\d+$/.test(key))){
+    const oldPlayer=before?.[seat],nextPlayer=after?.[seat];
+    if(!oldPlayer||!nextPlayer)continue;
+    const actor=playerName(after,seat);
+    const oldHp=String(oldPlayer.hp||'').match(/^(\d+)\/(\d+)$/);
+    const nextHp=String(nextPlayer.hp||'').match(/^(\d+)\/(\d+)$/);
+    if(oldHp&&nextHp&&oldHp[2]===nextHp[2]){
+      const delta=Number(nextHp[1])-Number(oldHp[1]);
+      if(delta>0)notices.push({seat,text:`${actor} 回复 ${delta} 点体力`});
+      if(delta<0)notices.push({seat,text:`${actor} 失去 ${Math.abs(delta)} 点体力`});
+    }
+    if(oldPlayer.debuff?.[0]!==nextPlayer.debuff?.[0])notices.push({seat,text:`${actor} 翻面`});
+    if(oldPlayer.debuff?.[1]!==nextPlayer.debuff?.[1])notices.push({seat,text:`${actor} ${nextPlayer.debuff?.[1]==='1'?'进入':'解除'}连环状态`});
+  }
+  return notices;
+}
+
 function hintedChanges(hint,before,after,cardCatalog={},localSeat=null){
   const moved=moves(before,after);
   switch(hint.opcode){
